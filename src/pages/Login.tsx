@@ -3,80 +3,75 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Heart, Mail, Lock, Eye, EyeOff } from "lucide-react";
+import { Mail, Lock, Eye, EyeOff, Droplets } from "lucide-react";
 
 export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
 
   return (
-    <div className="min-h-screen bg-background flex">
-      {/* Left panel */}
-      <div className="hidden lg:flex lg:w-1/2 hero-gradient items-center justify-center p-12">
-        <div className="text-center text-primary-foreground max-w-md">
-          <Heart className="h-16 w-16 mx-auto mb-6 fill-primary-foreground/20" />
-          <h2 className="text-3xl font-bold mb-4">Bienvenue sur SangVital</h2>
-          <p className="text-primary-foreground/80 text-lg">
-            Accédez à votre dossier médical, partagez-le avec vos médecins et contribuez à sauver des vies.
-          </p>
+    <div className="min-h-screen bg-[#faf8f8] flex flex-col items-center justify-center p-6 py-1">
+      <div className="w-full max-w-lg space-y-8 flex flex-col items-center">
+        {/* Logo Section */}
+        <div className="text-center group">
+          <div className="flex flex-col items-center gap-3">
+            <div className="h-20 w-20 rounded-full bg-primary flex items-center justify-center shadow-xl shadow-primary/20 hover:scale-105 transition-transform duration-300">
+             <img src="icons8-blood-64 (1).png" alt="" width={50} />
+            </div>
+            <h2 className="text-2xl font-bold text-slate-900 mb-2">Connexion</h2>
+           </div>
+          <p className="text-slate-500 text-sm">Accédez à votre espace médical sécurisé</p>
+          
         </div>
-      </div>
 
-      {/* Right panel */}
-      <div className="flex-1 flex items-center justify-center p-6">
-        <div className="w-full max-w-md space-y-8">
-          <div className="text-center">
-            <Link to="/" className="inline-flex items-center gap-2 font-bold text-2xl mb-2">
-              <Heart className="h-7 w-7 text-primary fill-primary" />
-              <span>Sang<span className="text-primary">Vital</span></span>
-            </Link>
-            <h1 className="text-2xl font-bold mt-6 mb-2">Connexion</h1>
-            <p className="text-muted-foreground">Accédez à votre espace médical sécurisé</p>
-          </div>
+        {/* Main Card */}
+        <div className="w-full bg-white rounded-[2.5rem] shadow-[0_20px_60px_-15px_rgba(0,0,0,0.05)] border border-slate-100 p-8 md:p-12 space-y-8">
 
-          <form className="space-y-5" onSubmit={(e) => e.preventDefault()}>
+          <form className="space-y-6" onSubmit={(e) => e.preventDefault()}>
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input id="email" type="email" placeholder="votre@email.com" className="pl-10" />
-              </div>
+             <Label htmlFor="email font-bold" title="email" className="text-slate-900 font-bold">Email</Label>
+              <Input 
+                id="email" 
+                type="email" 
+                placeholder="Votre Email" 
+                className="h-12 rounded-xl border-slate-200 focus:border-primary transition-all px-6 text-base" 
+              />
             </div>
 
             <div className="space-y-2">
-              <div className="flex justify-between items-center">
-                <Label htmlFor="password">Mot de passe</Label>
-                <a href="#" className="text-xs text-primary hover:underline">Mot de passe oublié ?</a>
+              <div className="flex justify-between items-center px-1">
+                <Label htmlFor="password font-bold" title="password" className="text-slate-900 font-bold">Mot de passe</Label>
+                <a href="#" className="text-xs text-primary font-bold hover:underline">Mot de passe oublié ?</a>
               </div>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   id="password"
                   type={showPassword ? "text" : "password"}
-                  placeholder="••••••••"
-                  className="pl-10 pr-10"
+                  placeholder="Mot De Passe"
+                  className="h-12 rounded-xl border-slate-200 focus:border-primary transition-all px-6 text-base pr-14"
                 />
                 <button
                   type="button"
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-primary transition-colors"
                   onClick={() => setShowPassword(!showPassword)}
                 >
-                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  {showPassword ? <EyeOff className="h-6 w-6" /> : <Eye className="h-6 w-6" />}
                 </button>
               </div>
             </div>
 
-            <Button variant="hero" className="w-full" size="lg">
+            <Button size="lg" className="w-full h-12 rounded-lg bg-primary text-white text-md font-black uppercase tracking-widest shadow-xl shadow-primary/30 hover:shadow-primary/50 transition-all">
               Se connecter
             </Button>
           </form>
 
-          <p className="text-center text-sm text-muted-foreground">
-            Pas encore de compte ?{" "}
-            <Link to="/register" className="text-primary font-medium hover:underline">
-              Créer un compte
+          <div className="text-center space-y-4 pt-4">
+            <b>Pas encore de compte ? </b>
+            <Link to="/register" className="text-primary font-black hover:underline tracking-tight">
+               S'inscrire
             </Link>
-          </p>
+          </div>
         </div>
+       
       </div>
     </div>
   );

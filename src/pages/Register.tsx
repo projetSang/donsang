@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Heart, Mail, Lock, User, Phone, Eye, EyeOff, Building2 } from "lucide-react";
+import { Mail, Lock, User, Phone, Eye, EyeOff, Building2, Droplets } from "lucide-react";
 
 type AccountType = "patient" | "hospital";
 
@@ -12,145 +12,87 @@ export default function Register() {
   const [accountType, setAccountType] = useState<AccountType>("patient");
 
   return (
-    <div className="min-h-screen bg-background flex">
-      {/* Left panel */}
-      <div className="hidden lg:flex lg:w-1/2 hero-gradient items-center justify-center p-12">
-        <div className="text-center text-primary-foreground max-w-md">
-          <Heart className="h-16 w-16 mx-auto mb-6 fill-primary-foreground/20" />
-          <h2 className="text-3xl font-bold mb-4">Rejoignez SangVital</h2>
-          <p className="text-primary-foreground/80 text-lg">
-            Créez votre dossier médical en quelques minutes et contribuez à sauver des vies.
-          </p>
+    <div className="min-h-screen bg-[#faf8f8] flex flex-col items-center justify-center p-6 py-1">
+      <div className="w-full max-w-lg space-y-8 flex flex-col items-center">
+        {/* Logo Section */}
+        <div className="text-center group">
+          <div className="flex flex-col items-center gap-3">
+            <div className="h-20 w-20 rounded-full bg-primary flex items-center justify-center shadow-xl shadow-primary/20 hover:scale-105 transition-transform duration-300">
+              <img src="icons8-blood-64 (1).png" alt="" width={50} />
+            </div>
+           <h1 className="text-2xl font-bold text-slate-900 mb-2">Inscription</h1>
+            </div>
+          <p className="text-slate-500 text-sm">Créez votre compte pour accéder à la plateforme</p>
+          
         </div>
-      </div>
 
-      {/* Right panel */}
-      <div className="flex-1 flex items-center justify-center p-6">
-        <div className="w-full max-w-md space-y-6">
-          <div className="text-center">
-            <Link to="/" className="inline-flex items-center gap-2 font-bold text-2xl mb-2">
-              <Heart className="h-7 w-7 text-primary fill-primary" />
-              <span>Sang<span className="text-primary">Vital</span></span>
-            </Link>
-            <h1 className="text-2xl font-bold mt-6 mb-2">Créer un compte</h1>
-            <p className="text-muted-foreground">Choisissez votre type de compte</p>
-          </div>
+        {/* Main Card */}
+        <div className="w-full bg-white rounded-[2.5rem] shadow-[0_20px_60px_-15px_rgba(0,0,0,0.05)] border border-slate-100 p-8 md:p-12 space-y-8">
 
-          {/* Account type toggle */}
-          <div className="flex bg-muted rounded-lg p-1">
-            <button
-              className={`flex-1 py-2.5 px-4 rounded-md text-sm font-medium transition-all flex items-center justify-center gap-2 ${
-                accountType === "patient"
-                  ? "bg-card text-foreground shadow-sm"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-              onClick={() => setAccountType("patient")}
-            >
-              <User className="h-4 w-4" />
-              Patient
-            </button>
-            <button
-              className={`flex-1 py-2.5 px-4 rounded-md text-sm font-medium transition-all flex items-center justify-center gap-2 ${
-                accountType === "hospital"
-                  ? "bg-card text-foreground shadow-sm"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-              onClick={() => setAccountType("hospital")}
-            >
-              <Building2 className="h-4 w-4" />
-              Hôpital
-            </button>
-          </div>
-
-          <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
-            <div className="space-y-2">
-              <Label htmlFor="name">
-                {accountType === "patient" ? "Nom complet" : "Nom de l'établissement"}
-              </Label>
-              <div className="relative">
-                {accountType === "patient" ? (
-                  <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                ) : (
-                  <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                )}
-                <Input id="name" placeholder={accountType === "patient" ? "Votre nom" : "Nom de l'hôpital"} className="pl-10" />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input id="email" type="email" placeholder="votre@email.com" className="pl-10" />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="phone">Téléphone</Label>
-              <div className="relative">
-                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input id="phone" type="tel" placeholder="+212 600 000 000" className="pl-10" />
-              </div>
-            </div>
-
-            {accountType === "patient" && (
+          <div className="space-y-6">
+           <form className="space-y-6" onSubmit={(e) => e.preventDefault()}>
               <div className="space-y-2">
-                <Label htmlFor="blood-group">Groupe sanguin</Label>
-                <select
-                  id="blood-group"
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                >
-                  <option value="">Sélectionnez votre groupe</option>
-                  <option value="A+">A+</option>
-                  <option value="A-">A−</option>
-                  <option value="B+">B+</option>
-                  <option value="B-">B−</option>
-                  <option value="AB+">AB+</option>
-                  <option value="AB-">AB−</option>
-                  <option value="O+">O+</option>
-                  <option value="O-">O−</option>
-                </select>
-              </div>
-            )}
-
-            {accountType === "hospital" && (
-              <div className="space-y-2">
-                <Label htmlFor="city">Ville</Label>
-                <Input id="city" placeholder="Casablanca, Rabat, Marrakech..." />
-              </div>
-            )}
-
-            <div className="space-y-2">
-              <Label htmlFor="password">Mot de passe</Label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  id="password"
-                  type={showPassword ? "text" : "password"}
-                  placeholder="••••••••"
-                  className="pl-10 pr-10"
+                <Label htmlFor="name" className="text-slate-900 font-bold px-1">
+                  Nom complet
+                </Label>
+                <Input 
+                  id="name" 
+                  placeholder= "Votre Nom" 
+                  className="h-12 rounded-xl border-slate-200 focus:border-primary transition-all px-6 text-base" 
                 />
-                <button
-                  type="button"
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                  onClick={() => setShowPassword(!showPassword)}
-                >
-                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </button>
               </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="email" className="text-slate-900 font-bold px-1">Email</Label>
+                <Input 
+                  id="email" 
+                  type="email" 
+                  placeholder="Votre Email" 
+                  className="h-12 rounded-xl border-slate-200 focus:border-primary transition-all px-6 text-base" 
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="phone" className="text-slate-900 font-bold px-1">Téléphone</Label>
+                <Input 
+                  id="phone" 
+                  type="tel" 
+                  placeholder="Numéro Téléphone" 
+                  className="h-12 rounded-xl border-slate-200 focus:border-primary transition-all px-6 text-base" 
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="password" title="password" className="text-slate-900 font-bold px-1">Mot de passe</Label>
+                <div className="relative">
+                  <Input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Mot De Passe"
+                    className="h-12 rounded-xl border-slate-200 focus:border-primary transition-all px-6 text-base pr-14"
+                  />
+                  <button
+                    type="button"
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-primary transition-colors"
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? <EyeOff className="h-6 w-6" /> : <Eye className="h-6 w-6" />}
+                  </button>
+                </div>
+              </div>
+
+              <Button size="lg" className="w-full h-12 rounded-lg bg-primary text-white text-md font-black uppercase tracking-widest shadow-xl shadow-primary/30 hover:shadow-primary/50 transition-all">
+                S'inscrire
+              </Button>
+            </form>
+
+            <div className="text-center space-y-2 pt-4">
+              <b>Déjà un compte ? </b>
+              <Link to="/login" className="text-primary font-black hover:underline tracking-tight">
+                 Se connecter
+              </Link>
             </div>
-
-            <Button variant="hero" className="w-full" size="lg">
-              Créer mon compte
-            </Button>
-          </form>
-
-          <p className="text-center text-sm text-muted-foreground">
-            Déjà un compte ?{" "}
-            <Link to="/login" className="text-primary font-medium hover:underline">
-              Se connecter
-            </Link>
-          </p>
+          </div>
         </div>
       </div>
     </div>
