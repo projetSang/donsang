@@ -6,7 +6,6 @@ import { Menu, X, Droplets } from "lucide-react";
 const navItems = [
   { label: "Accueil", path: "/" },
   { label: "Fonctionnalités", path: "/fonctionnalites" },
-  { label: "Comment ça marche", path: "/comment-ca-marche" },
   { label: "Contact", path: "/contact" },
 ];
 
@@ -16,32 +15,37 @@ export function Navbar() {
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-white h-18 md:h-16 flex items-stretch border-b border-slate-100 shadow-sm overflow-hidden">
-      {/* Left Section (White) */}
-      <div className="flex-1 flex items-center justify-between px-6 md:px-12 relative z-10">
+      {/* Left: Logo */}
+      <div className="flex items-center px-6 md:px-12 relative z-10">
         <Link to="/" className="flex items-center gap-2 group">
           <div className="h-10 w-10 md:h-12 md:w-12 rounded-full bg-primary flex items-center justify-center shadow-lg shadow-primary/20 group-hover:scale-110 transition-transform">
             <Droplets className="h-6 w-6 md:h-7 md:w-7 text-white fill-white" />
           </div>
           <span className="hidden sm:block text-xl md:text-2xl font-black text-slate-900 tracking-tighter">DonSang</span>
         </Link>
-        
-        {/* Desktop Nav Links */}
-        <div className="hidden lg:flex items-center gap-10">
-          {navItems.map((item) => (
-            <Link
-              key={item.path}
-              to={item.path}
-              className={`text-sm md:text-base font-bold transition-all ${
-                location.pathname === item.path ? "text-primary" : "text-slate-500 hover:text-primary"
-              }`}
-            >
-              {item.label}
-            </Link>
-          ))}
-        </div>
+      </div>
 
-        {/* Mobile toggle */}
-        <button className="lg:hidden text-slate-900 p-2" onClick={() => setMobileOpen(!mobileOpen)}>
+      {/* Center: Nav Links (absolutely centered) */}
+      <div className="hidden lg:flex absolute inset-0 items-center justify-center gap-10 pointer-events-none">
+        {navItems.map((item) => (
+          <Link
+            key={item.path}
+            to={item.path}
+            className={`pointer-events-auto text-sm md:text-base font-bold transition-all ${
+              location.pathname === item.path ? "text-primary" : "text-slate-500 hover:text-primary"
+            }`}
+          >
+            {item.label}
+          </Link>
+        ))}
+      </div>
+
+      {/* Spacer to push right section */}
+      <div className="flex-1" />
+
+      {/* Mobile toggle */}
+      <div className="flex lg:hidden items-center pr-6">
+        <button className="text-slate-900 p-2" onClick={() => setMobileOpen(!mobileOpen)}>
           {mobileOpen ? <X className="h-8 w-8" /> : <Menu className="h-8 w-8" />}
         </button>
       </div>

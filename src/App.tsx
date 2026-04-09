@@ -7,7 +7,7 @@ import Index from "./pages/Index.tsx";
 import Login from "./pages/Login.tsx";
 import Register from "./pages/Register.tsx";
 import Features from "./pages/Features.tsx";
-import HowItWorks from "./pages/HowItWorks.tsx";
+
 import Contact from "./pages/Contact.tsx";
 import PatientDashboard from "./pages/PatientDashboard.tsx";
 import HospitalDashboard from "./pages/HospitalDashboard.tsx";
@@ -24,7 +24,7 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/fonctionnalites" element={<Features />} />
-          <Route path="/comment-ca-marche" element={<HowItWorks />} />
+
           <Route path="/contact" element={<Contact />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />

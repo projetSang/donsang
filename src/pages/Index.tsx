@@ -3,42 +3,10 @@ import { Button } from "@/components/ui/button";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import {
-  Heart, Shield, Search, Share2, FileText, Bell,
-  UserPlus, ClipboardList, Link2, ArrowRight, Droplets, MapPin, Phone
+  Heart, UserPlus, ClipboardList, Link2, ArrowRight, Droplets, MapPin, Phone
 } from "lucide-react";
 
-const features = [
-  {
-    icon: Droplets,
-    title: "Groupe sanguin",
-    description: "Enregistrez votre groupe sanguin ABO + Rh pour un accès rapide en cas d'urgence.",
-  },
-  {
-    icon: FileText,
-    title: "Dossier médical",
-    description: "Conservez vos informations médicales, allergies, traitements et documents en un seul endroit.",
-  },
-  {
-    icon: Share2,
-    title: "Lien de partage",
-    description: "Générez un lien sécurisé pour que votre médecin consulte votre dossier en lecture seule.",
-  },
-  {
-    icon: Search,
-    title: "Recherche de donneurs",
-    description: "Les hôpitaux trouvent des donneurs compatibles par groupe sanguin et proximité géographique.",
-  },
-  {
-    icon: Bell,
-    title: "Alertes urgences",
-    description: "Recevez des notifications quand un hôpital proche a besoin de votre groupe sanguin.",
-  },
-  {
-    icon: Shield,
-    title: "Sécurité des données",
-    description: "Vos données médicales sont chiffrées et protégées selon les normes de confidentialité.",
-  },
-];
+
 
 const steps = [
   {
@@ -110,31 +78,7 @@ export default function Index() {
         </div>
       </section>
 
-      {/* Features */}
-      <section id="features" className="py-16 md:py-24 bg-muted/50">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">Fonctionnalités principales</h2>
-            <p className="text-muted-foreground max-w-xl mx-auto">
-              Tout ce dont vous avez besoin pour gérer vos informations médicales et faciliter le don de sang.
-            </p>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {features.map((f) => (
-              <div
-                key={f.title}
-                className="bg-card rounded-xl p-6 border border-border hover:shadow-lg transition-shadow duration-300"
-              >
-                <div className="h-12 w-12 rounded-lg bg-accent flex items-center justify-center mb-4">
-                  <f.icon className="h-6 w-6 text-primary" />
-                </div>
-                <h3 className="text-lg font-semibold mb-2">{f.title}</h3>
-                <p className="text-sm text-muted-foreground leading-relaxed">{f.description}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+
 
       {/* How it works */}
       <section id="how-it-works" className="py-16 md:py-24">
