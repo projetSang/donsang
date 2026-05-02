@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, FileText, Edit, User, Search, Filter } from "lucide-react";
+import { Plus, FileText, Edit, User, Search, Filter, Users, Trash2 } from "lucide-react";
 import { PatientDetails } from "./PatientDetails";
 
 import { useEffect } from "react";
@@ -11,6 +11,7 @@ export function PatientsTab({ showAddPatient, setShowAddPatient }: any) {
   const [showOtherDisease, setShowOtherDisease] = useState(false);
   const [selectedPatient, setSelectedPatient] = useState<any>(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [editingPatientId, setEditingPatientId] = useState<number | null>(null);
   const [patients, setPatients] = useState<any[]>([]);
 
   const filteredPatients = patients.filter(p => {
@@ -23,16 +24,19 @@ export function PatientsTab({ showAddPatient, setShowAddPatient }: any) {
     );
   });
   const [formData, setFormData] = useState({
+    hospital_id: 1, // CHU Casablanca par défaut
     full_name: "",
+    email: "",
     cin: "",
     birth_date: "",
     phone: "",
     address: "",
     height: "",
     weight: "",
-    chronic_diseases: [] as string[],
     blood_type: "",
-    admission_date: new Date().toISOString().split('T')[0],
+    chronic_diseases: [] as string[],
+    other_disease: "",
+    admission_date: new Date().toISOString().split('T')[0]
   });
 
   const toggleDisease = (disease: string) => {
@@ -46,24 +50,90 @@ export function PatientsTab({ showAddPatient, setShowAddPatient }: any) {
 
   const handleAddPatient = async () => {
     try {
-      const res = await fetch("http://localhost:8000/api/hospital/patients", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+      const finalDiseases = [...formData.chronic_diseases];
+      if (showOtherDisease && formData.other_disease) {
+        finalDiseases.push(formData.other_disease);
+      }
+
+      const url = editingPatientId 
+        ? `http://localhost:8000/api/hospital/patients/${editingPatientId}`
+        : "http://localhost:8000/api/hospital/patients";
+      
+      const method = editingPatientId ? "PUT" : "POST";
+
+      const res = await fetch(url, {
+        method: method,
+        headers: { 
+          "Content-Type": "application/json",
+          "Accept": "application/json" 
+        },
         body: JSON.stringify({
           ...formData,
+          chronic_diseases: finalDiseases,
           hospital_id: 1, // default for CHU Casablanca
-          status: "En attente"
         })
       });
+
       if (res.ok) {
-        const newPatient = await res.json();
-        setPatients(prev => [...prev, newPatient]);
+        const result = await res.json();
+        const updatedPatient = editingPatientId ? result : result.patient;
+
+        if (editingPatientId) {
+          setPatients(prev => prev.map(p => p.id === editingPatientId ? updatedPatient : p));
+        } else {
+          setPatients(prev => [...prev, updatedPatient]);
+        }
+
         setShowAddPatient(false);
-        setFormData({ full_name: "", cin: "", birth_date: "", phone: "", address: "", height: "", weight: "", chronic_diseases: [], blood_type: "", admission_date: new Date().toISOString().split('T')[0] });
+        setEditingPatientId(null);
+        setFormData({ 
+          hospital_id: 1,
+          full_name: "", 
+          email: "",
+          cin: "", 
+          birth_date: "", 
+          phone: "", 
+          address: "", 
+          height: "", 
+          weight: "", 
+          chronic_diseases: [], 
+          other_disease: "",
+          blood_type: "", 
+          admission_date: new Date().toISOString().split('T')[0] 
+        });
+        setShowOtherDisease(false);
       }
     } catch(err) {
       console.error(err);
     }
+  };
+
+  const handleDeletePatient = async (e: React.MouseEvent, id: number) => {
+    e.stopPropagation();
+    if (!confirm("Voulez-vous vraiment supprimer ce dossier ?")) return;
+
+    try {
+      const res = await fetch(`http://localhost:8000/api/hospital/patients/${id}`, {
+        method: "DELETE",
+        headers: { "Accept": "application/json" }
+      });
+      if (res.ok) {
+        setPatients(prev => prev.filter(p => p.id !== id));
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const startEdit = (e: React.MouseEvent, patient: any) => {
+    e.stopPropagation();
+    setEditingPatientId(patient.id);
+    setFormData({
+      ...patient,
+      other_disease: "", 
+      chronic_diseases: Array.isArray(patient.chronic_diseases) ? patient.chronic_diseases : JSON.parse(patient.chronic_diseases || "[]")
+    });
+    setShowAddPatient(true);
   };
 
   useEffect(() => {
@@ -85,9 +155,12 @@ export function PatientsTab({ showAddPatient, setShowAddPatient }: any) {
   return (
     <div className="space-y-6 animate-reveal">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h3 className="font-bold text-2xl">Gestion des Patients</h3>
-          <p className="text-muted-foreground text-sm">Consultez et gérez les dossiers médicaux des patients.</p>
+        <div className="animate-reveal">
+        <h1 className="text-3xl font-extrabold text-slate-900 flex items-center gap-3">
+          <Users className="h-8 w-8 text-primary" />
+          Gestion des Patients
+        </h1>
+        <p className="text-slate-500 mt-1">Consultez et gérez les dossiers médicaux des patients.</p>
         </div>
         <Button variant="hero" size="sm" onClick={() => setShowAddPatient(true)} className="shadow-lg hover:shadow-primary/20">
           <Plus className="h-4 w-4 mr-2" />
@@ -99,7 +172,7 @@ export function PatientsTab({ showAddPatient, setShowAddPatient }: any) {
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input 
-            placeholder="Rechercher un patient (Nom, CIN, ID)..." 
+            placeholder="Rechercher un patient (Nom, CIN)..." 
             className="pl-10 bg-card border-border"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
@@ -117,7 +190,7 @@ export function PatientsTab({ showAddPatient, setShowAddPatient }: any) {
             <div className="p-2 bg-accent text-primary rounded-lg">
               <User className="h-5 w-5" />
             </div>
-            <h4 className="font-bold text-lg">Nouveau Dossier Patient</h4>
+            <h4 className="font-bold text-lg">{editingPatientId ? "Modifier le Dossier" : "Nouveau Dossier Patient"}</h4>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
@@ -128,6 +201,10 @@ export function PatientsTab({ showAddPatient, setShowAddPatient }: any) {
             <div className="space-y-1.5">
               <label className="text-sm font-medium text-muted-foreground">CIN </label>
               <Input placeholder="entre votre CIN" className="bg-muted/30 border-transparent focus:bg-background" value={formData.cin} onChange={(e) => setFormData({...formData, cin: e.target.value})} />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium text-muted-foreground">Email</label>
+              <Input type="email" placeholder="email@exemple.com" className="bg-muted/30 border-transparent focus:bg-background" value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} />
             </div>
             <div className="space-y-1.5">
               <label className="text-sm font-medium text-muted-foreground">Date de naissance</label>
@@ -186,6 +263,8 @@ export function PatientsTab({ showAddPatient, setShowAddPatient }: any) {
                     placeholder="Veuillez préciser ici..." 
                     className="flex w-full rounded-xl border border-input bg-muted/30 px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all" 
                     rows={3} 
+                    value={formData.other_disease}
+                    onChange={(e) => setFormData({...formData, other_disease: e.target.value})}
                   />
                 </div>
               )}
@@ -195,8 +274,13 @@ export function PatientsTab({ showAddPatient, setShowAddPatient }: any) {
           </div>
 
           <div className="flex justify-end gap-3 pt-4 border-t border-border">
-            <Button variant="ghost" className="rounded-xl px-6" onClick={() => setShowAddPatient(false)}>Annuler</Button>
-            <Button variant="hero" className="rounded-xl px-8 shadow-lg shadow-primary/20" onClick={handleAddPatient}>Créer le dossier</Button>
+            <Button variant="ghost" className="rounded-xl px-6" onClick={() => {
+              setShowAddPatient(false);
+              setEditingPatientId(null);
+            }}>Annuler</Button>
+            <Button variant="hero" className="rounded-xl px-8 shadow-lg shadow-primary/20" onClick={handleAddPatient}>
+              {editingPatientId ? "Enregistrer les modifications" : "Créer le dossier"}
+            </Button>
           </div>
         </div>
       )}
@@ -206,7 +290,7 @@ export function PatientsTab({ showAddPatient, setShowAddPatient }: any) {
           <table className="w-full text-left">
             <thead>
               <tr className="bg-muted/30 border-b border-border">
-                <th className="p-4 text-xs font-bold uppercase tracking-wider text-muted-foreground">ID</th>
+                <th className="p-4 text-xs font-bold uppercase tracking-wider text-muted-foreground">numéro dossier</th>
                 <th className="p-4 text-xs font-bold uppercase tracking-wider text-muted-foreground">Nom Patient</th>
                 <th className="p-4 text-xs font-bold uppercase tracking-wider text-muted-foreground">Groupe</th>
                 <th className="p-4 text-xs font-bold uppercase tracking-wider text-muted-foreground">Admission</th>
@@ -216,10 +300,10 @@ export function PatientsTab({ showAddPatient, setShowAddPatient }: any) {
             <tbody className="divide-y divide-border">
               {filteredPatients.length > 0 ? filteredPatients.map((p) => (
                 <tr key={p.id} className="hover:bg-muted/40 transition-colors group cursor-pointer" onClick={() => setSelectedPatient(p)}>
-                  <td className="p-4 font-mono text-sm text-muted-foreground">{p.id}</td>
+                  <td className="p-4 font-mono text-sm text-muted-foreground">N{p.id}</td>
                   <td className="p-4">
                     <div className="font-bold text-foreground group-hover:text-primary transition-colors">{p.full_name}</div>
-                    <div className="text-xs text-muted-foreground">{p.status}</div>
+                    
                   </td>
                   <td className="p-4">
                     <span className="bg-accent text-primary px-3 py-1 rounded-full font-bold text-xs shadow-sm border border-primary/10">
@@ -228,10 +312,18 @@ export function PatientsTab({ showAddPatient, setShowAddPatient }: any) {
                   </td>
                   <td className="p-4 text-sm text-muted-foreground">{p.admission_date}</td>
                   <td className="p-4 text-right">
-                    <Button variant="outline" size="sm" className="h-8 rounded-lg hover:bg-primary hover:text-white transition-all">
-                      <FileText className="h-3.5 w-3.5 mr-1.5" />
-                      Détails
-                    </Button>
+                    <div className="flex justify-end gap-2">
+                      <Button variant="outline" size="sm" className="h-8 rounded-lg hover:bg-primary hover:text-white transition-all" onClick={() => setSelectedPatient(p)}>
+                        <FileText className="h-3.5 w-3.5 mr-1.5" />
+                        Détails
+                      </Button>
+                      <Button variant="outline" size="sm" className="h-8 rounded-lg hover:bg-blue-600 hover:text-white transition-all border-blue-200" onClick={(e) => startEdit(e, p)}>
+                        <Edit className="h-3.5 w-3.5" />
+                      </Button>
+                      <Button variant="outline" size="sm" className="h-8 rounded-lg hover:bg-gray-600 hover:text-white transition-all border-gray-200" onClick={(e) => handleDeletePatient(e, p.id)}>
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
                   </td>
                 </tr>
               )) : (

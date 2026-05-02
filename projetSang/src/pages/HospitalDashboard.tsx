@@ -1,18 +1,20 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { 
-  Heart, Search, Users, Droplets, Building2, 
+import {
+  Heart, Search, Users, Droplets, Building2,
   LogOut, Bell, BarChart3, ChevronRight, LayoutDashboard,
   Settings, HelpCircle
 } from "lucide-react";
 
 import { PatientsTab } from "@/components/hospital/PatientsTab";
-import { SearchTab, mockDonors } from "@/components/hospital/SearchTab";
+import { SearchTab } from "@/components/hospital/SearchTab";
 import { StatsTab } from "@/components/hospital/StatsTab";
 import { AlertsTab } from "@/components/hospital/AlertsTab";
+import TableBord from "@/components/hospital/TableBord";
 
 const tabs = [
+  { id: "table", label: "Tableau de bord", icon: LayoutDashboard },
   { id: "patients", label: "Gestion Patients", icon: Users },
   { id: "search", label: "Recherche Donneurs", icon: Search },
   { id: "stats", label: "Statistiques", icon: BarChart3 },
@@ -20,39 +22,23 @@ const tabs = [
 ];
 
 export default function HospitalDashboard() {
-  const [activeTab, setActiveTab] = useState("patients");
+  const [activeTab, setActiveTab] = useState("table");
   const [showAddPatient, setShowAddPatient] = useState(false);
   const [showNewAlert, setShowNewAlert] = useState(false);
   const [selectedBlood, setSelectedBlood] = useState("O+");
-  const [city, setCity] = useState("Casablanca");
-
-  const [statsData, setStatsData] = useState<any>(null);
-
-  useEffect(() => {
-    fetch("http://localhost:8000/api/hospital/stats")
-      .then(res => res.json())
-      .then(data => setStatsData(data))
-      .catch(err => console.error("Erreur de récupération des statistiques backend", err));
-  }, []);
-
-  const dynamicStats = [
-    { label: "Donneurs dans la région", value: statsData?.donors_region || "0", icon: Users, color: "text-blue-500", bg: "bg-blue-50" },
-    { label: "Demandes ce mois", value: statsData?.requests_month || "0", icon: Search, color: "text-purple-500", bg: "bg-purple-50" },
-    { label: "Patients", value: statsData?.patients || "0", icon: Heart, color: "text-primary", bg: "bg-primary/5" },
-    { label: "Alertes en cours", value: statsData?.alerts || "0", icon: Droplets, color: "text-orange-500", bg: "bg-orange-50" },
-  ];
+  const [city, setCity] = useState("");
 
   return (
     <div className="min-h-screen bg-[#F8FAFC]">
       {/* Top bar */}
       <header className="bg-white/80 backdrop-blur-md border-b border-slate-200 sticky top-0 z-50">
         <div className="container mx-auto flex items-center justify-between h-16 px-6">
-           <div className="flex items-center px-6 md:px-12 relative z-10">
-        <Link to="/" className="flex items-center gap-2 group">
-         <img src="logo_sang.png" alt=""  width={130} height={130}/>
-        </Link>
-      </div>
-          
+          <div className="flex items-center px-6 md:px-12 relative z-10">
+            <Link to="/" className="flex items-center gap-2 group">
+              <img src="logo_sang.png" alt="" width={130} height={130} />
+            </Link>
+          </div>
+
           <div className="flex items-center gap-4">
             <div className="hidden md:flex flex-col items-end">
               <span className="text-sm font-bold text-slate-900">CHU Casablanca</span>
@@ -82,11 +68,10 @@ export default function HospitalDashboard() {
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`w-full flex items-center justify-between px-4 py-3 rounded-xl text-sm font-semibold transition-all group ${
-                    activeTab === tab.id
+                  className={`w-full flex items-center justify-between px-4 py-3 rounded-xl text-sm font-semibold transition-all group ${activeTab === tab.id
                       ? "bg-primary text-white shadow-lg shadow-primary/20"
                       : "text-slate-600 hover:bg-slate-50 hover:text-primary"
-                  }`}
+                    }`}
                 >
                   <div className="flex items-center gap-3">
                     <tab.icon className={`h-5 w-5 ${activeTab === tab.id ? "text-white" : "text-slate-400 group-hover:text-primary"}`} />
@@ -95,7 +80,7 @@ export default function HospitalDashboard() {
                   {activeTab === tab.id && <ChevronRight className="h-4 w-4 opacity-70" />}
                 </button>
               ))}
-              
+
               <div className="pt-4 mt-4 border-t border-slate-100">
                 <p className="px-4 py-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Support & Config</p>
                 <button className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold text-slate-600 hover:bg-slate-50 hover:text-primary transition-all group">
@@ -108,30 +93,10 @@ export default function HospitalDashboard() {
 
           {/* Main Area */}
           <main className="flex-1 min-w-0 space-y-8">
-            <div className="animate-reveal">
-              <h1 className="text-3xl font-extrabold text-slate-900 flex items-center gap-3">
-                <LayoutDashboard className="h-8 w-8 text-primary" />
-                Tableau de Bord
-              </h1>
-              <p className="text-slate-500 mt-1">Bienvenue, CHU Casablanca. Voici l'état actuel de votre hôpital .</p>
-            </div>
 
-            {/* Quick Stats Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {dynamicStats.map((s) => (
-                <div key={s.label} className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm hover:shadow-md transition-shadow group">
-                  <div className="flex justify-between items-start mb-4">
-                    <div className={`${s.bg} ${s.color} p-3 rounded-xl group-hover:scale-110 transition-transform`}>
-                      <s.icon className="h-6 w-6" />
-                    </div>
-                  </div>
-                  <div className="text-3xl font-black text-slate-900 tracking-tight">{s.value}</div>
-                  <div className="text-sm font-semibold text-slate-500 group-hover:text-slate-700 transition-colors uppercase tracking-wide text-[10px] mt-1">{s.label}</div>
-                </div>
-              ))}
-            </div>
 
             <div className="min-h-[500px]">
+              {activeTab === "table" && <TableBord />}
               {activeTab === "patients" && <PatientsTab showAddPatient={showAddPatient} setShowAddPatient={setShowAddPatient} />}
               {activeTab === "search" && <SearchTab selectedBlood={selectedBlood} setSelectedBlood={setSelectedBlood} city={city} setCity={setCity} />}
               {activeTab === "stats" && <StatsTab />}

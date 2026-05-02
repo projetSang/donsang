@@ -1,111 +1,226 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, Filter, MapPin, Phone, Mail } from "lucide-react";
+import { Search, Filter, MapPin, Phone, Mail, Calendar, Edit2, X } from "lucide-react";
+import { useState, useEffect, useCallback } from "react";
+//from bibliotheque 'Shadcn UI' to display window when i click on edit donation date 
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 
-const bloodGroups = ["A+", "A−", "B+", "B−", "AB+", "AB−", "O+", "O−"];
-
-import { useState, useEffect } from "react";
-
-export const mockDonors = [];
+const bloodGroups = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
 
 export function SearchTab({ selectedBlood, setSelectedBlood, city, setCity }: any) {
   const [donors, setDonors] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [editingDonor, setEditingDonor] = useState<any>(null);
+  const [newDonationDate, setNewDonationDate] = useState("");
 
-  const handleSearch = () => {
-    fetch(`http://localhost:8000/api/hospital/search-donors?blood_type=${encodeURIComponent(selectedBlood)}&city=${encodeURIComponent(city)}`)
+  const handleSearch = useCallback(() => {
+    setLoading(true);
+    const queryParams = new URLSearchParams({
+      blood_type: selectedBlood,
+      city: city
+    });
+
+    fetch(`http://localhost:8000/api/hospital/search-donors?${queryParams.toString()}`)
       .then(res => res.json())
-      .then(data => setDonors(data))
-      .catch(console.error);
-  };
+      .then(data => {
+        setDonors(data);
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error("Search error:", err);
+        setLoading(false);
+      });
+  }, [selectedBlood, city]);
 
   useEffect(() => {
     handleSearch();
-  }, []);
+  }, [handleSearch]);
+
+  const handleUpdateDate = () => {
+    if (!editingDonor) return;
+
+    fetch(`http://localhost:8000/api/hospital/donors/${editingDonor.id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ...editingDonor, last_donation_date: newDonationDate })
+    })
+      .then(res => res.json())
+      .then(updatedDonor => {
+        setDonors(donors.map(d => d.id === updatedDonor.id ? updatedDonor : d));
+        setEditingDonor(null);
+      })
+      .catch(console.error);
+  };
 
   return (
-    <div className="space-y-6">
-      <div className="bg-card rounded-xl border border-border p-6">
-        <h3 className="font-semibold mb-4 flex items-center gap-2">
-          <Filter className="h-4 w-4" />
-          Recherche de donneurs
-        </h3>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div>
-            <label className="text-sm font-medium text-muted-foreground">Groupe sanguin</label>
-            <select
-              className="mt-1 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-              value={selectedBlood}
-              onChange={(e) => setSelectedBlood(e.target.value)}
-            >
-              {bloodGroups.map((g) => (
-                <option key={g} value={g}>{g}</option>
-              ))}
-            </select>
+    <div className="space-y-6 animate-reveal">
+      {/* Search Header and Filters */}
+       <div>
+            <h1 className="text-3xl font-extrabold text-slate-900 flex items-center gap-3">
+              <Search className="h-8 w-8 text-primary" />
+              Recherche de Donneurs
+            </h1>
+            <p className="text-slate-500 mt-1">Trouvez les donneurs disponibles dans votre région.</p>
           </div>
-          <div>
-            <label className="text-sm font-medium text-muted-foreground">Ville</label>
-            <Input className="mt-1" value={city} onChange={(e) => setCity(e.target.value)} />
-          </div>
-          <div>
-            <label className="text-sm font-medium text-muted-foreground">Distance max</label>
-            <select className="mt-1 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm">
-              <option>5 km</option>
-              <option>10 km</option>
-              <option defaultValue="20 km">20 km</option>
-              <option>50 km</option>
-            </select>
-          </div>
-          <div className="flex items-end">
-            <Button variant="hero" className="w-full" onClick={handleSearch}>
-              <Search className="h-4 w-4 mr-2" />
-              Rechercher
-            </Button>
+      <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
+      <div className="flex flex-col gap-6">
+       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="space-y-1.5">
+              <label className="text-sm font-bold text-slate-700 ml-1">Groupe sanguin</label>
+              <select
+                className="flex h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 transition-all cursor-pointer"
+                value={selectedBlood}
+                onChange={(e) => setSelectedBlood(e.target.value)}
+              >
+                {bloodGroups.map((g) => (
+                  <option key={g} value={g}>{g}</option>
+                ))}
+              </select>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-sm font-bold text-slate-700 ml-1">Ville</label>
+              <div className="relative">
+                <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                <Input
+                  className="h-11 pl-10 rounded-xl border-slate-200 bg-slate-50 focus:bg-white transition-all"
+                  value={city}
+                  onChange={(e) => setCity(e.target.value)}
+                  placeholder="entre la ville"
+                />
+              </div>
+            </div>
+
+            <div className="flex items-end">
+              <Button variant="hero" className="w-full h-11 rounded-xl shadow-lg shadow-primary/20 flex gap-2" onClick={handleSearch} disabled={loading}>
+                <Search className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+                {loading ? "Recherche..." : "Rechercher"}
+              </Button>
+            </div>
           </div>
         </div>
       </div>
 
-      <div>
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="font-semibold">
-            {donors.length} donneurs {selectedBlood} trouvés dans {city}
+      {/* Results Section */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between px-2">
+          <h3 className="font-bold text-slate-800">
+            {donors.length} {donors.length === 1 ? 'donneur' : 'donneurs'} {selectedBlood} trouvés à {city}
           </h3>
-          <span className="text-sm text-muted-foreground">Triés par distance</span>
+
         </div>
-        <div className="space-y-3">
-          {donors.map((donor, i) => (
-            <div key={i} className="bg-card rounded-xl border border-border p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-              <div className="flex items-center gap-4">
-                <div className="h-12 w-12 rounded-full bg-accent flex items-center justify-center text-primary font-bold text-lg">
+
+        <div className="grid grid-cols-1 gap-4">
+          {donors.length > 0 ? donors.map((donor, i) => (
+            <div key={i} className="bg-white rounded-2xl border border-slate-200 p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 hover:shadow-xl hover:shadow-slate-100/50 hover:border-primary/20 transition-all duration-300 group">
+              <div className="flex items-center gap-5">
+                <div className="h-12 w-12 rounded-2xl bg-primary/5 flex items-center justify-center text-primary font-black text-xl border-2 border-primary/10 group-hover:bg-primary group-hover:text-white group-hover:border-primary transition-all duration-300">
                   {donor.blood_type}
                 </div>
                 <div>
-                  <div className="font-medium flex items-center gap-2">
+                  <div className="font-bold text-lg text-slate-900 flex items-center gap-2">
                     {donor.full_name}
-                    <span className="text-xs bg-success/10 text-success px-2 py-0.5 rounded-full">Vérifié</span>
                   </div>
-                  <div className="text-sm text-muted-foreground flex items-center gap-3 mt-1">
-                    <span>{donor.phone}</span>
-                    <span className="flex items-center gap-1">
-                      <MapPin className="h-3 w-3" />
+                  <div className="text-sm text-slate-500 flex flex-wrap items-center gap-x-5 gap-y-1.5 mt-1.5">
+                    <div className="flex items-center gap-1.5 hover:text-primary transition-colors cursor-pointer" onClick={() => window.location.href = `tel:${donor.phone}`}>
+                      <Phone className="h-3.5 w-3.5 text-slate-400" />
+                      {donor.phone}
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <MapPin className="h-3.5 w-3.5 text-slate-400" />
                       {donor.city}
-                    </span>
+                    </div>
+                    <div className="flex items-center gap-1.5 group/date cursor-pointer hover:text-primary transition-colors" onClick={() => {
+                      setEditingDonor(donor);
+                      setNewDonationDate(donor.last_donation_date || "");
+                    }}>
+                      <Calendar className="h-3.5 w-3.5 text-slate-400 group-hover/date:text-primary" />
+                      {donor.last_donation_date ? (
+                        <span>Dernier don: {donor.last_donation_date}</span>
+                      ) : (
+                        <span className="text-emerald-600 font-medium italic">Prêt pour un premier don</span>
+                      )}
+                      <Edit2 className="h-3 w-3 opacity-0 group-hover/date:opacity-100 ml-1" />
+                    </div>
                   </div>
                 </div>
               </div>
-              <div className="flex gap-2">
-                <Button variant="hero" size="sm">
-                  <Phone className="h-4 w-4 mr-1" />
-                  Contacter
-                </Button>
-                <Button variant="outline" size="sm">
-                  <Mail className="h-4 w-4 mr-1" />
+
+              <div className="flex items-center gap-3 w-full sm:w-auto">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="flex-1 sm:flex-none h-11 rounded-xl border-slate-200 hover:bg-slate-50 hover:text-primary transition-all gap-2"
+                  onClick={() => donor.email ? window.location.href = `mailto:${donor.email}` : alert("Email non disponible")}
+                >
+                  <Mail className="h-4 w-4" />
                   Email
+                </Button>
+                <Button
+                  variant="hero"
+                  size="sm"
+                  className="flex-1 sm:flex-none h-11 rounded-xl shadow-lg shadow-primary/10 gap-2"
+                  onClick={() => window.location.href = `tel:${donor.phone}`}
+                >
+                  <Phone className="h-4 w-4" />
+                  Appeler
                 </Button>
               </div>
             </div>
-          ))}
+          )) : (
+            <div className="bg-slate-50 border-2 border-dashed border-slate-200 rounded-3xl p-16 text-center">
+              <div className="h-16 w-16 bg-white rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-sm">
+                <Search className="h-8 w-8 text-slate-300" />
+              </div>
+              <h4 className="text-slate-900 font-bold text-lg">Aucun donneur trouvé</h4>
+              <p className="text-slate-500 max-w-xs mx-auto mt-2">
+                Essayez de modifier votre recherche ou de sélectionner un autre groupe sanguin.
+              </p>
+            </div>
+          )}
         </div>
       </div>
+
+      {/* Edit Dialog */}
+      <Dialog open={!!editingDonor} onOpenChange={() => setEditingDonor(null)}>
+        <DialogContent className="sm:max-w-[425px] rounded-3xl">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-black flex items-center gap-2">
+              <Edit2 className="h-6 w-6 text-primary" />
+              Modifier le Donneur
+            </DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="space-y-2">
+              <label className="text-sm font-bold text-slate-700">Nom complet</label>
+              <Input
+                value={editingDonor?.full_name || ""}
+                onChange={(e) => setEditingDonor({ ...editingDonor, full_name: e.target.value })}
+                className="rounded-xl"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-bold text-slate-700">Date du dernier don</label>
+              <Input
+                type="date"
+                value={newDonationDate}
+                onChange={(e) => setNewDonationDate(e.target.value)}
+                className="rounded-xl"
+              />
+            </div>
+          </div>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button variant="outline" onClick={() => setEditingDonor(null)} className="rounded-xl">Annuler</Button>
+            <Button variant="hero" onClick={handleUpdateDate} className="rounded-xl">Enregistrer</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

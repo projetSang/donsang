@@ -18,10 +18,14 @@ export function AlertsTab({ showNewAlert, setShowNewAlert }: any) {
   return (
     <div className="space-y-6 animate-reveal">
       <div className="flex items-center justify-between">
-        <div>
-          <h3 className="font-semibold text-xl">Urgences & Besoins en Sang</h3>
-          <p className="text-sm text-muted-foreground mt-1">Gérez vos alertes et trouvez des donneurs rapidement</p>
-        </div>
+        <div className="animate-reveal">
+              <h1 className="text-3xl font-extrabold text-slate-900 flex items-center gap-3">
+                <AlertTriangle className="h-8 w-8 text-primary" />
+                Urgences & Besoins en Sang
+              </h1>
+              <p className="text-slate-500 mt-1">Gérez vos alertes et trouvez des donneurs rapidement .</p>
+            </div>
+            
         <Button variant="hero" size="sm" onClick={() => setShowNewAlert(!showNewAlert)}>
           <AlertTriangle className="h-4 w-4 mr-2" />
           Lancer une alerte
