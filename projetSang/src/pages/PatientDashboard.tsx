@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { Navbar } from "@/components/Navbar";
+import { Footer } from "@/components/Footer";
 import { Input } from "@/components/ui/input";
 import {
   Heart, User, Droplets, FileText, Share2, Bell, Settings,
@@ -29,27 +31,8 @@ export default function PatientDashboard() {
   const [shareLink] = useState("https://sangvital.ma/dossier/abc123xyz");
 
   return (
-    <div className="min-h-screen bg-muted/30">
-      {/* Top bar */}
-      <header className="bg-card border-b border-border sticky top-0 z-40">
-        <div className="container mx-auto flex items-center justify-between h-14 px-4">
-          <Link to="/" className="flex items-center gap-2 font-bold text-lg">
-            <Heart className="h-5 w-5 text-primary fill-primary" />
-            <span>Sang<span className="text-primary">Vital</span></span>
-          </Link>
-          <div className="flex items-center gap-3">
-            <span className="text-sm text-muted-foreground hidden sm:block">Aya Asrir</span>
-            <div className="h-8 w-8 rounded-full hero-gradient flex items-center justify-center text-primary-foreground text-sm font-bold">
-              A
-            </div>
-            <Link to="/">
-              <Button variant="ghost" size="icon" className="text-muted-foreground">
-                <LogOut className="h-4 w-4" />
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </header>
+    <div className="min-h-screen bg-muted/30 pt-18 md:pt-16">
+      <Navbar user={{ name: "Aya Asrir" }} />
 
       <div className="container mx-auto px-4 py-6 flex flex-col lg:flex-row gap-6">
         {/* Sidebar */}
@@ -108,9 +91,12 @@ export default function PatientDashboard() {
                   </div>
                   <div>
                     <label className="text-sm font-medium text-muted-foreground">Groupe sanguin</label>
-                    <select className="mt-1 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm">
+                    <select 
+                      className="mt-1 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                      defaultValue="O+"
+                    >
                       {bloodGroups.map((g) => (
-                        <option key={g} value={g} selected={g === "O+"}>
+                        <option key={g} value={g}>
                           {g}
                         </option>
                       ))}
@@ -273,6 +259,7 @@ export default function PatientDashboard() {
           )}
         </main>
       </div>
+      <Footer />
     </div>
   );
 }

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,6 +10,13 @@ type AccountType = "patient" | "hospital";
 export default function Register() {
   const [showPassword, setShowPassword] = useState(false);
   const [accountType, setAccountType] = useState<AccountType>("patient");
+  const navigate = useNavigate();
+
+  const handleRegister = (e: React.FormEvent) => {
+    e.preventDefault();
+    localStorage.setItem("isAuthenticated", "true");
+    navigate("/patient");
+  };
 
   return (
     <div className="min-h-screen bg-[#faf8f8] flex flex-col items-center justify-center p-6 py-1">
@@ -17,8 +24,8 @@ export default function Register() {
         {/* Logo Section */}
         <div className="text-center group">
           <div className="flex flex-col items-center gap-3">
-            <div className="h-20 w-20 rounded-full bg-primary flex items-center justify-center shadow-xl shadow-primary/20 hover:scale-105 transition-transform duration-300">
-              <img src="icons8-blood-64 (1).png" alt="" width={50} />
+            <div className="mb-4">
+              <img src="logo_sang.png" alt="SangVital Logo" width={180} height={180} />
             </div>
            <h1 className="text-2xl font-bold text-slate-900 mb-2">Inscription</h1>
             </div>
@@ -30,7 +37,7 @@ export default function Register() {
         <div className="w-full bg-white rounded-[2.5rem] shadow-[0_20px_60px_-15px_rgba(0,0,0,0.05)] border border-slate-100 p-8 md:p-12 space-y-8">
 
           <div className="space-y-6">
-           <form className="space-y-6" onSubmit={(e) => e.preventDefault()}>
+           <form className="space-y-6" onSubmit={handleRegister}>
               <div className="space-y-2">
                 <Label htmlFor="name" className="text-slate-900 font-bold px-1">
                   Nom complet

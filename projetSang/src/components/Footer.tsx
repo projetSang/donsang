@@ -7,9 +7,8 @@ export function Footer() {
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div>
-            <div className="flex items-center gap-2 font-bold text-xl mb-4">
-              <Heart className="h-5 w-5 text-primary fill-primary" />
-              <span>SangVital</span>
+            <div className="flex items-center gap-2 mb-4">
+              <img src="logo_sang.png" alt="SangVital Logo" width={130} height={130} />
             </div>
             <p className="text-sm text-background/60">
               Votre dossier médical accessible partout, à tout moment. Sauvez des vies grâce au don de sang.

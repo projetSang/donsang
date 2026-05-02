@@ -12,6 +12,7 @@ export default function Login() {
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
+    localStorage.setItem("isAuthenticated", "true");
     if (email.toLowerCase().includes("hopital") || email.toLowerCase().includes("chu")) {
       navigate('/hospital');
     } else {
@@ -25,8 +26,8 @@ export default function Login() {
         {/* Logo Section */}
         <div className="text-center group">
           <div className="flex flex-col items-center gap-3">
-            <div className="h-20 w-20 rounded-full bg-primary flex items-center justify-center shadow-xl shadow-primary/20 hover:scale-105 transition-transform duration-300">
-             <img src="icons8-blood-64 (1).png" alt="" width={50} />
+            <div className="mb-4">
+              <img src="logo_sang.png" alt="SangVital Logo" width={180} height={180} />
             </div>
             <h2 className="text-2xl font-bold text-slate-900 mb-2">Connexion</h2>
            </div>
@@ -49,7 +50,6 @@ export default function Login() {
                   className="h-12 rounded-xl border-slate-200 focus:border-primary transition-all px-6 text-base" 
                 />
             </div>
-
             <div className="space-y-2">
               <div className="flex justify-between items-center px-1">
                 <Label htmlFor="password font-bold" title="password" className="text-slate-900 font-bold">Mot de passe</Label>
