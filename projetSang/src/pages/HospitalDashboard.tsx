@@ -55,7 +55,7 @@ export default function HospitalDashboard() {
                 {hospitalInfo?.city || "Centre Hospitalier"}
               </span>
             </div>
-            <div className="h-10 w-10 rounded-xl bg-primary text-white flex items-center justify-center shadow-lg shadow-primary/20 font-bold border-2 border-white">
+            <div className="h-10 w-10 rounded-3xl bg-primary text-white flex items-center justify-center shadow-lg shadow-primary/20 font-bold border-2 border-white">
               {hospitalInfo?.name ? hospitalInfo.name.charAt(0).toUpperCase() : "H"}
             </div>
             <Link to="/">
