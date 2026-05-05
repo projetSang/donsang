@@ -5,7 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import Index from "./pages/Index.tsx";
 import Login from "./pages/Login.tsx";
-import Register from "./pages/Register.tsx";
+
 import Contact from "./pages/Contact.tsx";
 import PatientDashboard from "./pages/PatientDashboard.tsx";
 import HospitalDashboard from "./pages/HospitalDashboard.tsx";
@@ -29,7 +29,7 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
+
           <Route 
             path="/patient" 
             element={

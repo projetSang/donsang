@@ -3,6 +3,11 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\AuthController;
+
+Route::post('/login', [AuthController::class, 'login']);
+Route::post('/update-password', [AuthController::class, 'updatePassword']);
+Route::post('/update-profile', [AuthController::class, 'updateProfile']);
 
 Route::get('/user', function (Request $request) {
     return $request->user();

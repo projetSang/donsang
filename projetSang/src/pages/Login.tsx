@@ -8,15 +8,42 @@ import { Mail, Lock, Eye, EyeOff, Droplets } from "lucide-react";
 export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    localStorage.setItem("isAuthenticated", "true");
-    if (email.toLowerCase().includes("hopital") || email.toLowerCase().includes("chu")) {
-      navigate('/hospital');
-    } else {
-      navigate('/patient');
+    setError("");
+    setLoading(true);
+
+    try {
+      const response = await fetch("http://localhost:8000/api/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.status === "success") {
+        localStorage.setItem("isAuthenticated", "true");
+        localStorage.setItem("userType", data.user_type);
+        localStorage.setItem("userData", JSON.stringify(data.user));
+
+        if (data.user_type === "hospital") {
+          navigate("/hospital");
+        } else {
+          navigate("/patient");
+        }
+      } else {
+        setError(data.message || "Identifiants invalides");
+      }
+    } catch (err) {
+      setError("Erreur de connexion au serveur");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -35,9 +62,12 @@ export default function Login() {
           
         </div>
 
-        {/* Main Card */}
         <div className="w-full bg-white rounded-[2.5rem] shadow-[0_20px_60px_-15px_rgba(0,0,0,0.05)] border border-slate-100 p-8 md:p-12 space-y-8">
-
+          {error && (
+            <div className="bg-destructive/10 border border-destructive/20 text-destructive text-sm p-4 rounded-xl text-center font-bold animate-reveal">
+              {error}
+            </div>
+          )}
           <form className="space-y-6" onSubmit={handleLogin}>
             <div className="space-y-2">
              <Label htmlFor="email font-bold" title="email" className="text-slate-900 font-bold">Email</Label>
@@ -60,6 +90,8 @@ export default function Login() {
                   id="password"
                   type={showPassword ? "text" : "password"}
                   placeholder="Mot De Passe"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                   className="h-12 rounded-xl border-slate-200 focus:border-primary transition-all px-6 text-base pr-14"
                 />
                 <button
@@ -72,17 +104,17 @@ export default function Login() {
               </div>
             </div>
 
-            <Button type="submit" size="lg" className="w-full h-12 rounded-lg bg-primary text-white text-md font-black uppercase tracking-widest shadow-xl shadow-primary/30 hover:shadow-primary/50 transition-all">
-              Se connecter
+            <Button 
+              type="submit" 
+              size="lg" 
+              disabled={loading}
+              className="w-full h-12 rounded-lg bg-primary text-white text-md font-black uppercase tracking-widest shadow-xl shadow-primary/30 hover:shadow-primary/50 transition-all disabled:opacity-50"
+            >
+              {loading ? "Connexion..." : "Se connecter"}
             </Button>
           </form>
 
-          <div className="text-center space-y-4 pt-4">
-            <b>Pas encore de compte ? </b>
-            <Link to="/register" className="text-primary font-black hover:underline tracking-tight">
-               S'inscrire
-            </Link>
-          </div>
+
         </div>
        
       </div>

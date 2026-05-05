@@ -29,7 +29,7 @@ export function Navbar({ user }: NavbarProps) {
       {/* Left: Logo */}
       <div className="flex items-center px-6 md:px-12 relative z-10">
         <Link to="/" className="flex items-center gap-2 group">
-         <img src="logo_sang.png" alt=""  width={130} height={130}/>
+          <img src="logo_sang.png" alt="" width={130} height={130} />
         </Link>
       </div>
 
@@ -39,9 +39,8 @@ export function Navbar({ user }: NavbarProps) {
           <Link
             key={item.path}
             to={item.path}
-            className={`pointer-events-auto text-sm md:text-base font-bold transition-all ${
-              location.pathname === item.path ? "text-primary" : "text-slate-500 hover:text-primary"
-            }`}
+            className={`pointer-events-auto text-sm md:text-base font-bold transition-all ${location.pathname === item.path ? "text-primary" : "text-slate-500 hover:text-primary"
+              }`}
           >
             {item.label}
           </Link>
@@ -61,11 +60,11 @@ export function Navbar({ user }: NavbarProps) {
       {/* Right Section (Slanted Gradient) - Desktop only */}
       <div className="hidden sm:block relative w-[200px] xl:w-[300px]">
         {/* The Slant Background */}
-        <div 
-          className="absolute inset-0 bg-gradient-to-r from-[#780101] via-[#9f0101] to-[#c60505]" 
+        <div
+          className="absolute inset-0 bg-gradient-to-r from-[#780101] via-[#9f0101] to-[#c60505]"
           style={{ clipPath: 'polygon(15% 0, 100% 0, 100% 100%, 0% 100%)' }}
         />
-        
+
         {/* Sign In Button */}
         <div className="absolute inset-0 flex items-center justify-center pl-10">
           {user ? (
@@ -74,10 +73,10 @@ export function Navbar({ user }: NavbarProps) {
               <div className="h-8 w-8 rounded-full bg-white text-primary flex items-center justify-center text-xs font-black shadow-lg">
                 {user.name.charAt(0)}
               </div>
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                className="text-white hover:bg-white/20 transition-colors"
+              <Button
+                variant="ghost"
+                size="icon"
+                className="text-white hover:bg-white transition-colors"
                 onClick={handleLogout}
               >
                 <LogOut className="h-4 w-4" />
@@ -101,9 +100,8 @@ export function Navbar({ user }: NavbarProps) {
               <Link
                 key={item.path}
                 to={item.path}
-                 className={` font-black text-sm md:text-slate-900 py-2 border-b border-slate-500font-bold transition-all ${
-                location.pathname === item.path ? "text-primary" : "text-slate-500 hover:text-primary"
-              }`}
+                className={` font-black text-sm md:text-slate-900 py-2 border-b border-slate-500font-bold transition-all ${location.pathname === item.path ? "text-primary" : "text-slate-500 hover:text-primary"
+                  }`}
                 onClick={() => setMobileOpen(false)}
               >
                 {item.label}
@@ -119,8 +117,8 @@ export function Navbar({ user }: NavbarProps) {
                 </div>
                 <span className="font-bold text-slate-900">{user.name}</span>
               </div>
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 className="w-full rounded-xl h-12 text-lg text-primary border-primary"
                 onClick={handleLogout}
               >

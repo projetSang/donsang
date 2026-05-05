@@ -50,7 +50,7 @@ export default function HospitalDashboard() {
 
           <div className="flex items-center gap-4">
             <div className="hidden md:flex flex-col items-end">
-              <span className="text-sm font-bold text-slate-900">{hospitalInfo?.name.toUpperCase() || "Chargement..."}</span>
+              <span className="text-sm font-bold text-slate-900">{hospitalInfo?.name?.toUpperCase() || "Chargement..."}</span>
               <span className="text-[10px] text-muted-foreground uppercase tracking-widest font-semibold text-right">
                 {hospitalInfo?.city || "Centre Hospitalier"}
               </span>
@@ -80,8 +80,8 @@ export default function HospitalDashboard() {
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
                   className={`w-full flex items-center justify-between px-4 py-3 rounded-xl text-sm font-semibold transition-all group ${activeTab === tab.id
-                      ? "bg-primary text-white shadow-lg shadow-primary/20"
-                      : "text-slate-600 hover:bg-slate-50 hover:text-primary"
+                    ? "bg-primary text-white shadow-lg shadow-primary/20"
+                    : "text-slate-600 hover:bg-slate-50 hover:text-primary"
                     }`}
                 >
                   <div className="flex items-center gap-3">
@@ -94,12 +94,12 @@ export default function HospitalDashboard() {
 
               <div className="pt-4 mt-4 border-t border-slate-100">
                 <p className="px-4 py-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Support & Config</p>
-                <button 
+                <button
                   onClick={() => setActiveTab("settings")}
-                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all group ${activeTab === "settings" 
-                    ? "bg-primary text-white shadow-lg shadow-primary/20" 
+                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all group ${activeTab === "settings"
+                    ? "bg-primary text-white shadow-lg shadow-primary/20"
                     : "text-slate-600 hover:bg-slate-50 hover:text-primary"
-                  }`}
+                    }`}
                 >
                   <Settings className={`h-5 w-5 ${activeTab === "settings" ? "text-white" : "text-slate-400 group-hover:text-primary"}`} />
                   Paramètres
@@ -118,8 +118,8 @@ export default function HospitalDashboard() {
               {activeTab === "search" && <SearchTab selectedBlood={selectedBlood} setSelectedBlood={setSelectedBlood} city={city} setCity={setCity} />}
               {activeTab === "stats" && <StatsTab />}
               {activeTab === "alerts" && (
-                <AlertsTab 
-                  showNewAlert={showNewAlert} 
+                <AlertsTab
+                  showNewAlert={showNewAlert}
                   setShowNewAlert={setShowNewAlert}
                   onViewDonors={(bloodType: string) => {
                     setSelectedBlood(bloodType);

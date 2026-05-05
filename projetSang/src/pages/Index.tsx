@@ -12,8 +12,8 @@ import {
 const steps = [
   {
     icon: UserPlus,
-    title: "Créez votre compte",
-    description: "Inscrivez-vous en quelques secondes avec votre email ou téléphone.",
+    title: "Connectez-vous",
+    description: "Accédez à votre espace sécurisé avec vos identifiants fournis.",
   },
   {
     icon: ClipboardList,
@@ -87,12 +87,7 @@ export default function Index() {
             Sauvegardez votre groupe sanguin et vos informations médicales. Partagez-les facilement avec vos médecins et aidez les hôpitaux à trouver des donneurs en urgence.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link to="/register">
-              <Button variant="hero" size="lg" className="text-base px-8">
-                Créer mon dossier médical
-                <ArrowRight className="ml-2 h-5 w-5" />
-              </Button>
-            </Link>
+
             <Link to="/login">
               <Button variant="hero-outline" size="lg" className="text-base px-8">
                 Se connecter
@@ -173,12 +168,7 @@ export default function Index() {
             Accédez à une base de données de donneurs classés par groupe sanguin et proximité. Trouvez des donneurs compatibles en quelques secondes.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link to="/register">
-              <Button size="lg" className="bg-white text-primary hover:bg-white/90 font-semibold text-base px-8">
-                <MapPin className="mr-2 h-5 w-5" />
-                Créer un compte hôpital
-              </Button>
-            </Link>
+
             <Link to="/contact">
               <Button size="lg" className="bg-transparent border-2 border-white text-white hover:bg-white/10 hover:text-white font-semibold text-base px-8">
                 <Phone className="mr-2 h-5 w-5 text-white" />
