@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Menu, X, Droplets, LogOut } from "lucide-react";
@@ -15,12 +15,35 @@ const navItems = [
   { label: "Contact", path: "/contact" },
 ];
 
-export function Navbar({ user }: NavbarProps) {
+export function Navbar({ user: propUser }: NavbarProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [user, setUser] = useState<any>(propUser || null);
   const location = useLocation();
+
+  useEffect(() => {
+    if (!propUser) {
+      const storedData = localStorage.getItem("userData");
+      const isAuthenticated = localStorage.getItem("isAuthenticated") === "true";
+      if (isAuthenticated && storedData) {
+        try {
+          const parsed = JSON.parse(storedData);
+          setUser({
+            name: parsed.full_name || parsed.name || "Utilisateur",
+            avatar: parsed.avatar
+          });
+        } catch (e) {
+          console.error("Error parsing user data in Navbar", e);
+        }
+      }
+    } else {
+      setUser(propUser);
+    }
+  }, [propUser]);
 
   const handleLogout = () => {
     localStorage.removeItem("isAuthenticated");
+    localStorage.removeItem("userData");
+    localStorage.removeItem("userType");
     window.location.href = "/";
   };
 
@@ -71,7 +94,7 @@ export function Navbar({ user }: NavbarProps) {
             <div className="flex items-center gap-3 text-white">
               <span className="text-sm font-bold hidden sm:block">{user.name}</span>
               <div className="h-8 w-8 rounded-full bg-white text-primary flex items-center justify-center text-xs font-black shadow-lg">
-                {user.name.charAt(0)}
+                {user.name?.charAt(0) ?? "?"}
               </div>
               <Button
                 variant="ghost"
@@ -85,7 +108,7 @@ export function Navbar({ user }: NavbarProps) {
           ) : (
             <Link to="/login">
               <Button className="bg-white text-slate-900 hover:bg-slate-100 rounded-full px-4 h-9 font-black text-md shadow-2xl transition-all hover:scale-105">
-                Sign In
+                Se connecter
               </Button>
             </Link>
           )}
@@ -113,7 +136,7 @@ export function Navbar({ user }: NavbarProps) {
             <div className="flex flex-col items-center gap-4 w-full pt-4">
               <div className="flex items-center gap-3">
                 <div className="h-10 w-10 rounded-full hero-gradient text-white flex items-center justify-center text-lg font-bold">
-                  {user.name.charAt(0)}
+                  {user.name?.charAt(0) ?? "?"}
                 </div>
                 <span className="font-bold text-slate-900">{user.name}</span>
               </div>
@@ -128,7 +151,7 @@ export function Navbar({ user }: NavbarProps) {
             </div>
           ) : (
             <Link to="/login" className="w-full pt-6" onClick={() => setMobileOpen(false)}>
-              <Button size="xl" className="w-full rounded-xl h-12 text-xl">Sign In</Button>
+              <Button size="xl" className="w-full rounded-xl h-12 text-xl">Se connecter</Button>
             </Link>
           )}
         </div>

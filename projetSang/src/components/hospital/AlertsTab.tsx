@@ -128,7 +128,7 @@ export function AlertsTab({ showNewAlert, setShowNewAlert, onViewDonors }: any) 
               <label className="text-sm font-medium text-slate-800">Quantité (Poches)</label>
               <Input 
                 type="number"
-                placeholder="quntité par poches" 
+                placeholder="Quantité de poches" 
                 className="mt-1 h-11 rounded-lg border-input bg-white" 
                 value={formData.quantity}
                 onChange={(e) => setFormData({...formData, quantity: e.target.value})}

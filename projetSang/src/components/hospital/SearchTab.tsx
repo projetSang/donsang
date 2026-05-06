@@ -93,7 +93,7 @@ export function SearchTab({ selectedBlood, setSelectedBlood, city, setCity }: an
                   className="h-11 pl-10 rounded-xl border-slate-200 bg-slate-50 focus:bg-white transition-all"
                   value={city}
                   onChange={(e) => setCity(e.target.value)}
-                  placeholder="entre la ville"
+                  placeholder="Entrez la ville"
                 />
               </div>
             </div>
