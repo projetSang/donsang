@@ -173,6 +173,7 @@ class DashboardController extends Controller
             'urgency_level' => 'required|string',
             'quantity' => 'nullable|string',
             'description' => 'nullable|string',
+            'direct_phone' => 'nullable|string',
             'status' => 'nullable|string'
         ]);
 
@@ -189,6 +190,7 @@ class DashboardController extends Controller
             'urgency_level' => 'sometimes|required|string',
             'quantity' => 'nullable|string',
             'description' => 'nullable|string',
+            'direct_phone' => 'nullable|string',
             'status' => 'nullable|string'
         ]);
 

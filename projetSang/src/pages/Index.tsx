@@ -1,10 +1,11 @@
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import {
   Heart, UserPlus, ClipboardList, Link2, ArrowRight, Droplets, MapPin, Phone,
-  FileText, Share2, Search, Bell, Shield
+  FileText, Share2, Search, Bell, Shield, Activity, AlertTriangle
 } from "lucide-react";
 
 
@@ -68,6 +69,19 @@ const features = [
 ];
 
 export default function Index() {
+  const [alerts, setAlerts] = useState<any[]>([]);
+
+  useEffect(() => {
+    fetch("http://localhost:8000/api/hospital/alerts")
+      .then(res => res.json())
+      .then(data => {
+        // Only show active alerts
+        const activeAlerts = data.filter((a: any) => a.status === "Active");
+        setAlerts(activeAlerts);
+      })
+      .catch(err => console.error("Error fetching alerts on index:", err));
+  }, []);
+
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
@@ -107,7 +121,60 @@ export default function Index() {
         </div>
       </section>
 
-
+      {/* Urgent Alerts Section */}
+      {alerts.length > 0 && (
+        <section className="py-16 bg-red-50/50">
+          <div className="container mx-auto px-4">
+            <div className="flex items-center gap-3 mb-8 justify-center md:justify-start">
+              <div className="h-10 w-10 rounded-full bg-primary flex items-center justify-center animate-pulse">
+                <AlertTriangle className="h-6 w-6 text-white" />
+              </div>
+              <h2 className="text-2xl md:text-3xl font-black text-slate-900 uppercase tracking-tight">Appels aux dons urgents</h2>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {alerts.slice(0, 3).map((alert) => (
+                <div key={alert.id} className="bg-white rounded-2xl border-l-4 border-primary p-6 shadow-sm hover:shadow-md transition-all">
+                  <div className="flex justify-between items-start mb-4">
+                    <div className="h-12 w-12 rounded-xl bg-primary/5 flex items-center justify-center text-primary font-black text-xl border border-primary/10">
+                      {alert.blood_type}
+                    </div>
+                    <span className="px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider bg-red-100 text-red-700">
+                      {alert.urgency_level}
+                    </span>
+                  </div>
+                  <h3 className="font-bold text-lg mb-1">{alert.hospital?.name || "Hôpital Partenaire"}</h3>
+                  <div className="flex items-center gap-1.5 text-sm text-muted-foreground mb-4">
+                    <MapPin className="h-3.5 w-3.5" />
+                    {alert.hospital?.city || "Ville non spécifiée"}
+                  </div>
+                  <p className="text-sm text-slate-600 mb-6 line-clamp-2 italic">
+                    "{alert.description || "Besoin immédiat de donneurs de sang pour une urgence vitale."}"
+                  </p>
+                  <div className="flex gap-2">
+                    {(alert.direct_phone || alert.hospital?.phone) ? (
+                      <Button 
+                        variant="hero" 
+                        className="w-full rounded-xl gap-2"
+                        onClick={() => window.location.href = `tel:${alert.direct_phone || alert.hospital.phone}`}
+                      >
+                        <Phone className="h-4 w-4" />
+                        Appeler {alert.direct_phone ? "directement" : "l'hôpital"}
+                      </Button>
+                    ) : (
+                      <Link to="/contact" className="w-full">
+                        <Button variant="hero" className="w-full rounded-xl">
+                          Je souhaite donner
+                        </Button>
+                      </Link>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* How it works */}
       <section id="how-it-works" className="py-16 md:py-24">
@@ -183,3 +250,4 @@ export default function Index() {
     </div>
   );
 }
+

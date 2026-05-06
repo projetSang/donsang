@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Bell, Activity, AlertTriangle, MapPin, Users } from "lucide-react";
+import { Bell, Activity, AlertTriangle, MapPin, Users, Phone } from "lucide-react";
 
 const bloodGroups = ["A+", "A−", "B+", "B−", "AB+", "AB−", "O+", "O−"];
 
@@ -15,6 +15,7 @@ export function AlertsTab({ showNewAlert, setShowNewAlert, onViewDonors }: any) 
     urgency_level: "critique",
     quantity: "",
     description: "",
+    direct_phone: "",
     status: "Active"
   });
 
@@ -46,6 +47,7 @@ export function AlertsTab({ showNewAlert, setShowNewAlert, onViewDonors }: any) 
           urgency_level: "critique",
           quantity: "",
           description: "",
+          direct_phone: "",
           status: "Active"
         });
       }
@@ -147,10 +149,20 @@ export function AlertsTab({ showNewAlert, setShowNewAlert, onViewDonors }: any) 
               </select>
             </div>
             <div className="md:col-span-3">
+              <label className="text-sm font-medium text-slate-800">Numéro de téléphone direct (Optionnel)</label>
+              <Input 
+                type="text"
+                placeholder="Ex: 0612345678" 
+                className="mt-1 h-11 rounded-lg border-input bg-white" 
+                value={formData.direct_phone}
+                onChange={(e) => setFormData({...formData, direct_phone: e.target.value})}
+              />
+            </div>
+            <div className="md:col-span-3">
               <label className="text-sm font-medium text-slate-800">Informations complémentaires</label>
               <textarea 
                 className="mt-1 flex w-full rounded-lg border border-input bg-white px-3 py-3 text-sm min-h-[80px] focus:ring-2 focus:ring-destructive/20 outline-none resize-none" 
-                placeholder="Précisez le service (ex: Réanimation), des instructions pour l'accès, ou un numéro direct..." 
+                placeholder="Précisez le service (ex: Réanimation), des instructions pour l'accès..." 
                 value={formData.description}
                 onChange={(e) => setFormData({...formData, description: e.target.value})}
               />
@@ -177,12 +189,12 @@ export function AlertsTab({ showNewAlert, setShowNewAlert, onViewDonors }: any) 
         {alerts.map((alert) => (
           <div key={alert.id} className={`bg-white rounded-xl border-l-4 p-6 shadow-sm relative overflow-hidden group transition-all hover:shadow-md ${
             alert.status === 'Clôturée' 
-              ? 'border-slate-200 border-y border-r border-slate-100 opacity-80' 
+              ? 'border-slate-200 border-y border-r opacity-80' 
               : alert.urgency_level === 'critique'
-                ? 'border-red-600 border-y border-r border-red-50'
+                ? 'border-red-600 border-y border-r'
                 : alert.urgency_level === 'haute'
-                  ? 'border-orange-500 border-y border-r border-orange-50'
-                  : 'border-blue-500 border-y border-r border-blue-50'
+                  ? 'border-orange-500 border-y border-r'
+                  : 'border-blue-500 border-y border-r'
           }`}>
             <div className="absolute top-0 right-0 p-5">
               <span className="relative flex h-3 w-3">
@@ -235,6 +247,11 @@ export function AlertsTab({ showNewAlert, setShowNewAlert, onViewDonors }: any) 
                   <span className={`flex items-center gap-2 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-100 ${alert.status === 'Clôturée' ? 'text-slate-400' : 'text-green-600'}`}>
                     <Bell className="h-4 w-4" /> État : {alert.status}
                   </span>
+                  {alert.direct_phone && (
+                    <span className="flex items-center gap-2 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-100">
+                      <Phone className="h-4 w-4 text-primary" /> {alert.direct_phone}
+                    </span>
+                  )}
                 </div>
 
                 <div className="flex gap-3">
