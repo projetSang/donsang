@@ -125,7 +125,7 @@ export default function Index() {
       {alerts.length > 0 && (
         <section className="py-16 bg-red-50/50">
           <div className="container mx-auto px-4">
-            <div className="flex items-center gap-3 mb-8 justify-center md:justify-start">
+            <div className="flex items-center gap-3 mb-8 justify-center">
               <div className="h-10 w-10 rounded-full bg-primary flex items-center justify-center animate-pulse">
                 <AlertTriangle className="h-6 w-6 text-white" />
               </div>
