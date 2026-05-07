@@ -91,10 +91,10 @@ export default function Index() {
         <div className="container mx-auto px-4 text-center">
           <div className="inline-flex items-center gap-2 bg-accent text-accent-foreground text-sm font-medium px-4 py-1.5 rounded-full mb-6">
             <Heart className="h-4 w-4" />
-            Sauvez des vies, partagez votre groupe sanguin
+            Sauvez des vies, Partagez votre groupe sanguin
           </div>
           <h1 className="text-4xl md:text-6xl font-extrabold leading-tight mb-6 max-w-4xl mx-auto">
-            Votre dossier médical{" "}
+            Votre dossier médical {" "}
             <span className="text-gradient">toujours accessible</span>
           </h1>
           <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-10">
@@ -131,7 +131,7 @@ export default function Index() {
               </div>
               <h2 className="text-2xl md:text-3xl font-black text-slate-900 uppercase tracking-tight">Appels aux dons urgents</h2>
             </div>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {alerts.slice(0, 3).map((alert) => (
                 <div key={alert.id} className="bg-white rounded-2xl border-l-4 border-primary p-6 shadow-sm hover:shadow-md transition-all">
@@ -153,8 +153,8 @@ export default function Index() {
                   </p>
                   <div className="flex gap-2">
                     {(alert.direct_phone || alert.hospital?.phone) ? (
-                      <Button 
-                        variant="hero" 
+                      <Button
+                        variant="hero"
                         className="w-full rounded-xl gap-2"
                         onClick={() => window.location.href = `tel:${alert.direct_phone || alert.hospital.phone}`}
                       >
