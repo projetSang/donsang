@@ -8,16 +8,27 @@ import { Mail, Phone, MapPin, Send } from "lucide-react";
 
 export default function Contact() {
   const [submitted, setSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    subject: "",
+    message: ""
+  });
+
+  const handleChange = (e: any) => {
+    setFormData({ ...formData, [e.target.id]: e.target.value });
+  };
 
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
 
-      <section className="pt-24 pb-16 md:pt-32 md:pb-24">
+      <section className="pt-20 pb-10 md:pt-30 md:pb-20 overflow-hidden relative">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h1 className="text-3xl md:text-5xl font-extrabold mb-4">
-              <span className="text-gradient">Contactez</span>-nous
+          <div className="text-center mb-6 mt-6">
+            <h1 className="text-2xl md:text-4xl font-black text-slate-900 mb-4">
+              Contactez-nous
             </h1>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
               Une question ? Un partenariat ? N'hésitez pas à nous écrire.
@@ -25,7 +36,6 @@ export default function Contact() {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 max-w-5xl mx-auto">
-            {/* Contact info */}
             <div className="space-y-8">
               <div>
                 <h2 className="text-xl font-bold mb-6">Nos coordonnées</h2>
@@ -36,16 +46,16 @@ export default function Contact() {
                     </div>
                     <div>
                       <div className="font-medium">Email</div>
-                      <div className="text-sm text-muted-foreground">contact@sangvital.ma</div>
+                      <div className="text-sm text-muted-foreground"><a href="mailto:admin@chu.com">admin@chu.com</a></div>
                     </div>
-                  </div>
+                  </div> 
                   <div className="flex items-start gap-4">
                     <div className="h-10 w-10 rounded-lg bg-accent flex items-center justify-center shrink-0">
                       <Phone className="h-5 w-5 text-primary" />
                     </div>
                     <div>
                       <div className="font-medium">Téléphone</div>
-                      <div className="text-sm text-muted-foreground">+212 600 000 000</div>
+                      <div className="text-sm text-muted-foreground">+212 684575896</div>
                     </div>
                   </div>
                   <div className="flex items-start gap-4">
@@ -81,37 +91,56 @@ export default function Contact() {
               ) : (
                 <form
                   className="space-y-4"
-                  onSubmit={(e) => {
+                  onSubmit={async (e) => {
                     e.preventDefault();
-                    setSubmitted(true);
+                    setIsSubmitting(true);
+                    try {
+                      const res = await fetch('http://localhost:8000/api/contact-messages', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(formData)
+                      });
+                      if (res.ok) {
+                        setSubmitted(true);
+                      } else {
+                        alert("Erreur lors de l'envoi du message.");
+                      }
+                    } catch (error) {
+                      console.error(error);
+                      alert("Erreur de connexion au serveur.");
+                    } finally {
+                      setIsSubmitting(false);
+                    }
                   }}
                 >
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="name">Nom</Label>
-                      <Input id="name" placeholder="Votre nom" required />
+                      <Input id="name" value={formData.name} onChange={handleChange} placeholder="Votre nom" required />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="email">Email</Label>
-                      <Input id="email" type="email" placeholder="votre@email.com" required />
+                      <Input id="email" type="email" value={formData.email} onChange={handleChange} placeholder="votre@email.com" required />
                     </div>
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="subject">Sujet</Label>
-                    <Input id="subject" placeholder="Sujet de votre message" required />
+                    <Input id="subject" value={formData.subject} onChange={handleChange} placeholder="Sujet de votre message" required />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="message">Message</Label>
                     <textarea
                       id="message"
+                      value={formData.message}
+                      onChange={handleChange}
                       className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm min-h-[120px] ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       placeholder="Votre message..."
                       required
                     />
                   </div>
-                  <Button variant="hero" className="w-full" size="lg">
+                  <Button variant="hero" className="w-full" size="lg" disabled={isSubmitting}>
                     <Send className="h-4 w-4 mr-2" />
-                    Envoyer le message
+                    {isSubmitting ? "Envoi en cours..." : "Envoyer le message"}
                   </Button>
                 </form>
               )}

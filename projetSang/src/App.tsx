@@ -11,7 +11,7 @@ import PatientDashboard from "./pages/PatientDashboard.tsx";
 import HospitalDashboard from "./pages/HospitalDashboard.tsx";
 import MedicalPassport from "./pages/MedicalPassport.jsx";
 import NotFound from "./pages/NotFound.tsx";
-
+import UrgentAlerts from "./pages/urgentAlerts.tsx";
 const queryClient = new QueryClient();
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -27,6 +27,7 @@ const App = () => (
       <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <Routes>
           <Route path="/" element={<Index />} />
+          <Route path="/UrgentAlerts" element={<UrgentAlerts />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/login" element={<Login />} />
 

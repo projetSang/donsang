@@ -171,6 +171,7 @@ class DashboardController extends Controller
             'hospital_id' => 'required|exists:hospitals,id',
             'blood_type' => 'required|string',
             'urgency_level' => 'required|string',
+            'city' => 'nullable|string',
             'quantity' => 'nullable|string',
             'description' => 'nullable|string',
             'direct_phone' => 'nullable|string',
@@ -188,6 +189,7 @@ class DashboardController extends Controller
         $validated = $request->validate([
             'blood_type' => 'sometimes|required|string',
             'urgency_level' => 'sometimes|required|string',
+            'city' => 'nullable|string',
             'quantity' => 'nullable|string',
             'description' => 'nullable|string',
             'direct_phone' => 'nullable|string',

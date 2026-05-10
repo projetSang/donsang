@@ -11,8 +11,9 @@ interface NavbarProps {
 
 const navItems = [
   { label: "Accueil", path: "/" },
-  { label: "Patient", path: "/patient" },
+  { label: "alertes urgentes", path: "/UrgentAlerts" },
   { label: "Contact", path: "/contact" },
+  { label: "Patient", path: "/patient" },
 ];
 
 export function Navbar({ user: propUser }: NavbarProps) {

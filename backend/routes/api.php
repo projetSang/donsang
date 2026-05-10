@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\ContactMessageController;
 
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/update-password', [AuthController::class, 'updatePassword']);
@@ -27,3 +28,5 @@ Route::put('/hospital/alerts/{id}', [DashboardController::class, 'updateAlert'])
 Route::delete('/hospital/alerts/{id}', [DashboardController::class, 'deleteAlert']);
 Route::get('/hospital/settings', [DashboardController::class, 'getHospitalSettings']);
 Route::put('/hospital/settings', [DashboardController::class, 'updateHospitalSettings']);
+Route::post('/contact-messages', [ContactMessageController::class, 'store']);
+Route::get('/hospital/contact-messages', [ContactMessageController::class, 'index']);
