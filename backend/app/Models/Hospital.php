@@ -7,6 +7,10 @@ use Illuminate\Database\Eloquent\Model;
 class Hospital extends Model
 {
     protected $fillable = ['name', 'city', 'email', 'password', 'address', 'phone'];
+
+    protected $casts = [
+        'password' => 'hashed',
+    ];
     
     public function patients() {
         return $this->hasMany(Patient::class);

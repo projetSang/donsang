@@ -70,7 +70,7 @@ export default function Login() {
           )}
           <form className="space-y-6" onSubmit={handleLogin}>
             <div className="space-y-2">
-             <Label htmlFor="email font-bold" title="email" className="text-slate-900 font-bold">Email</Label>
+             <Label htmlFor="email" title="email" className="text-slate-900 font-bold">Email</Label>
                 <Input 
                   id="email" 
                   type="email" 
@@ -82,7 +82,7 @@ export default function Login() {
             </div>
             <div className="space-y-2">
               <div className="flex justify-between items-center px-1">
-                <Label htmlFor="password font-bold" title="password" className="text-slate-900 font-bold">Mot de passe</Label>
+                <Label htmlFor="password" title="password" className="text-slate-900 font-bold">Mot de passe</Label>
                 <a href="#" className="text-xs text-primary font-bold hover:underline">Mot de passe oublié ?</a>
               </div>
               <div className="relative">

@@ -33,5 +33,16 @@ class DatabaseSeeder extends Seeder
             'blood_type' => 'O-',
             'urgency_level' => 'Critique',
         ]);
+
+        Patient::create([
+            'hospital_id' => $hospital->id,
+            'full_name' => 'Jean Dupont',
+            'email' => 'patient@test.com',
+            'password' => bcrypt('password'),
+            'cin' => 'AB123456',
+            'blood_type' => 'A+',
+            'status' => 'Stable',
+            'admission_date' => now(),
+        ]);
     }
 }
