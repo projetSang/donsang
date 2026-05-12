@@ -227,13 +227,13 @@ export default function Index() {
               </div>
             </div>
 
-            <div className="flex-1 w-full flex justify-center">
-              <div className="relative w-[300px] h-[450px] w-full">
-                <div className="absolute inset-0 bg-red-50 rounded-full blur-3xl opacity-70 transform scale-110"></div>
+            <div className="flex-1 w-full flex justify-end">
+              <div className="relative w-[300px] h-[490px] w-full">
+                <div className="absolute inset-0 bg-red-50 rounded-full blur-3xl opacity-80 transform scale-110"></div>
                 <img 
                   src="/public/télécharger (24).png" 
                   alt="Stéthoscope en forme de cœur" 
-                  className="relative z-10 w-full h-auto object-contain drop-shadow-1xl hover:scale-105 transition-transform duration-500"
+                  className="relative z-11 w-full h-auto object-contain drop-shadow-1xl hover:scale-105 transition-transform duration-500 translate-x-[30px]"
                 />
               </div>
             </div>
