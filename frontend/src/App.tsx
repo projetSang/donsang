@@ -12,6 +12,7 @@ import HospitalDashboard from "./pages/HospitalDashboard.tsx";
 import MedicalPassport from "./pages/MedicalPassport.jsx";
 import NotFound from "./pages/NotFound.tsx";
 import UrgentAlerts from "./pages/urgentAlerts.tsx";
+import SharedDossier from "./pages/SharedDossier.tsx";
 const queryClient = new QueryClient();
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -48,6 +49,7 @@ const App = () => (
             } 
           />
           <Route path="/medical-passport" element={<MedicalPassport />} />
+          <Route path="/dossier/partage/:token" element={<SharedDossier />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

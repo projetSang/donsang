@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
@@ -12,22 +13,18 @@ import {
 
 const bloodGroups = ["A+", "A−", "B+", "B−", "AB+", "AB−", "O+", "O−"];
 
-const mockDocuments = [
-  { name: "Analyse sanguine - Mars 2026", type: "PDF", date: "15/03/2026", category: "Analyses" },
-  { name: "Radiographie thorax", type: "Image", date: "02/02/2026", category: "Imagerie" },
-  { name: "Ordonnance Dr. Bennani", type: "PDF", date: "20/01/2026", category: "Ordonnances" },
-];
+
 
 const tabs = [
   { id: "profile", label: "Mon profil", icon: User },
   { id: "medical", label: "Dossier médical", icon: FileText },
-  { id: "documents_share", label: "Documents & Partage", icon: Download },
+  { id: "documents_share", label: "Partage du dossier", icon: Share2 },
   { id: "notifications", label: "Notifications", icon: Bell },
 ];
 
 export default function PatientDashboard() {
   const [activeTab, setActiveTab] = useState("profile");
-  const [shareLink] = useState("https://sangvital.ma/dossier/abc123xyz");
+  const [shareLink, setShareLink] = useState("");
   const [userData, setUserData] = useState<any>(null);
   const [passwords, setPasswords] = useState({ current: "", new: "", confirm: "" });
   const [passError, setPassError] = useState("");
@@ -37,7 +34,132 @@ export default function PatientDashboard() {
   const [profileLoading, setProfileLoading] = useState(false);
   const [profileSuccess, setProfileSuccess] = useState("");
   const [profileError, setProfileError] = useState("");
+  const [documents, setDocuments] = useState<any[]>([]);
+  const [notifications, setNotifications] = useState<any[]>([]);
+  const [uploadingDoc, setUploadingDoc] = useState(false);
   const navigate = useNavigate();
+
+  const fetchDocuments = async (patientId: number) => {
+    try {
+      const res = await fetch(`http://localhost:8000/api/patients/${patientId}/documents`);
+      if (res.ok) {
+        const data = await res.json();
+        setDocuments(data);
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const fetchNotifications = async (patientId: number) => {
+    try {
+      const res = await fetch(`http://localhost:8000/api/patients/${patientId}/notifications`);
+      if (res.ok) {
+        const data = await res.json();
+        setNotifications(data);
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || e.target.files.length === 0 || !userData) return;
+    const file = e.target.files[0];
+    
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("name", file.name);
+    formData.append("category", "Autre");
+
+    setUploadingDoc(true);
+    try {
+      const res = await fetch(`http://localhost:8000/api/patients/${userData.id}/documents`, {
+        method: "POST",
+        body: formData,
+      });
+      if (res.ok) {
+        const newDoc = await res.json();
+        setDocuments([newDoc, ...documents]);
+      }
+    } catch (error) {
+      console.error("Upload error", error);
+    } finally {
+      setUploadingDoc(false);
+    }
+  };
+
+  const handleGenerateShareToken = async () => {
+    try {
+      const res = await fetch("http://localhost:8000/api/generate-share-token", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: userData.email })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setShareLink(`${window.location.origin}/dossier/partage/${data.share_token}`);
+        const newUserData = { ...userData, share_token: data.share_token };
+        setUserData(newUserData);
+        localStorage.setItem("userData", JSON.stringify(newUserData));
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleDisableShareToken = async () => {
+    try {
+      const res = await fetch("http://localhost:8000/api/disable-share-token", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: userData.email })
+      });
+      if (res.ok) {
+        setShareLink("");
+        const newUserData = { ...userData, share_token: null };
+        setUserData(newUserData);
+        localStorage.setItem("userData", JSON.stringify(newUserData));
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleAvailabilityResponse = async (type: "disponible" | "indisponible", title: string, alertId?: number) => {
+    if (!userData || !alertId) return;
+
+    try {
+      const res = await fetch("http://localhost:8000/api/alerts/respond", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+        },
+        body: JSON.stringify({
+          alert_id: alertId,
+          patient_id: userData.id,
+          status: type === "disponible" ? "available" : "unavailable"
+        })
+      });
+
+      if (res.ok) {
+        if (type === "disponible") {
+          toast.success("Merci ! Votre disponibilité a été enregistrée. Un agent de santé pourrait vous contacter.", {
+            description: `Réponse pour: ${title}`,
+            duration: 5000,
+          });
+        } else {
+          toast.info("C'est noté. Merci de nous avoir informés.", {
+            description: `Réponse pour: ${title}`,
+          });
+        }
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Erreur lors de l'enregistrement de votre réponse.");
+    }
+  };
 
   useEffect(() => {
     const data = localStorage.getItem("userData");
@@ -55,6 +177,11 @@ export default function PatientDashboard() {
           birth_date: parsedData.birth_date || "",
           blood_type: parsedData.blood_type || ""
         });
+        if (parsedData.share_token) {
+          setShareLink(`${window.location.origin}/dossier/partage/${parsedData.share_token}`);
+        }
+        fetchDocuments(parsedData.id);
+        fetchNotifications(parsedData.id);
       } catch (e) {
         console.error("Error parsing userData", e);
         navigate("/login");
@@ -371,48 +498,72 @@ export default function PatientDashboard() {
                   <label className="text-sm font-medium text-muted-foreground">Maladies chroniques</label>
                   <textarea
                     className="mt-1 flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm min-h-[80px]"
-                    defaultValue="Aucune"
+                    value={(() => {
+                      if (!userData?.chronic_diseases) return "Aucune";
+                      if (Array.isArray(userData.chronic_diseases)) {
+                        return userData.chronic_diseases.length > 0 ? userData.chronic_diseases.join(", ") : "Aucune";
+                      }
+                      try {
+                        const parsed = JSON.parse(userData.chronic_diseases);
+                        return Array.isArray(parsed) && parsed.length > 0 ? parsed.join(", ") : "Aucune";
+                      } catch(e) {
+                        return userData.chronic_diseases || "Aucune";
+                      }
+                    })()}
+                    readOnly
                   />
                 </div>
                 <div>
                   <label className="text-sm font-medium text-muted-foreground">Allergies</label>
                   <textarea
                     className="mt-1 flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm min-h-[80px]"
-                    defaultValue="Pénicilline"
+                    value={userData?.allergies || "Aucune"}
+                    readOnly
                   />
                 </div>
                 <div>
                   <label className="text-sm font-medium text-muted-foreground">Traitements en cours</label>
                   <textarea
                     className="mt-1 flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm min-h-[80px]"
-                    defaultValue="Aucun"
+                    value={userData?.current_treatments || "Aucun"}
+                    readOnly
                   />
                 </div>
                 <div>
                   <label className="text-sm font-medium text-muted-foreground">Antécédents médicaux</label>
                   <textarea
                     className="mt-1 flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm min-h-[80px]"
-                    defaultValue="Appendicectomie (2019)"
+                    value={userData?.medical_history || "Aucun"}
+                    readOnly
                   />
                 </div>
-                <Button variant="hero">Enregistrer</Button>
               </div>
-            </div>
-          )}
-
-          {activeTab === "documents_share" && (
-            <div className="space-y-8">
-              <div className="space-y-6">
+              
+              {/* Documents médicaux section added here */}
+              <div className="space-y-6 pt-4">
                 <div className="flex items-center justify-between">
                   <h2 className="text-xl font-bold">Documents médicaux</h2>
-                  <Button variant="hero" size="sm">
-                    <Upload className="h-4 w-4 mr-2" />
-                    Ajouter un document
-                  </Button>
+                  <div>
+                    <input 
+                      type="file" 
+                      id="document-upload" 
+                      className="hidden" 
+                      onChange={handleFileUpload}
+                      disabled={uploadingDoc}
+                    />
+                    <label htmlFor="document-upload">
+                      <Button variant="hero" size="sm" asChild disabled={uploadingDoc}>
+                        <span>
+                          <Upload className="h-4 w-4 mr-2" />
+                          {uploadingDoc ? "Chargement..." : "Ajouter un document"}
+                        </span>
+                      </Button>
+                    </label>
+                  </div>
                 </div>
                 <div className="bg-card rounded-xl border border-border divide-y divide-border shadow-sm overflow-hidden">
-                  {mockDocuments.map((doc) => (
-                    <div key={doc.name} className="flex items-center justify-between p-4 hover:bg-muted/50 transition-colors">
+                  {documents.length > 0 ? documents.map((doc) => (
+                    <div key={doc.id} className="flex items-center justify-between p-4 hover:bg-muted/50 transition-colors">
                       <div className="flex items-center gap-3">
                         <div className="h-10 w-10 rounded-lg bg-accent flex items-center justify-center">
                           <FileText className="h-5 w-5 text-primary" />
@@ -422,13 +573,24 @@ export default function PatientDashboard() {
                           <div className="text-xs text-muted-foreground">{doc.category} • {doc.date}</div>
                         </div>
                       </div>
-                      <Button variant="ghost" size="sm">
-                        <Download className="h-4 w-4" />
-                      </Button>
+                      <a href={doc.file_url} target="_blank" rel="noreferrer">
+                        <Button variant="ghost" size="sm">
+                          <Download className="h-4 w-4" />
+                        </Button>
+                      </a>
                     </div>
-                  ))}
+                  )) : (
+                    <div className="p-8 text-center text-muted-foreground text-sm">
+                      Aucun document médical disponible.
+                    </div>
+                  )}
                 </div>
               </div>
+            </div>
+          )}
+
+          {activeTab === "documents_share" && (
+            <div className="space-y-8">
 
               <div className="space-y-6">
                 <h2 className="text-xl font-bold">Partager mon dossier</h2>
@@ -437,37 +599,47 @@ export default function PatientDashboard() {
                     Générez un lien sécurisé pour permettre à votre médecin de consulter votre dossier en lecture seule.
                   </p>
                   <div className="flex gap-2">
-                    <Input value={shareLink} readOnly className="flex-1 font-mono text-xs bg-muted/30" />
-                    <Button variant="outline" size="icon" className="shrink-0 rounded-xl">
-                      <Copy className="h-4 w-4" />
-                    </Button>
+                    <Input 
+                      value={shareLink || "Aucun lien actif"} 
+                      readOnly 
+                      className="flex-1 font-mono text-xs bg-muted/30" 
+                    />
+                    {shareLink && (
+                      <Button variant="outline" size="icon" className="shrink-0 rounded-xl" onClick={() => navigator.clipboard.writeText(shareLink)}>
+                        <Copy className="h-4 w-4" />
+                      </Button>
+                    )}
                   </div>
                   <div className="flex flex-wrap gap-3">
-                    <Button variant="hero" size="sm" className="rounded-xl">
+                    <Button variant="hero" size="sm" className="rounded-xl" onClick={handleGenerateShareToken}>
                       <RefreshCw className="h-4 w-4 mr-2" />
-                      Régénérer le lien
+                      {shareLink ? "Régénérer le lien" : "Générer un lien"}
                     </Button>
-                    <Button variant="outline" size="sm" className="text-destructive border-destructive/20 hover:bg-destructive/5 rounded-xl">
-                      Désactiver le lien
-                    </Button>
+                    {shareLink && (
+                      <Button variant="outline" size="sm" className="text-destructive border-destructive/20 hover:bg-destructive/5 rounded-xl" onClick={handleDisableShareToken}>
+                        Désactiver le lien
+                      </Button>
+                    )}
                   </div>
-                  <div className="bg-muted/50 rounded-xl p-4 text-sm border border-border/50">
-                    <div className="font-bold text-slate-900 mb-2">Paramètres du lien</div>
-                    <div className="space-y-1 text-muted-foreground">
-                      <div className="flex items-center gap-2">
-                        <div className="h-1.5 w-1.5 rounded-full bg-primary" />
-                        Durée de validité : 30 jours
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <div className="h-1.5 w-1.5 rounded-full bg-primary" />
-                        Accès : Lecture seule
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <div className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                        Statut : Actif
+                  {shareLink && (
+                    <div className="bg-muted/50 rounded-xl p-4 text-sm border border-border/50">
+                      <div className="font-bold text-slate-900 mb-2">Paramètres du lien</div>
+                      <div className="space-y-1 text-muted-foreground">
+                        <div className="flex items-center gap-2">
+                          <div className="h-1.5 w-1.5 rounded-full bg-primary" />
+                          Durée de validité : 30 jours
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <div className="h-1.5 w-1.5 rounded-full bg-primary" />
+                          Accès : Lecture seule
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <div className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                          Statut : Actif
+                        </div>
                       </div>
                     </div>
-                  </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -477,12 +649,8 @@ export default function PatientDashboard() {
             <div className="space-y-6">
               <h2 className="text-xl font-bold">Notifications</h2>
               <div className="space-y-3">
-                {[
-                  { title: "Urgence : Besoin de donneur O+ à Casablanca", time: "Il y a 2h", urgent: true },
-                  { title: "Votre dossier a été consulté par Dr. Bennani", time: "Hier", urgent: false },
-                  { title: "Rappel : Mettez à jour vos informations médicales", time: "Il y a 3 jours", urgent: false },
-                ].map((n, i) => (
-                  <div key={i} className={`bg-card rounded-xl border p-4 flex items-start gap-3 ${n.urgent ? "border-primary" : "border-border"}`}>
+                {notifications.length > 0 ? notifications.map((n, i) => (
+                  <div key={n.id || i} className={`bg-card rounded-xl border p-4 flex items-start gap-3 ${n.urgent ? "border-primary" : "border-border"}`}>
                     <div className={`h-8 w-8 rounded-full flex items-center justify-center shrink-0 ${n.urgent ? "hero-gradient text-primary-foreground" : "bg-muted text-muted-foreground"}`}>
                       <Bell className="h-4 w-4" />
                     </div>
@@ -492,12 +660,28 @@ export default function PatientDashboard() {
                     </div>
                     {n.urgent && (
                       <div className="flex gap-2">
-                        <Button variant="hero" size="sm">Disponible</Button>
-                        <Button variant="outline" size="sm">Indisponible</Button>
+                        <Button 
+                          variant="hero" 
+                          size="sm"
+                          onClick={() => handleAvailabilityResponse("disponible", n.title, n.alert_id)}
+                        >
+                          Disponible
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => handleAvailabilityResponse("indisponible", n.title, n.alert_id)}
+                        >
+                          Indisponible
+                        </Button>
                       </div>
                     )}
                   </div>
-                ))}
+                )) : (
+                  <div className="p-8 text-center text-muted-foreground text-sm border border-border rounded-xl">
+                    Aucune notification pour le moment.
+                  </div>
+                )}
               </div>
             </div>
           )}

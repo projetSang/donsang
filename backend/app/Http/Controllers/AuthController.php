@@ -108,4 +108,58 @@ class AuthController extends Controller
             'user' => $user
         ]);
     }
+
+    public function generateShareToken(Request $request)
+    {
+        $patient = Patient::where('email', $request->email)->first();
+        if (!$patient) {
+            return response()->json(['message' => 'Utilisateur introuvable'], 404);
+        }
+        
+        $token = \Illuminate\Support\Str::random(32);
+        $patient->share_token = $token;
+        $patient->share_token_expires_at = now()->addDays(30);
+        $patient->save();
+
+        return response()->json([
+            'status' => 'success',
+            'share_token' => $token,
+            'expires_at' => $patient->share_token_expires_at
+        ]);
+    }
+
+    public function disableShareToken(Request $request)
+    {
+        $patient = Patient::where('email', $request->email)->first();
+        if ($patient) {
+            $patient->share_token = null;
+            $patient->share_token_expires_at = null;
+            $patient->save();
+        }
+        return response()->json(['status' => 'success']);
+    }
+
+    public function getSharedDossier($token)
+    {
+        $patient = Patient::where('share_token', $token)
+            ->where('share_token_expires_at', '>', now())
+            ->first();
+
+        if (!$patient) {
+            return response()->json(['status' => 'error', 'message' => 'Lien invalide ou expiré'], 404);
+        }
+
+        $patient->load('hospital');
+        $documents = \App\Models\MedicalDocument::where('patient_id', $patient->id)->orderBy('created_at', 'desc')->get();
+        $documents->transform(function ($doc) {
+            $doc->file_url = url('storage/' . $doc->file_path);
+            return $doc;
+        });
+        $patient->documents = $documents;
+
+        return response()->json([
+            'status' => 'success',
+            'patient' => $patient
+        ]);
+    }
 }

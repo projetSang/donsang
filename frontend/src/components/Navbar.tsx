@@ -53,7 +53,7 @@ export function Navbar({ user: propUser }: NavbarProps) {
       {/* Left: Logo */}
       <div className="flex items-center px-6 md:px-12 relative z-10">
         <Link to="/" className="flex items-center gap-2 group">
-          <img src="logo_sang.png" alt="" width={130} height={130} />
+          <img src="/logo_sang.png" alt="" width={130} height={130} />
         </Link>
       </div>
 

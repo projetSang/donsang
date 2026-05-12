@@ -8,7 +8,8 @@ class Patient extends Model
 {
     protected $fillable = [
         'hospital_id', 'full_name', 'email', 'password', 'cin', 'birth_date', 'phone', 'address',
-        'height', 'weight', 'chronic_diseases', 'blood_type', 'status', 'admission_date'
+        'height', 'weight', 'chronic_diseases', 'blood_type', 'status', 'admission_date',
+        'allergies', 'current_treatments', 'medical_history', 'share_token', 'share_token_expires_at'
     ];
 
     protected $hidden = [

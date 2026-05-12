@@ -60,6 +60,9 @@ class DashboardController extends Controller
             'height' => 'nullable|string|max:10',
             'weight' => 'nullable|string|max:10',
             'chronic_diseases' => 'nullable|array',
+            'allergies' => 'nullable|string',
+            'current_treatments' => 'nullable|string',
+            'medical_history' => 'nullable|string',
             'blood_type' => 'required|string|max:10',
             'admission_date' => 'required|date'
         ]);
@@ -99,6 +102,9 @@ class DashboardController extends Controller
             'height' => 'nullable|string|max:10',
             'weight' => 'nullable|string|max:10',
             'chronic_diseases' => 'nullable|array',
+            'allergies' => 'nullable|string',
+            'current_treatments' => 'nullable|string',
+            'medical_history' => 'nullable|string',
             'blood_type' => 'sometimes|required|string|max:10',
             'admission_date' => 'sometimes|required|date'
         ]);
@@ -236,5 +242,150 @@ class DashboardController extends Controller
 
         $hospital->update($validated);
         return response()->json($hospital);
+    }
+
+    public function getDocuments($id)
+    {
+        $documents = \App\Models\MedicalDocument::where('patient_id', $id)->orderBy('created_at', 'desc')->get();
+        // Add full URL to file_path
+        $documents->transform(function ($doc) {
+            $doc->file_url = url('storage/' . $doc->file_path);
+            return $doc;
+        });
+        return response()->json($documents);
+    }
+
+    public function uploadDocument(Request $request, $id)
+    {
+        $request->validate([
+            'file' => 'required|file|max:10240', // 10MB max
+            'name' => 'required|string|max:255',
+            'category' => 'nullable|string|max:255',
+            'date' => 'nullable|date'
+        ]);
+
+        $file = $request->file('file');
+        // Store in storage/app/public/documents
+        $path = $file->store('documents', 'public');
+
+        $doc = \App\Models\MedicalDocument::create([
+            'patient_id' => $id,
+            'name' => $request->name,
+            'category' => $request->category ?: 'Autre',
+            'type' => $file->getClientOriginalExtension(),
+            'file_path' => $path,
+            'date' => $request->date ?: now()->toDateString(),
+        ]);
+
+        $doc->file_url = url('storage/' . $doc->file_path);
+
+        return response()->json($doc, 201);
+    }
+
+    public function deleteDocument($id)
+    {
+        $doc = \App\Models\MedicalDocument::findOrFail($id);
+        
+        // Delete file from storage
+        if (\Illuminate\Support\Facades\Storage::disk('public')->exists($doc->file_path)) {
+            \Illuminate\Support\Facades\Storage::disk('public')->delete($doc->file_path);
+        }
+
+        $doc->delete();
+        return response()->json(['message' => 'Document supprimé']);
+    }
+
+    public function getNotifications($id)
+    {
+        $patient = \App\Models\Patient::findOrFail($id);
+
+        // Fetch personal notifications
+        $personal = \App\Models\PatientNotification::where('patient_id', $id)
+            ->orderBy('created_at', 'desc')
+            ->get()
+            ->map(function ($n) {
+                return [
+                    'id' => $n->id,
+                    'title' => $n->title,
+                    'time' => $n->created_at->diffForHumans(),
+                    'urgent' => $n->type === 'urgent',
+                    'is_read' => $n->is_read
+                ];
+            });
+
+        // Fetch public urgent alerts (blood donation matching patient's city or blood type, or all active)
+        $alerts = \App\Models\Alert::where('status', 'active')
+            ->orderBy('created_at', 'desc')
+            ->take(5)
+            ->get()
+            ->map(function ($a) {
+                return [
+                    'id' => 'alert_' . $a->id,
+                    'alert_id' => $a->id,
+                    'title' => "Urgence : Besoin de donneur {$a->blood_type} à {$a->city}",
+                    'time' => $a->created_at->diffForHumans(),
+                    'urgent' => true,
+                    'is_read' => false
+                ];
+            });
+
+        $allNotifications = collect($alerts)->merge($personal)->sortByDesc('time')->values()->all();
+
+        return response()->json($allNotifications);
+    }
+
+    public function sendNotification(Request $request, $id)
+    {
+        $request->validate([
+            'title' => 'required|string|max:255',
+            'message' => 'nullable|string',
+            'type' => 'nullable|string|in:urgent,normal'
+        ]);
+
+        $notification = \App\Models\PatientNotification::create([
+            'patient_id' => $id,
+            'title' => $request->title,
+            'message' => $request->message,
+            'type' => $request->type ?? 'normal',
+            'is_read' => false
+        ]);
+
+        return response()->json(['status' => 'success', 'notification' => $notification]);
+    }
+
+    public function respondToAlert(Request $request)
+    {
+        $request->validate([
+            'alert_id' => 'required|integer',
+            'patient_id' => 'required|integer',
+            'status' => 'required|string|in:available,unavailable'
+        ]);
+
+        $response = \App\Models\AlertResponse::updateOrCreate(
+            ['alert_id' => $request->alert_id, 'patient_id' => $request->patient_id],
+            ['status' => $request->status]
+        );
+
+        return response()->json(['status' => 'success', 'response' => $response]);
+    }
+
+    public function getAlertResponses($id)
+    {
+        $responses = \App\Models\AlertResponse::where('alert_id', $id)
+            ->with('patient')
+            ->orderBy('created_at', 'desc')
+            ->get()
+            ->map(function ($r) {
+                return [
+                    'id' => $r->id,
+                    'patient_name' => $r->patient->full_name,
+                    'blood_type' => $r->patient->blood_type,
+                    'phone' => $r->patient->phone,
+                    'status' => $r->status,
+                    'time' => $r->created_at->diffForHumans()
+                ];
+            });
+
+        return response()->json($responses);
     }
 }

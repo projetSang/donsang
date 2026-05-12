@@ -9,6 +9,9 @@ use App\Http\Controllers\ContactMessageController;
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/update-password', [AuthController::class, 'updatePassword']);
 Route::post('/update-profile', [AuthController::class, 'updateProfile']);
+Route::post('/generate-share-token', [AuthController::class, 'generateShareToken']);
+Route::post('/disable-share-token', [AuthController::class, 'disableShareToken']);
+Route::get('/shared-dossier/{token}', [AuthController::class, 'getSharedDossier']);
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -30,3 +33,11 @@ Route::get('/hospital/settings', [DashboardController::class, 'getHospitalSettin
 Route::put('/hospital/settings', [DashboardController::class, 'updateHospitalSettings']);
 Route::post('/contact-messages', [ContactMessageController::class, 'store']);
 Route::get('/hospital/contact-messages', [ContactMessageController::class, 'index']);
+
+Route::get('/patients/{id}/documents', [DashboardController::class, 'getDocuments']);
+Route::post('/patients/{id}/documents', [DashboardController::class, 'uploadDocument']);
+Route::delete('/documents/{id}', [DashboardController::class, 'deleteDocument']);
+Route::get('/patients/{id}/notifications', [DashboardController::class, 'getNotifications']);
+Route::post('/patients/{id}/notifications', [DashboardController::class, 'sendNotification']);
+Route::post('/alerts/respond', [DashboardController::class, 'respondToAlert']);
+Route::get('/hospital/alerts/{id}/responses', [DashboardController::class, 'getAlertResponses']);

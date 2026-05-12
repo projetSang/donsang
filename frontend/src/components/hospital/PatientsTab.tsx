@@ -36,6 +36,9 @@ export function PatientsTab({ showAddPatient, setShowAddPatient }: any) {
     blood_type: "",
     chronic_diseases: [] as string[],
     other_disease: "",
+    allergies: "",
+    current_treatments: "",
+    medical_history: "",
     admission_date: new Date().toISOString().split('T')[0]
   });
 
@@ -98,6 +101,9 @@ export function PatientsTab({ showAddPatient, setShowAddPatient }: any) {
           weight: "", 
           chronic_diseases: [], 
           other_disease: "",
+          allergies: "",
+          current_treatments: "",
+          medical_history: "",
           blood_type: "", 
           admission_date: new Date().toISOString().split('T')[0] 
         });
@@ -270,6 +276,38 @@ export function PatientsTab({ showAddPatient, setShowAddPatient }: any) {
               )}
             </div>
 
+            <div className="md:col-span-3 space-y-4 pt-4 border-t border-border">
+              <h5 className="font-bold text-foreground">Autres informations médicales</h5>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="space-y-1.5">
+                  <label className="text-sm font-medium text-muted-foreground">Allergies</label>
+                  <textarea 
+                    placeholder="Ex: Pénicilline, Arachides..." 
+                    className="flex w-full rounded-xl border border-input bg-muted/30 px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all min-h-[80px]" 
+                    value={formData.allergies || ""}
+                    onChange={(e) => setFormData({...formData, allergies: e.target.value})}
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-sm font-medium text-muted-foreground">Traitements en cours</label>
+                  <textarea 
+                    placeholder="Ex: Insuline, Paracétamol..." 
+                    className="flex w-full rounded-xl border border-input bg-muted/30 px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all min-h-[80px]" 
+                    value={formData.current_treatments || ""}
+                    onChange={(e) => setFormData({...formData, current_treatments: e.target.value})}
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-sm font-medium text-muted-foreground">Antécédents médicaux</label>
+                  <textarea 
+                    placeholder="Ex: Appendicectomie (2019)..." 
+                    className="flex w-full rounded-xl border border-input bg-muted/30 px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all min-h-[80px]" 
+                    value={formData.medical_history || ""}
+                    onChange={(e) => setFormData({...formData, medical_history: e.target.value})}
+                  />
+                </div>
+              </div>
+            </div>
 
           </div>
 

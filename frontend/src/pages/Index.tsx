@@ -233,7 +233,7 @@ export default function Index() {
                 <img 
                   src="/public/télécharger (24).png" 
                   alt="Stéthoscope en forme de cœur" 
-                  className="relative z-11 w-full h-auto object-contain drop-shadow-1xl hover:scale-105 transition-transform duration-500 translate-x-[30px]"
+                  className="relative z-11 w-80 h-auto object-contain drop-shadow-1xl hover:scale-105 transition-transform duration-500 translate-x-[30px]"
                 />
               </div>
             </div>
