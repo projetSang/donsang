@@ -2,11 +2,9 @@ import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Menu, X, Droplets, LogOut } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 interface NavbarProps {
-  user?: {
-    name: string;
-    avatar?: string;
-  };
+  // propUser removed as we use AuthContext now
 }
 
 const navItems = [
@@ -16,37 +14,12 @@ const navItems = [
   { label: "Patient", path: "/patient" },
 ];
 
-export function Navbar({ user: propUser }: NavbarProps) {
+export function Navbar({}: NavbarProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [user, setUser] = useState<any>(propUser || null);
+  const { user, isAuthenticated, logout } = useAuth();
   const location = useLocation();
 
-  useEffect(() => {
-    if (!propUser) {
-      const storedData = localStorage.getItem("userData");
-      const isAuthenticated = localStorage.getItem("isAuthenticated") === "true";
-      if (isAuthenticated && storedData) {
-        try {
-          const parsed = JSON.parse(storedData);
-          setUser({
-            name: parsed.full_name || parsed.name || "Utilisateur",
-            avatar: parsed.avatar
-          });
-        } catch (e) {
-          console.error("Error parsing user data in Navbar", e);
-        }
-      }
-    } else {
-      setUser(propUser);
-    }
-  }, [propUser]);
-
-  const handleLogout = () => {
-    localStorage.removeItem("isAuthenticated");
-    localStorage.removeItem("userData");
-    localStorage.removeItem("userType");
-    window.location.href = "/";
-  };
+  const displayName = user?.full_name || user?.name || "Utilisateur";
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-white h-18 md:h-16 flex items-stretch border-b border-slate-100 shadow-sm overflow-hidden">
@@ -91,17 +64,17 @@ export function Navbar({ user: propUser }: NavbarProps) {
 
         {/* Sign In Button */}
         <div className="absolute inset-0 flex items-center justify-center pl-10">
-          {user ? (
+          {isAuthenticated ? (
             <div className="flex items-center gap-3 text-white">
-              <span className="text-sm font-bold hidden sm:block">{user.name}</span>
+              <span className="text-sm font-bold hidden sm:block">{displayName}</span>
               <div className="h-8 w-8 rounded-full bg-white text-primary flex items-center justify-center text-xs font-black shadow-lg">
-                {user.name?.charAt(0) ?? "?"}
+                {displayName.charAt(0) ?? "?"}
               </div>
               <Button
                 variant="ghost"
                 size="icon"
                 className="text-white hover:bg-white transition-colors"
-                onClick={handleLogout}
+                onClick={logout}
               >
                 <LogOut className="h-4 w-4" />
               </Button>
@@ -133,18 +106,18 @@ export function Navbar({ user: propUser }: NavbarProps) {
               </Link>
             ))}
           </div>
-          {user ? (
+          {isAuthenticated ? (
             <div className="flex flex-col items-center gap-4 w-full pt-4">
               <div className="flex items-center gap-3">
                 <div className="h-10 w-10 rounded-full hero-gradient text-white flex items-center justify-center text-lg font-bold">
-                  {user.name?.charAt(0) ?? "?"}
+                  {displayName.charAt(0) ?? "?"}
                 </div>
-                <span className="font-bold text-slate-900">{user.name}</span>
+                <span className="font-bold text-slate-900">{displayName}</span>
               </div>
               <Button
                 variant="outline"
                 className="w-full rounded-xl h-12 text-lg text-primary border-primary"
-                onClick={handleLogout}
+                onClick={logout}
               >
                 <LogOut className="mr-2 h-5 w-5" />
                 Se déconnecter

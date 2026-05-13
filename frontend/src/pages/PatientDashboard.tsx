@@ -6,6 +6,8 @@ import { Footer } from "@/components/Footer";
 import {
   User, Droplets, FileText, Share2, Bell, RefreshCw
 } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { usePatientData } from "@/hooks/usePatientData";
 import { apiFetch } from "@/lib/api";
 
 // Import sub-components
@@ -22,9 +24,20 @@ const tabs = [
 ];
 
 export default function PatientDashboard() {
+  const { user: userData, updateUser, loading: authLoading, logout } = useAuth();
   const [activeTab, setActiveTab] = useState("profile");
-  const [shareLink, setShareLink] = useState("");
-  const [userData, setUserData] = useState<any>(null);
+  
+  const {
+    documents,
+    notifications,
+    uploadingDoc,
+    shareLink,
+    handleFileUpload,
+    generateShareToken,
+    disableShareToken,
+    respondToAlert: handleAvailabilityResponse
+  } = usePatientData(userData, authLoading, logout);
+
   const [passwords, setPasswords] = useState({ current: "", new: "", confirm: "" });
   const [passError, setPassError] = useState("");
   const [passSuccess, setPassSuccess] = useState("");
@@ -33,143 +46,34 @@ export default function PatientDashboard() {
   const [profileLoading, setProfileLoading] = useState(false);
   const [profileSuccess, setProfileSuccess] = useState("");
   const [profileError, setProfileError] = useState("");
-  const [documents, setDocuments] = useState<any[]>([]);
-  const [notifications, setNotifications] = useState<any[]>([]);
-  const [uploadingDoc, setUploadingDoc] = useState(false);
   const navigate = useNavigate();
 
-  const fetchDocuments = async (patientId: number) => {
-    try {
-      const data = await apiFetch(`/patients/${patientId}/documents`);
-      setDocuments(data);
-    } catch (e) {
-      console.error(e);
-    }
-  };
-
-  const fetchNotifications = async (patientId: number) => {
-    try {
-      const data = await apiFetch(`/patients/${patientId}/notifications`);
-      setNotifications(data);
-    } catch (e) {
-      console.error(e);
-    }
-  };
-
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!e.target.files || e.target.files.length === 0 || !userData) return;
-    const file = e.target.files[0];
-    
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("name", file.name);
-    formData.append("category", "Autre");
-
-    setUploadingDoc(true);
-    try {
-      const newDoc = await apiFetch(`/patients/${userData.id}/documents`, {
-        method: "POST",
-        body: formData,
+  useEffect(() => {
+    if (!authLoading && userData) {
+      setProfileData({
+        full_name: userData.full_name,
+        email: userData.email,
+        phone: userData.phone || "",
+        address: userData.address || "",
+        birth_date: userData.birth_date || "",
+        blood_type: userData.blood_type || ""
       });
-      setDocuments([newDoc, ...documents]);
-      toast.success("Document ajouté avec succès");
-    } catch (error) {
-      console.error("Upload error", error);
-      toast.error("Erreur lors de l'upload");
-    } finally {
-      setUploadingDoc(false);
     }
-  };
+  }, [userData, authLoading]);
 
   const handleGenerateShareToken = async () => {
-    try {
-      const data = await apiFetch("/generate-share-token", {
-        method: "POST",
-        body: JSON.stringify({ email: userData.email })
-      });
-      setShareLink(`${window.location.origin}/dossier/partage/${data.share_token}`);
-      const newUserData = { ...userData, share_token: data.share_token };
-      setUserData(newUserData);
-      localStorage.setItem("userData", JSON.stringify(newUserData));
-      toast.success("Lien de partage généré");
-    } catch (err) {
-      console.error(err);
+    const token = await generateShareToken();
+    if (token) {
+      updateUser({ ...userData, share_token: token });
     }
   };
 
   const handleDisableShareToken = async () => {
-    try {
-      await apiFetch("/disable-share-token", {
-        method: "POST",
-        body: JSON.stringify({ email: userData.email })
-      });
-      setShareLink("");
-      const newUserData = { ...userData, share_token: null };
-      setUserData(newUserData);
-      localStorage.setItem("userData", JSON.stringify(newUserData));
-      toast.info("Lien de partage désactivé");
-    } catch (err) {
-      console.error(err);
+    const success = await disableShareToken();
+    if (success) {
+      updateUser({ ...userData, share_token: null });
     }
   };
-
-  const handleAvailabilityResponse = async (type: "disponible" | "indisponible", title: string, alertId?: number) => {
-    if (!userData || !alertId) return;
-
-    try {
-      await apiFetch("/alerts/respond", {
-        method: "POST",
-        body: JSON.stringify({
-          alert_id: alertId,
-          patient_id: userData.id,
-          status: type === "disponible" ? "available" : "unavailable"
-        })
-      });
-
-      if (type === "disponible") {
-        toast.success("Merci ! Votre disponibilité a été enregistrée.", {
-          description: `Réponse pour: ${title}`,
-        });
-      } else {
-        toast.info("C'est noté. Merci.", {
-          description: `Réponse pour: ${title}`,
-        });
-      }
-    } catch (err) {
-      console.error(err);
-      toast.error("Erreur lors de l'enregistrement");
-    }
-  };
-
-  useEffect(() => {
-    const data = localStorage.getItem("userData");
-    const isAuth = localStorage.getItem("isAuthenticated") === "true";
-    
-    if (isAuth && data) {
-      try {
-        const parsedData = JSON.parse(data);
-        setUserData(parsedData);
-        setProfileData({
-          full_name: parsedData.full_name,
-          email: parsedData.email,
-          phone: parsedData.phone || "",
-          address: parsedData.address || "",
-          birth_date: parsedData.birth_date || "",
-          blood_type: parsedData.blood_type || ""
-        });
-        if (parsedData.share_token) {
-          setShareLink(`${window.location.origin}/dossier/partage/${parsedData.share_token}`);
-        }
-        fetchDocuments(parsedData.id);
-        fetchNotifications(parsedData.id);
-      } catch (e) {
-        console.error("Error parsing userData", e);
-        navigate("/login");
-      }
-    } else {
-      navigate("/login");
-    }
-  }, [navigate]);
 
   const handleUpdatePassword = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -211,6 +115,7 @@ export default function PatientDashboard() {
     setProfileError("");
     setProfileSuccess("");
     setProfileLoading(true);
+    console.log("Updating profile with data:", profileData);
 
     try {
       const data = await apiFetch("/update-profile", {
@@ -223,19 +128,19 @@ export default function PatientDashboard() {
 
       if (data.status === "success") {
         setProfileSuccess(data.message);
-        setUserData(data.user);
-        localStorage.setItem("userData", JSON.stringify(data.user));
+        updateUser(data.user);
       } else {
         setProfileError(data.message || "Erreur lors de la mise à jour");
       }
     } catch (err: any) {
+      console.error("Profile update error:", err);
       setProfileError(err.message || "Erreur de connexion au serveur");
     } finally {
       setProfileLoading(false);
     }
   };
 
-  if (!userData) {
+  if (authLoading || !userData) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center gap-4 bg-muted/30">
         <RefreshCw className="h-8 w-8 text-primary animate-spin" />
@@ -246,7 +151,7 @@ export default function PatientDashboard() {
 
   return (
     <div className="min-h-screen bg-muted/30 pt-18 md:pt-16">
-      <Navbar user={{ name: userData.full_name || userData.name || "Patient" }} />
+      <Navbar />
 
       {/* Mobile Tab Bar */}
       <div className="lg:hidden sticky top-16 z-40 bg-white border-b border-border shadow-sm">

@@ -254,22 +254,25 @@ class DashboardController extends Controller
     public function getNotifications($id)
     {
         $patient = Patient::findOrFail($id);
-        $patientBlood = trim($patient->blood_type);
+        $patientBlood = str_replace('−', '-', trim($patient->blood_type));
 
         // Compatibility Map: Donor -> Recipients (Who can they donate TO?)
         $compatibility = [
             'A+'  => ['A+', 'AB+'],
-            'A−'  => ['A+', 'A−', 'AB+', 'AB−'],
+            'A-'  => ['A+', 'A-', 'AB+', 'AB-'],
             'B+'  => ['B+', 'AB+'],
-            'B−'  => ['B+', 'B−', 'AB+', 'AB−'],
+            'B-'  => ['B+', 'B-', 'AB+', 'AB-'],
             'AB+' => ['AB+'],
-            'AB−' => ['AB+', 'AB−'],
+            'AB-' => ['AB+', 'AB-'],
             'O+'  => ['O+', 'A+', 'B+', 'AB+'],
-            'O−'  => ['A+', 'A−', 'B+', 'B−', 'AB+', 'AB−', 'O+', 'O−'],
+            'O-'  => ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'],
         ];
 
         $compatibleGroups = $compatibility[$patientBlood] ?? [$patientBlood];
-        $compatibleGroups[] = 'Tous groupes'; // Always show general alerts
+        
+        // Add versions with the other minus sign just in case
+        $altCompatibleGroups = array_map(fn($g) => str_replace('-', '−', $g), $compatibleGroups);
+        $allCompatibleGroups = array_unique(array_merge($compatibleGroups, $altCompatibleGroups, ['Tous groupes']));
 
         // Fetch personal notifications
         $personal = \App\Models\PatientNotification::where('patient_id', $id)
@@ -285,7 +288,7 @@ class DashboardController extends Controller
 
         // Fetch public urgent alerts that this patient can donate to
         $alerts = Alert::where('status', 'active')
-            ->whereIn('blood_type', $compatibleGroups)
+            ->whereIn('blood_type', $allCompatibleGroups)
             ->orderBy('created_at', 'desc')
             ->take(5)
             ->get()

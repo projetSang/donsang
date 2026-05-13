@@ -14,6 +14,8 @@ import { AlertsTab } from "@/components/hospital/AlertsTab";
 import { SettingsTab } from "@/components/hospital/SettingsTab";
 import { MessagesTab } from "@/components/hospital/MessagesTab";
 import TableBord from "@/components/hospital/TableBord";
+import { useAuth } from "@/contexts/AuthContext";
+import { apiFetch } from "@/lib/api";
 
 const tabs = [
   { id: "table", label: "Tableau de bord", icon: LayoutDashboard },
@@ -25,26 +27,20 @@ const tabs = [
 ];
 
 export default function HospitalDashboard() {
+  const { user: hospitalInfo, logout, loading: authLoading } = useAuth();
   const [activeTab, setActiveTab] = useState("table");
   const [showAddPatient, setShowAddPatient] = useState(false);
   const [showNewAlert, setShowNewAlert] = useState(false);
   const [selectedBlood, setSelectedBlood] = useState("");
   const [city, setCity] = useState("");
-  const [hospitalInfo, setHospitalInfo] = useState<any>(null);
 
-  const handleLogout = () => {
-    localStorage.removeItem("isAuthenticated");
-    localStorage.removeItem("userData");
-    localStorage.removeItem("userType");
-    window.location.href = "/";
-  };
-
-  useEffect(() => {
-    fetch("http://localhost:8000/api/hospital/settings")
-      .then(res => res.json())
-      .then(data => setHospitalInfo(data))
-      .catch(console.error);
-  }, []);
+  if (authLoading || !hospitalInfo) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Droplets className="h-8 w-8 text-primary animate-bounce" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#F8FAFC]">
@@ -71,7 +67,7 @@ export default function HospitalDashboard() {
               variant="ghost" 
               size="icon" 
               className="text-slate-400 hover:text-destructive hover:bg-destructive/5 transition-all"
-              onClick={handleLogout}
+              onClick={logout}
             >
               <LogOut className="h-5 w-5" />
             </Button>

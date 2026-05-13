@@ -1,9 +1,10 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Mail, Lock, Eye, EyeOff, Droplets } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { apiFetch } from "@/lib/api";
 
 export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
@@ -11,7 +12,7 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
+  const { login } = useAuth();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -19,29 +20,18 @@ export default function Login() {
     setLoading(true);
 
     try {
-      const response = await fetch("http://localhost:8000/api/login", {
+      const data = await apiFetch("/login", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
       });
 
-      const data = await response.json();
-
-      if (response.ok && data.status === "success") {
-        localStorage.setItem("isAuthenticated", "true");
-        localStorage.setItem("userType", data.user_type);
-        localStorage.setItem("userData", JSON.stringify(data.user));
-
-        if (data.user_type === "hospital") {
-          navigate("/hospital");
-        } else {
-          navigate("/patient");
-        }
+      if (data.status === "success") {
+        login(data.user, data.token);
       } else {
         setError(data.message || "Identifiants invalides");
       }
-    } catch (err) {
-      setError("Erreur de connexion au serveur");
+    } catch (err: any) {
+      setError(err.message || "Erreur de connexion au serveur");
     } finally {
       setLoading(false);
     }
