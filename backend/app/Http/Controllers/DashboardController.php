@@ -17,15 +17,24 @@ class DashboardController extends Controller
         $donorsCount = BloodDonor::count();
         $alertsCount = Alert::where('status','!=','Clôturée')-> count();
         $patientsCount = Patient::count();
-        
-        // Données pour le graphique (par mois de l'année en cours)
-        $donationsData = [];
-        $requestsData = [];
         $currentYear = date('Y');
+        
+        // Optimisation : récupérer toutes les données en deux requêtes au lieu de 24
+        $donationsByMonth = BloodDonor::selectRaw('MONTH(created_at) as month, COUNT(*) as count')
+            ->whereYear('created_at', $currentYear)
+            ->groupBy('month')
+            ->pluck('count', 'month')
+            ->toArray();
+
+        $requestsByMonth = Alert::selectRaw('MONTH(created_at) as month, COUNT(*) as count')
+            ->whereYear('created_at', $currentYear)
+            ->groupBy('month')
+            ->pluck('count', 'month')
+            ->toArray();
 
         for ($m = 1; $m <= 12; $m++) {
-            $donationsData[] = BloodDonor::whereYear('created_at', $currentYear)->whereMonth('created_at', $m)->count();
-            $requestsData[] = Alert::whereYear('created_at', $currentYear)->whereMonth('created_at', $m)->count();
+            $donationsData[] = $donationsByMonth[$m] ?? 0;
+            $requestsData[] = $requestsByMonth[$m] ?? 0;
         }
 
         return response()->json([
@@ -49,23 +58,7 @@ class DashboardController extends Controller
 
     public function storePatient(Request $request)
     {
-        $validated = $request->validate([
-            'hospital_id' => 'required|exists:hospitals,id',
-            'full_name' => 'required|string|max:255',
-            'email' => 'required|email|unique:patients,email',
-            'cin' => 'nullable|string|max:50',
-            'birth_date' => 'nullable|date',
-            'phone' => 'nullable|string|max:50',
-            'address' => 'nullable|string|max:500',
-            'height' => 'nullable|string|max:10',
-            'weight' => 'nullable|string|max:10',
-            'chronic_diseases' => 'nullable|array',
-            'allergies' => 'nullable|string',
-            'current_treatments' => 'nullable|string',
-            'medical_history' => 'nullable|string',
-            'blood_type' => 'required|string|max:10',
-            'admission_date' => 'required|date'
-        ]);
+        $validated = $request->validate($this->patientRules());
 
         $password = Str::random(10);// cree mdp auto avec 10 caracteres
         $validated['password'] = $password;
@@ -91,24 +84,7 @@ class DashboardController extends Controller
     public function updatePatient(Request $request, $id)
     {
         $patient = Patient::findOrFail($id);
-        
-        $validated = $request->validate([
-            'full_name' => 'sometimes|required|string|max:255',
-            'email' => 'sometimes|required|email|unique:patients,email,' . $id,
-            'cin' => 'nullable|string|max:50',
-            'birth_date' => 'nullable|date',
-            'phone' => 'nullable|string|max:50',
-            'address' => 'nullable|string|max:500',
-            'height' => 'nullable|string|max:10',
-            'weight' => 'nullable|string|max:10',
-            'chronic_diseases' => 'nullable|array',
-            'allergies' => 'nullable|string',
-            'current_treatments' => 'nullable|string',
-            'medical_history' => 'nullable|string',
-            'blood_type' => 'sometimes|required|string|max:10',
-            'admission_date' => 'sometimes|required|date'
-        ]);
-
+        $validated = $request->validate($this->patientRules($id));
         $patient->update($validated);
         return response()->json($patient);
     }
@@ -173,17 +149,7 @@ class DashboardController extends Controller
 
     public function storeAlert(Request $request)
     {
-        $validated = $request->validate([
-            'hospital_id' => 'required|exists:hospitals,id',
-            'blood_type' => 'required|string',
-            'urgency_level' => 'required|string',
-            'city' => 'nullable|string',
-            'quantity' => 'nullable|string',
-            'description' => 'nullable|string',
-            'direct_phone' => 'nullable|string',
-            'status' => 'nullable|string'
-        ]);
-
+        $validated = $request->validate($this->alertRules());
         $alert = Alert::create($validated);
         return response()->json($alert->load('hospital'), 201);
     }
@@ -191,17 +157,7 @@ class DashboardController extends Controller
     public function updateAlert(Request $request, $id)
     {
         $alert = Alert::findOrFail($id);
-        
-        $validated = $request->validate([
-            'blood_type' => 'sometimes|required|string',
-            'urgency_level' => 'sometimes|required|string',
-            'city' => 'nullable|string',
-            'quantity' => 'nullable|string',
-            'description' => 'nullable|string',
-            'direct_phone' => 'nullable|string',
-            'status' => 'nullable|string'
-        ]);
-
+        $validated = $request->validate($this->alertRules($id));
         $alert->update($validated);
         return response()->json($alert->load('hospital'));
     }
@@ -297,7 +253,7 @@ class DashboardController extends Controller
 
     public function getNotifications($id)
     {
-        $patient = \App\Models\Patient::findOrFail($id);
+        $patient = Patient::findOrFail($id);
 
         // Fetch personal notifications
         $personal = \App\Models\PatientNotification::where('patient_id', $id)
@@ -314,7 +270,7 @@ class DashboardController extends Controller
             });
 
         // Fetch public urgent alerts (blood donation matching patient's city or blood type, or all active)
-        $alerts = \App\Models\Alert::where('status', 'active')
+        $alerts = Alert::where('status', 'active')
             ->orderBy('created_at', 'desc')
             ->take(5)
             ->get()
@@ -387,5 +343,40 @@ class DashboardController extends Controller
             });
 
         return response()->json($responses);
+    }
+
+    private function patientRules($id = null)
+    {
+        return [
+            'full_name' => ($id ? 'sometimes|' : '') . 'required|string|max:255',
+            'email' => ($id ? 'sometimes|' : '') . 'required|email|unique:patients,email' . ($id ? ',' . $id : ''),
+            'blood_type' => ($id ? 'sometimes|' : '') . 'required|string|max:10',
+            'admission_date' => ($id ? 'sometimes|' : '') . 'required|date',
+            'hospital_id' => ($id ? 'nullable|' : 'required|') . 'exists:hospitals,id',
+            'cin' => 'nullable|string|max:50',
+            'birth_date' => 'nullable|date',
+            'phone' => 'nullable|string|max:50',
+            'address' => 'nullable|string|max:500',
+            'height' => 'nullable|string|max:10',
+            'weight' => 'nullable|string|max:10',
+            'chronic_diseases' => 'nullable|array',
+            'allergies' => 'nullable|string',
+            'current_treatments' => 'nullable|string',
+            'medical_history' => 'nullable|string',
+        ];
+    }
+
+    private function alertRules($id = null)
+    {
+        return [
+            'hospital_id' => ($id ? 'nullable|' : 'required|') . 'exists:hospitals,id',
+            'blood_type' => ($id ? 'sometimes|' : '') . 'required|string',
+            'urgency_level' => ($id ? 'sometimes|' : '') . 'required|string',
+            'city' => 'nullable|string',
+            'quantity' => 'nullable|string',
+            'description' => 'nullable|string',
+            'direct_phone' => 'nullable|string',
+            'status' => 'nullable|string'
+        ];
     }
 }

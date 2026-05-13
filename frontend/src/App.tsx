@@ -9,9 +9,9 @@ import Login from "./pages/Login.tsx";
 import Contact from "./pages/Contact.tsx";
 import PatientDashboard from "./pages/PatientDashboard.tsx";
 import HospitalDashboard from "./pages/HospitalDashboard.tsx";
-import MedicalPassport from "./pages/MedicalPassport.jsx";
+import MedicalPassport from "./pages/MedicalPassport.tsx";
 import NotFound from "./pages/NotFound.tsx";
-import UrgentAlerts from "./pages/urgentAlerts.tsx";
+import UrgentAlerts from "./pages/UrgentAlerts.tsx";
 import SharedDossier from "./pages/SharedDossier.tsx";
 const queryClient = new QueryClient();
 

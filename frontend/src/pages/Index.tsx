@@ -134,7 +134,7 @@ export default function Index() {
             <div className="flex-1 relative">
               <div className="absolute inset-0 bg-gradient-to-tr from-primary/20 to-transparent rounded-[3rem] blur-3xl -z-10 transform rotate-12 scale-110"></div>
               <img
-                src="/public/image2.jpeg"
+                src="/image2.jpeg"
                 alt="Illustration médicale moderne"
                 className="w-full h-auto object-cover rounded-[2rem] shadow-2xl border-8 border-white transform transition-transform hover:scale-105 duration-500"
               />
@@ -231,7 +231,7 @@ export default function Index() {
               <div className="relative w-[300px] h-[490px] w-full">
                 <div className="absolute inset-0 bg-red-50 rounded-full blur-3xl opacity-80 transform scale-110"></div>
                 <img 
-                  src="/public/télécharger (24).png" 
+                  src="/télécharger (24).png" 
                   alt="Stéthoscope en forme de cœur" 
                   className="relative z-11 w-80 h-auto object-contain drop-shadow-1xl hover:scale-105 transition-transform duration-500 translate-x-[30px]"
                 />

@@ -10,6 +10,7 @@ import {
   Plus, Copy, RefreshCw, Download, Upload, AlertTriangle,
   Phone, MapPin, LogOut, ChevronRight, Lock
 } from "lucide-react";
+import { apiFetch } from "@/lib/api";
 
 const bloodGroups = ["A+", "A−", "B+", "B−", "AB+", "AB−", "O+", "O−"];
 
@@ -41,11 +42,8 @@ export default function PatientDashboard() {
 
   const fetchDocuments = async (patientId: number) => {
     try {
-      const res = await fetch(`http://localhost:8000/api/patients/${patientId}/documents`);
-      if (res.ok) {
-        const data = await res.json();
-        setDocuments(data);
-      }
+      const data = await apiFetch(`/patients/${patientId}/documents`);
+      setDocuments(data);
     } catch (e) {
       console.error(e);
     }
@@ -53,11 +51,8 @@ export default function PatientDashboard() {
 
   const fetchNotifications = async (patientId: number) => {
     try {
-      const res = await fetch(`http://localhost:8000/api/patients/${patientId}/notifications`);
-      if (res.ok) {
-        const data = await res.json();
-        setNotifications(data);
-      }
+      const data = await apiFetch(`/patients/${patientId}/notifications`);
+      setNotifications(data);
     } catch (e) {
       console.error(e);
     }
@@ -74,14 +69,11 @@ export default function PatientDashboard() {
 
     setUploadingDoc(true);
     try {
-      const res = await fetch(`http://localhost:8000/api/patients/${userData.id}/documents`, {
+      const newDoc = await apiFetch(`/patients/${userData.id}/documents`, {
         method: "POST",
         body: formData,
       });
-      if (res.ok) {
-        const newDoc = await res.json();
-        setDocuments([newDoc, ...documents]);
-      }
+      setDocuments([newDoc, ...documents]);
     } catch (error) {
       console.error("Upload error", error);
     } finally {
@@ -91,18 +83,14 @@ export default function PatientDashboard() {
 
   const handleGenerateShareToken = async () => {
     try {
-      const res = await fetch("http://localhost:8000/api/generate-share-token", {
+      const data = await apiFetch("/generate-share-token", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: userData.email })
       });
-      if (res.ok) {
-        const data = await res.json();
-        setShareLink(`${window.location.origin}/dossier/partage/${data.share_token}`);
-        const newUserData = { ...userData, share_token: data.share_token };
-        setUserData(newUserData);
-        localStorage.setItem("userData", JSON.stringify(newUserData));
-      }
+      setShareLink(`${window.location.origin}/dossier/partage/${data.share_token}`);
+      const newUserData = { ...userData, share_token: data.share_token };
+      setUserData(newUserData);
+      localStorage.setItem("userData", JSON.stringify(newUserData));
     } catch (err) {
       console.error(err);
     }
@@ -110,17 +98,14 @@ export default function PatientDashboard() {
 
   const handleDisableShareToken = async () => {
     try {
-      const res = await fetch("http://localhost:8000/api/disable-share-token", {
+      await apiFetch("/disable-share-token", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: userData.email })
       });
-      if (res.ok) {
-        setShareLink("");
-        const newUserData = { ...userData, share_token: null };
-        setUserData(newUserData);
-        localStorage.setItem("userData", JSON.stringify(newUserData));
-      }
+      setShareLink("");
+      const newUserData = { ...userData, share_token: null };
+      setUserData(newUserData);
+      localStorage.setItem("userData", JSON.stringify(newUserData));
     } catch (err) {
       console.error(err);
     }
@@ -130,12 +115,8 @@ export default function PatientDashboard() {
     if (!userData || !alertId) return;
 
     try {
-      const res = await fetch("http://localhost:8000/api/alerts/respond", {
+      await apiFetch("/alerts/respond", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Accept": "application/json"
-        },
         body: JSON.stringify({
           alert_id: alertId,
           patient_id: userData.id,
@@ -143,17 +124,15 @@ export default function PatientDashboard() {
         })
       });
 
-      if (res.ok) {
-        if (type === "disponible") {
-          toast.success("Merci ! Votre disponibilité a été enregistrée. Un agent de santé pourrait vous contacter.", {
-            description: `Réponse pour: ${title}`,
-            duration: 5000,
-          });
-        } else {
-          toast.info("C'est noté. Merci de nous avoir informés.", {
-            description: `Réponse pour: ${title}`,
-          });
-        }
+      if (type === "disponible") {
+        toast.success("Merci ! Votre disponibilité a été enregistrée. Un agent de santé pourrait vous contacter.", {
+          description: `Réponse pour: ${title}`,
+          duration: 5000,
+        });
+      } else {
+        toast.info("C'est noté. Merci de nous avoir informés.", {
+          description: `Réponse pour: ${title}`,
+        });
       }
     } catch (err) {
       console.error(err);
@@ -212,9 +191,8 @@ export default function PatientDashboard() {
 
     setPassLoading(true);
     try {
-      const response = await fetch("http://localhost:8000/api/update-password", {
+      const data = await apiFetch("/update-password", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           email: userData.email,
           user_type: "patient",
@@ -223,15 +201,14 @@ export default function PatientDashboard() {
         }),
       });
 
-      const data = await response.json();
-      if (response.ok && data.status === "success") {
+      if (data.status === "success") {
         setPassSuccess(data.message);
         setPasswords({ current: "", new: "", confirm: "" });
       } else {
         setPassError(data.message || "Erreur lors de la mise à jour");
       }
-    } catch (err) {
-      setPassError("Erreur de connexion au serveur");
+    } catch (err: any) {
+      setPassError(err.message || "Erreur de connexion au serveur");
     } finally {
       setPassLoading(false);
     }
@@ -244,25 +221,23 @@ export default function PatientDashboard() {
     setProfileLoading(true);
 
     try {
-      const response = await fetch("http://localhost:8000/api/update-profile", {
+      const data = await apiFetch("/update-profile", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...profileData,
           user_type: "patient"
         }),
       });
 
-      const data = await response.json();
-      if (response.ok && data.status === "success") {
+      if (data.status === "success") {
         setProfileSuccess(data.message);
         setUserData(data.user);
         localStorage.setItem("userData", JSON.stringify(data.user));
       } else {
         setProfileError(data.message || "Erreur lors de la mise à jour");
       }
-    } catch (err) {
-      setProfileError("Erreur de connexion au serveur");
+    } catch (err: any) {
+      setProfileError(err.message || "Erreur de connexion au serveur");
     } finally {
       setProfileLoading(false);
     }
@@ -497,7 +472,7 @@ export default function PatientDashboard() {
                 <div>
                   <label className="text-sm font-medium text-muted-foreground">Maladies chroniques</label>
                   <textarea
-                    className="mt-1 flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm min-h-[80px]"
+                    className="mt-1 flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm h-15"
                     value={(() => {
                       if (!userData?.chronic_diseases) return "Aucune";
                       if (Array.isArray(userData.chronic_diseases)) {
@@ -516,7 +491,7 @@ export default function PatientDashboard() {
                 <div>
                   <label className="text-sm font-medium text-muted-foreground">Allergies</label>
                   <textarea
-                    className="mt-1 flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm min-h-[80px]"
+                    className="mt-1 flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm h-15"
                     value={userData?.allergies || "Aucune"}
                     readOnly
                   />
@@ -524,7 +499,7 @@ export default function PatientDashboard() {
                 <div>
                   <label className="text-sm font-medium text-muted-foreground">Traitements en cours</label>
                   <textarea
-                    className="mt-1 flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm min-h-[80px]"
+                    className="mt-1 flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm h-15"
                     value={userData?.current_treatments || "Aucun"}
                     readOnly
                   />
@@ -532,7 +507,7 @@ export default function PatientDashboard() {
                 <div>
                   <label className="text-sm font-medium text-muted-foreground">Antécédents médicaux</label>
                   <textarea
-                    className="mt-1 flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm min-h-[80px]"
+                    className="mt-1 flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm h-15"
                     value={userData?.medical_history || "Aucun"}
                     readOnly
                   />
