@@ -23,6 +23,7 @@ Route::post('/hospital/patients', [DashboardController::class, 'storePatient']);
 Route::put('/hospital/patients/{id}', [DashboardController::class, 'updatePatient']);
 Route::delete('/hospital/patients/{id}', [DashboardController::class, 'deletePatient']);
 Route::get('/hospital/search-donors', [DashboardController::class, 'searchDonors']);
+Route::post('/hospital/donors', [DashboardController::class, 'storeDonor']);
 Route::put('/hospital/donors/{id}', [DashboardController::class, 'updateDonor']);
 Route::get('/hospital/statistiques', [DashboardController::class, 'getStatistiques']);
 Route::get('/hospital/alerts', [DashboardController::class, 'getAlerts']);

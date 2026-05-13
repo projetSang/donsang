@@ -125,6 +125,13 @@ class DashboardController extends Controller
         return response()->json($donor);
     }
 
+    public function storeDonor(Request $request)
+    {
+        $validated = $request->validate($this->donorRules());
+        $donor = BloodDonor::create($validated);
+        return response()->json($donor, 201);
+    }
+
     public function getStatistiques()
     {
         $total = BloodDonor::count();
@@ -371,6 +378,18 @@ class DashboardController extends Controller
             'description' => 'nullable|string',
             'direct_phone' => 'nullable|string',
             'status' => 'nullable|string'
+        ];
+    }
+
+    private function donorRules($id = null)
+    {
+        return [
+            'full_name' => ($id ? 'sometimes|' : '') . 'required|string|max:255',
+            'email' => ($id ? 'sometimes|' : '') . 'nullable|email|unique:blood_donors,email' . ($id ? ',' . $id : ''),
+            'blood_type' => ($id ? 'sometimes|' : '') . 'required|string|max:10',
+            'phone' => ($id ? 'sometimes|' : '') . 'required|string|max:50',
+            'city' => ($id ? 'sometimes|' : '') . 'required|string|max:255',
+            'last_donation_date' => 'nullable|date',
         ];
     }
 }

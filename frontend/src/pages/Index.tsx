@@ -56,7 +56,7 @@ export default function Index() {
               <img
                 src="/image2.jpeg"
                 alt="Illustration médicale moderne"
-                className="w-full h-auto object-cover rounded-[2rem] shadow-2xl border-8 border-white transform transition-transform hover:scale-105 duration-500"
+                className="w-full h-auto object-cover rounded-[2rem] shadow-2xl border-2 border-white transform transition-transform hover:scale-105 duration-500"
               />
             </div>
           </div>

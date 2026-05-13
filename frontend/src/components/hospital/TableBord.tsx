@@ -32,7 +32,7 @@ export default function TableBord() {
                 <LayoutDashboard className="h-8 w-8 text-primary" />
                 Tableau de Bord
               </h1>
-              <p className="text-slate-500 mt-1">Bienvenue, {statsData?.hospital_name || ""}  Voici l'état actuel de votre hôpital .</p>
+              <p className="text-slate-500 mt-1">Bienvenue, Voici l'état actuel de votre hôpital .</p>
             </div>
 
             {/* Quick Stats Grid */}
