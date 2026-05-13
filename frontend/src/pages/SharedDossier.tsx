@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
-import { 
+import {
   User, Activity, FileText, Download, Droplets, Phone, MapPin, Calendar, Clock, AlertCircle
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -18,7 +18,7 @@ export default function SharedDossier() {
       try {
         const res = await fetch(`http://localhost:8000/api/shared-dossier/${token}`);
         const data = await res.json();
-        
+
         if (res.ok && data.status === "success") {
           setPatient(data.patient);
         } else {
@@ -30,7 +30,7 @@ export default function SharedDossier() {
         setLoading(false);
       }
     };
-    
+
     if (token) {
       fetchDossier();
     }
@@ -60,11 +60,11 @@ export default function SharedDossier() {
     );
   }
 
-  const diseases = Array.isArray(patient.chronic_diseases) 
-    ? patient.chronic_diseases 
+  const diseases = Array.isArray(patient.chronic_diseases)
+    ? patient.chronic_diseases
     : (typeof patient.chronic_diseases === 'string' && patient.chronic_diseases.startsWith('[')
-        ? JSON.parse(patient.chronic_diseases) 
-        : []);
+      ? JSON.parse(patient.chronic_diseases)
+      : []);
 
   return (
     <div className="min-h-screen bg-muted/30 pt-18 md:pt-16">
@@ -87,7 +87,7 @@ export default function SharedDossier() {
                   <p className="text-sm text-muted-foreground">{patient.cin || "CIN non renseigné"}</p>
                 </div>
               </div>
-              
+
               <div className="space-y-4 pt-4 border-t border-border">
                 <div className="flex items-center gap-3 text-sm">
                   <Phone className="h-4 w-4 text-muted-foreground" />

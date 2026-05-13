@@ -254,6 +254,22 @@ class DashboardController extends Controller
     public function getNotifications($id)
     {
         $patient = Patient::findOrFail($id);
+        $patientBlood = trim($patient->blood_type);
+
+        // Compatibility Map: Donor -> Recipients (Who can they donate TO?)
+        $compatibility = [
+            'A+'  => ['A+', 'AB+'],
+            'A−'  => ['A+', 'A−', 'AB+', 'AB−'],
+            'B+'  => ['B+', 'AB+'],
+            'B−'  => ['B+', 'B−', 'AB+', 'AB−'],
+            'AB+' => ['AB+'],
+            'AB−' => ['AB+', 'AB−'],
+            'O+'  => ['O+', 'A+', 'B+', 'AB+'],
+            'O−'  => ['A+', 'A−', 'B+', 'B−', 'AB+', 'AB−', 'O+', 'O−'],
+        ];
+
+        $compatibleGroups = $compatibility[$patientBlood] ?? [$patientBlood];
+        $compatibleGroups[] = 'Tous groupes'; // Always show general alerts
 
         // Fetch personal notifications
         $personal = \App\Models\PatientNotification::where('patient_id', $id)
@@ -267,8 +283,9 @@ class DashboardController extends Controller
                 'is_read' => $n->is_read
             ]);
 
-        // Fetch public urgent alerts (blood donation matching patient's city or blood type, or all active)
+        // Fetch public urgent alerts that this patient can donate to
         $alerts = Alert::where('status', 'active')
+            ->whereIn('blood_type', $compatibleGroups)
             ->orderBy('created_at', 'desc')
             ->take(5)
             ->get()

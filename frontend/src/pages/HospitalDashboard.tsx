@@ -32,6 +32,13 @@ export default function HospitalDashboard() {
   const [city, setCity] = useState("");
   const [hospitalInfo, setHospitalInfo] = useState<any>(null);
 
+  const handleLogout = () => {
+    localStorage.removeItem("isAuthenticated");
+    localStorage.removeItem("userData");
+    localStorage.removeItem("userType");
+    window.location.href = "/";
+  };
+
   useEffect(() => {
     fetch("http://localhost:8000/api/hospital/settings")
       .then(res => res.json())
@@ -60,11 +67,14 @@ export default function HospitalDashboard() {
             <div className="h-10 w-10 rounded-3xl bg-primary text-white flex items-center justify-center shadow-lg shadow-primary/20 font-bold border-2 border-white">
               {hospitalInfo?.name ? hospitalInfo.name.charAt(0).toUpperCase() : "H"}
             </div>
-            <Link to="/">
-              <Button variant="ghost" size="icon" className="text-slate-400 hover:text-destructive hover:bg-destructive/5 transition-all">
-                <LogOut className="h-5 w-5" />
-              </Button>
-            </Link>
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="text-slate-400 hover:text-destructive hover:bg-destructive/5 transition-all"
+              onClick={handleLogout}
+            >
+              <LogOut className="h-5 w-5" />
+            </Button>
           </div>
         </div>
       </header>
