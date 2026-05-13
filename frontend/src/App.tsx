@@ -9,7 +9,6 @@ import Login from "./pages/Login.tsx";
 import Contact from "./pages/Contact.tsx";
 import PatientDashboard from "./pages/PatientDashboard.tsx";
 import HospitalDashboard from "./pages/HospitalDashboard.tsx";
-import MedicalPassport from "./pages/MedicalPassport.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import UrgentAlerts from "./pages/UrgentAlerts.tsx";
 import SharedDossier from "./pages/SharedDossier.tsx";
@@ -48,7 +47,6 @@ const App = () => (
               </ProtectedRoute>
             } 
           />
-          <Route path="/medical-passport" element={<MedicalPassport />} />
           <Route path="/dossier/partage/:token" element={<SharedDossier />} />
           <Route path="*" element={<NotFound />} />
         </Routes>

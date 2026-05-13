@@ -259,31 +259,27 @@ class DashboardController extends Controller
         $personal = \App\Models\PatientNotification::where('patient_id', $id)
             ->orderBy('created_at', 'desc')
             ->get()
-            ->map(function ($n) {
-                return [
-                    'id' => $n->id,
-                    'title' => $n->title,
-                    'time' => $n->created_at->diffForHumans(),
-                    'urgent' => $n->type === 'urgent',
-                    'is_read' => $n->is_read
-                ];
-            });
+            ->map(fn($n) => [
+                'id' => $n->id,
+                'title' => $n->title,
+                'time' => $n->created_at->diffForHumans(),
+                'urgent' => $n->type === 'urgent',
+                'is_read' => $n->is_read
+            ]);
 
         // Fetch public urgent alerts (blood donation matching patient's city or blood type, or all active)
         $alerts = Alert::where('status', 'active')
             ->orderBy('created_at', 'desc')
             ->take(5)
             ->get()
-            ->map(function ($a) {
-                return [
-                    'id' => 'alert_' . $a->id,
-                    'alert_id' => $a->id,
-                    'title' => "Urgence : Besoin de donneur {$a->blood_type} à {$a->city}",
-                    'time' => $a->created_at->diffForHumans(),
-                    'urgent' => true,
-                    'is_read' => false
-                ];
-            });
+            ->map(fn($a) => [
+                'id' => 'alert_' . $a->id,
+                'alert_id' => $a->id,
+                'title' => "Urgence : Besoin de donneur {$a->blood_type} à {$a->city}",
+                'time' => $a->created_at->diffForHumans(),
+                'urgent' => true,
+                'is_read' => false
+            ]);
 
         $allNotifications = collect($alerts)->merge($personal)->sortByDesc('time')->values()->all();
 
@@ -331,16 +327,14 @@ class DashboardController extends Controller
             ->with('patient')
             ->orderBy('created_at', 'desc')
             ->get()
-            ->map(function ($r) {
-                return [
-                    'id' => $r->id,
-                    'patient_name' => $r->patient->full_name,
-                    'blood_type' => $r->patient->blood_type,
-                    'phone' => $r->patient->phone,
-                    'status' => $r->status,
-                    'time' => $r->created_at->diffForHumans()
-                ];
-            });
+            ->map(fn($r) => [
+                'id' => $r->id,
+                'patient_name' => $r->patient->full_name,
+                'blood_type' => $r->patient->blood_type,
+                'phone' => $r->patient->phone,
+                'status' => $r->status,
+                'time' => $r->created_at->diffForHumans()
+            ]);
 
         return response()->json($responses);
     }
