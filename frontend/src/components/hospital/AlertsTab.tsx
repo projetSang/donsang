@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Bell, Activity, AlertTriangle, MapPin, Users, Phone, X, CheckCircle2, XCircle } from "lucide-react";
+import { Bell, Activity, AlertTriangle, MapPin, Users, Phone, X, CheckCircle2, XCircle, Droplets } from "lucide-react";
 
 const bloodGroups = ["A+", "A−", "B+", "B−", "AB+", "AB−", "O+", "O−"];
 
