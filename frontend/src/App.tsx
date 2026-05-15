@@ -12,6 +12,7 @@ import NotFound from "./pages/NotFound.tsx";
 import UrgentAlerts from "./pages/UrgentAlerts.tsx";
 import SharedDossier from "./pages/SharedDossier.tsx";
 import { AuthProvider, useAuth } from "./contexts/AuthContext.tsx";
+import VoiceAssistant from "./components/ui/VoiceAssistant.tsx";
 const queryClient = new QueryClient();
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -40,6 +41,7 @@ const App = () => (
       <Sonner />
       <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <AuthProvider>
+          <VoiceAssistant />
           <Routes>
             {routesConfig.map((route) => (
               <Route

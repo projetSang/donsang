@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ContactMessageController;
+use App\Http\Controllers\AssistantController;
 
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/update-password', [AuthController::class, 'updatePassword']);
@@ -42,3 +43,5 @@ Route::get('/patients/{id}/notifications', [DashboardController::class, 'getNoti
 Route::post('/patients/{id}/notifications', [DashboardController::class, 'sendNotification']);
 Route::post('/alerts/respond', [DashboardController::class, 'respondToAlert']);
 Route::get('/hospital/alerts/{id}/responses', [DashboardController::class, 'getAlertResponses']);
+
+Route::post('/assistant/chat', [AssistantController::class, 'chat']);

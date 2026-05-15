@@ -24,40 +24,49 @@ export default function Index() {
     <div className="min-h-screen bg-background">
       <Navbar />
 
-      {/* Hero */}
-      <section className="pt-24 pb-16 md:pt-32 md:pb-24 overflow-hidden relative">
-        <div className="container mx-auto px-4 relative z-10">
-          <div className="flex flex-col lg:flex-row items-center gap-12">
-            <div className="flex-1 text-center lg:text-left space-y-6">
-              <div className="inline-flex items-center gap-2 bg-accent text-accent-foreground text-sm font-medium px-4 py-1.5 rounded-full mb-6">
-                <Heart className="h-4 w-4" />
-                Sauvez des vies, Partagez votre groupe sanguin
-              </div>
-              <h1 className="text-4xl md:text-6xl font-extrabold leading-tight mb-6 max-w-4xl mx-auto">
-                Donnez votre sang aujourd’hui,  <span className="text-gradient">sauvez des vies</span> demain.
-              </h1>
-              <p className="text-lg md:text-xl text-muted-foreground leading-relaxed">
-                Rejoignez notre communauté de donneurs et participez à une mission humaine et vitale.              </p>
-              <div className="pt-4 flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-                <Link to="/contact">
-                  <Button variant="hero" size="lg" className="rounded-xl px-8 w-full sm:w-auto">
-                    Rejoindre la communauté
-                  </Button>
-                </Link>
-                <Link to="/login">
-                  <Button variant="outline" size="lg" className="rounded-xl px-8 border-2 border-primary text-primary hover:bg-primary hover:text-white w-full sm:w-auto">
-                    Se connecter
-                  </Button>
-                </Link>
-              </div>
+      <section className="relative min-h-[80vh] flex items-center justify-center lg:justify-start overflow-hidden">
+        <div className="absolute inset-0 z-0">
+          <img
+            src="/image.png"
+            alt="Hero background"
+            className="w-full h-full object-cover"
+            style={{ transform: 'scale(1.1)', objectPosition: 'center 30%' }}
+          />
+          {/* Overlay dégradé allégé pour mieux voir l'image */}
+          <div className="absolute inset-0 bg-gradient-to-r from-slate-900/70 via-slate-900/30 to-transparent"></div>
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background/60"></div>
+        </div>
+
+        {/* Contenu Texte en 3D */}
+        <div className="container mx-auto px-4 lg:px-8 relative z-10 pt-24 pb-12 md:pt-32 md:pb-20">
+          <div className="max-w-3xl space-y-6">
+            <div className="inline-flex items-center gap-2 bg-red-500/20 text-red-100 backdrop-blur-sm border border-red-500/30 text-sm font-semibold px-6 py-2.5 rounded-full shadow-[0_0_20px_rgba(239,68,68,0.3)] animate-in fade-in slide-in-from-bottom-4 duration-700">
+              <Heart className="h-4 w-4 text-red-500 fill-red-500 animate-pulse" />
+              Sauvez des vies, Partagez votre groupe sanguin
             </div>
-            <div className="flex-1 relative">
-              <div className="absolute inset-0 bg-gradient-to-tr from-primary/20 to-transparent rounded-[3rem] blur-3xl -z-10 transform rotate-12 scale-110"></div>
-              <img
-                src="/image2.jpeg"
-                alt="Illustration médicale moderne"
-                className="w-full h-auto object-cover rounded-[2rem] shadow-2xl border-2 border-white transform transition-transform hover:scale-105 duration-500"
-              />
+            
+            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black leading-[1.15] text-white drop-shadow-2xl animate-in fade-in slide-in-from-bottom-6 duration-1000 delay-150">
+              Donnez votre sang aujourd’hui, <br/>
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-rose-400 drop-shadow-[0_0_30px_rgba(225,29,72,0.8)] relative inline-block transform hover:scale-105 transition-transform duration-300 mt-2">
+                sauvez des vies
+              </span> demain.
+            </h1>
+            
+            <p className="text-lg md:text-xl text-slate-200 leading-relaxed max-w-2xl font-light drop-shadow-lg animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-300">
+              Rejoignez notre communauté de donneurs et participez à une mission humaine et vitale.
+            </p>
+            
+            <div className="pt-6 flex flex-col sm:flex-row gap-4 animate-in fade-in slide-in-from-bottom-10 duration-1000 delay-500">
+              <Link to="/contact">
+                <Button size="lg" className="rounded-full px-8 h-14 text-lg font-bold bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 shadow-[0_8px_30px_rgba(225,29,72,0.4)] hover:shadow-[0_8px_40px_rgba(225,29,72,0.6)] transition-all hover:-translate-y-1 border-none w-full sm:w-auto text-white">
+                  Rejoindre la communauté
+                </Button>
+              </Link>
+              <Link to="/login">
+                <Button variant="outline" size="lg" className="rounded-full px-8 h-14 text-lg font-bold bg-white/10 hover:bg-white/20 border-white/30 text-white backdrop-blur-md hover:shadow-[0_8px_30px_rgba(255,255,255,0.15)] transition-all hover:-translate-y-1 w-full sm:w-auto">
+                  Se connecter
+                </Button>
+              </Link>
             </div>
           </div>
         </div>
