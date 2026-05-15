@@ -61,7 +61,7 @@ export const features = [
 export const benefits = [
   {
     icon: Heart,
-    title: "Amélioration de la santé cardiovasculaire",
+    title: "Amélioration de la santé cardiovasculai`re",
     description: "Le don régulier aide à réduire l'excès de fer dans le sang, ce qui peut diminuer les risques de maladies cardiovasculaires et de crises cardiaques.",
   },
   {
