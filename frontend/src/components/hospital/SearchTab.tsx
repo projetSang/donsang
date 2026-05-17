@@ -18,6 +18,7 @@ export function SearchTab({ selectedBlood, setSelectedBlood, city, setCity }: an
   const [editingDonor, setEditingDonor] = useState<any>(null);
   const [newDonationDate, setNewDonationDate] = useState("");
   const [showAddDonor, setShowAddDonor] = useState(false);
+  const [radius, setRadius] = useState("");
   const [newDonor, setNewDonor] = useState({
     full_name: "",
     blood_type: "",
@@ -31,7 +32,8 @@ export function SearchTab({ selectedBlood, setSelectedBlood, city, setCity }: an
     setLoading(true);
     const queryParams = new URLSearchParams({
       blood_type: selectedBlood,
-      city: city
+      city: city,
+      radius: radius
     });
 
     fetch(`http://localhost:8000/api/hospital/search-donors?${queryParams.toString()}`)
@@ -127,6 +129,20 @@ export function SearchTab({ selectedBlood, setSelectedBlood, city, setCity }: an
                 />
               </div>
             </div>
+            <div className="space-y-1.5">
+              <label className="text-sm font-bold text-slate-700 ml-1">Rayon (km)</label>
+              <select
+                className="flex h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 transition-all cursor-pointer"
+                value={radius}
+                onChange={(e) => setRadius(e.target.value)}
+              >
+                <option value="">Tous</option>
+                <option value="5">5 km</option>
+                <option value="10">10 km</option>
+                <option value="20">20 km</option>
+                <option value="50">50 km</option>
+              </select>
+            </div>
 
             <div className="flex items-end">
               <Button variant="hero" className="w-full h-11 rounded-xl shadow-lg shadow-primary/20 flex gap-2" onClick={handleSearch} disabled={loading}>
@@ -168,7 +184,7 @@ export function SearchTab({ selectedBlood, setSelectedBlood, city, setCity }: an
                     </div>
                     <div className="flex items-center gap-1.5">
                       <MapPin className="h-3.5 w-3.5 text-slate-400" />
-                      {donor.city}
+                      {donor.city} {donor.distance && <span className="text-primary font-bold">({Math.round(donor.distance)} km)</span>}
                     </div>
                     <div className="flex items-center gap-1.5 group/date cursor-pointer hover:text-primary transition-colors" onClick={() => {
                       setEditingDonor(donor);

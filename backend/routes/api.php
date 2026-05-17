@@ -8,6 +8,7 @@ use App\Http\Controllers\ContactMessageController;
 use App\Http\Controllers\AssistantController;
 
 Route::post('/login', [AuthController::class, 'login']);
+Route::post('/register', [AuthController::class, 'register']);
 Route::post('/update-password', [AuthController::class, 'updatePassword']);
 Route::post('/update-profile', [AuthController::class, 'updateProfile']);
 Route::post('/generate-share-token', [AuthController::class, 'generateShareToken']);

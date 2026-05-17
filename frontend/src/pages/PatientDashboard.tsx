@@ -26,7 +26,7 @@ const tabs = [
 export default function PatientDashboard() {
   const { user: userData, updateUser, loading: authLoading, logout } = useAuth();
   const [activeTab, setActiveTab] = useState("profile");
-  
+
   const {
     documents,
     notifications,
@@ -56,7 +56,10 @@ export default function PatientDashboard() {
         phone: userData.phone || "",
         address: userData.address || "",
         birth_date: userData.birth_date || "",
-        blood_type: userData.blood_type || ""
+        blood_type: userData.blood_type || "",
+        emergency_contact_name: userData.emergency_contact_name || "",
+        emergency_contact_relation: userData.emergency_contact_relation || "",
+        emergency_contact_phone: userData.emergency_contact_phone || ""
       });
     }
   }, [userData, authLoading]);
@@ -160,9 +163,8 @@ export default function PatientDashboard() {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all flex-shrink-0 ${
-                activeTab === tab.id ? "bg-primary text-white shadow-sm" : "text-muted-foreground hover:bg-muted"
-              }`}
+              className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all flex-shrink-0 ${activeTab === tab.id ? "bg-primary text-white shadow-sm" : "text-muted-foreground hover:bg-muted"
+                }`}
             >
               <tab.icon className="h-3.5 w-3.5" />
               {tab.label}
@@ -180,9 +182,8 @@ export default function PatientDashboard() {
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                    activeTab === tab.id ? "bg-accent text-accent-foreground" : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                  }`}
+                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${activeTab === tab.id ? "bg-accent text-accent-foreground" : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                    }`}
                 >
                   <tab.icon className="h-4 w-4" />
                   {tab.label}
@@ -200,8 +201,8 @@ export default function PatientDashboard() {
         {/* Main content */}
         <main className="flex-1 min-w-0">
           {activeTab === "profile" && (
-            <ProfileTab 
-              profileData={profileData} 
+            <ProfileTab
+              profileData={profileData}
               setProfileData={setProfileData}
               handleUpdateProfile={handleUpdateProfile}
               profileLoading={profileLoading}
@@ -217,7 +218,7 @@ export default function PatientDashboard() {
           )}
 
           {activeTab === "medical" && (
-            <MedicalTab 
+            <MedicalTab
               userData={userData}
               documents={documents}
               uploadingDoc={uploadingDoc}
@@ -226,7 +227,7 @@ export default function PatientDashboard() {
           )}
 
           {activeTab === "documents_share" && (
-            <ShareTab 
+            <ShareTab
               shareLink={shareLink}
               handleGenerateShareToken={handleGenerateShareToken}
               handleDisableShareToken={handleDisableShareToken}
@@ -234,7 +235,7 @@ export default function PatientDashboard() {
           )}
 
           {activeTab === "notifications" && (
-            <NotificationsTab 
+            <NotificationsTab
               notifications={notifications}
               handleAvailabilityResponse={handleAvailabilityResponse}
             />

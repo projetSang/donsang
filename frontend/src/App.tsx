@@ -11,6 +11,7 @@ import HospitalDashboard from "./pages/HospitalDashboard.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import UrgentAlerts from "./pages/UrgentAlerts.tsx";
 import SharedDossier from "./pages/SharedDossier.tsx";
+import Register from "./pages/Register.tsx";
 import { AuthProvider, useAuth } from "./contexts/AuthContext.tsx";
 import VoiceAssistant from "./components/ui/VoiceAssistant.tsx";
 const queryClient = new QueryClient();
@@ -28,6 +29,7 @@ const routesConfig = [
   { path: "/UrgentAlerts", element: <UrgentAlerts /> },
   { path: "/contact", element: <Contact /> },
   { path: "/login", element: <Login /> },
+  { path: "/register", element: <Register /> },
   { path: "/patient", element: <PatientDashboard />, protected: true },
   { path: "/hospital", element: <HospitalDashboard />, protected: true },
   { path: "/dossier/partage/:token", element: <SharedDossier /> },

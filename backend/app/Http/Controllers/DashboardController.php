@@ -65,11 +65,16 @@ class DashboardController extends Controller
 
         $patient = Patient::create($validated);
 
-        // Envoyer l'email (sera enregistré dans storage/logs/laravel.log)
+        // Envoyer l'email HTML professionnel
         try {
-            Mail::raw("Bonjour {$patient->full_name},\n\nVotre dossier médical a été créé avec succès.\nVoici vos identifiants de connexion :\nEmail : {$patient->email}\nMot de passe : {$password}\n\nCordialement,\nL'équipe médicale.", function ($message) use ($patient) {
+            $emailData = [
+                'patient' => $patient,
+                'password' => $password,
+                'appUrl' => 'http://localhost:8080',
+            ];
+            Mail::send('emails.welcome', $emailData, function ($message) use ($patient) {
                 $message->to($patient->email)
-                    ->subject('Votre nouveau dossier médical - Mot de passe');
+                    ->subject('Bienvenue sur DonSang - Vos identifiants de connexion');
             });
         } catch (\Exception $e) {
             \Log::error("Erreur d'envoi d'email : " . $e->getMessage());
@@ -115,6 +120,28 @@ class DashboardController extends Controller
             $query->where('city', 'LIKE', '%' . $request->city . '%');
         }
 
+        // Location-based search
+        if ($request->has('radius') && $request->radius != '') {
+            $hospital = Hospital::first(); // Should be authenticated hospital
+            if ($hospital && $hospital->latitude && $hospital->longitude) {
+                $radius = (float)$request->radius;
+                
+                // Note: BloodDonor table needs latitude/longitude too for this to work accurately.
+                // If it doesn't have them, we might want to search Patients who are donors.
+                // Let's assume we want to search Patients who have blood_type.
+                
+                $query = Patient::query(); // Change to Patient for accurate GPS search
+                if ($request->has('blood_type')) {
+                    $query->where('blood_type', $request->blood_type);
+                }
+                
+                $query->select('*')
+                    ->selectRaw('(6371 * acos(cos(radians(?)) * cos(radians(latitude)) * cos(radians(longitude) - radians(?)) + sin(radians(?)) * sin(radians(latitude)))) AS distance', [$hospital->latitude, $hospital->longitude, $hospital->latitude])
+                    ->having('distance', '<', $radius)
+                    ->orderBy('distance');
+            }
+        }
+
         return response()->json($query->get());
     }
 // modifier pour le dernier don
@@ -158,7 +185,72 @@ class DashboardController extends Controller
     {
         $validated = $request->validate($this->alertRules());
         $alert = Alert::create($validated);
+        
+        // Notify nearby patients
+        $this->notifyNearbyPatients($alert);
+
         return response()->json($alert->load('hospital'), 201);
+    }
+
+    private function notifyNearbyPatients($alert)
+    {
+        $hospital = Hospital::find($alert->hospital_id);
+        if (!$hospital || !$hospital->latitude || !$hospital->longitude) return;
+
+        // Radius in kilometers
+        $radius = 20;
+
+        $nearbyPatientsQuery = Patient::select('*')
+            ->selectRaw('(6371 * acos(cos(radians(?)) * cos(radians(latitude)) * cos(radians(longitude) - radians(?)) + sin(radians(?)) * sin(radians(latitude)))) AS distance', [$hospital->latitude, $hospital->longitude, $hospital->latitude])
+            ->having('distance', '<', $radius);
+
+        if ($alert->blood_type !== 'Tous groupes') {
+            if (str_contains($alert->blood_type, ',')) {
+                $rawGroups = array_map('trim', explode(',', $alert->blood_type));
+                $groups = [];
+                foreach ($rawGroups as $g) {
+                    $groups[] = $g;
+                    $groups[] = str_replace('−', '-', $g);
+                    $groups[] = str_replace('-', '−', $g);
+                }
+                $nearbyPatientsQuery->whereIn('blood_type', $groups);
+            } else {
+                $nearbyPatientsQuery->where(function($q) use ($alert) {
+                    $q->where('blood_type', $alert->blood_type)
+                      ->orWhere('blood_type', str_replace('−', '-', $alert->blood_type))
+                      ->orWhere('blood_type', str_replace('-', '−', $alert->blood_type));
+                });
+            }
+        }
+
+        $nearbyPatients = $nearbyPatientsQuery->get();
+
+        foreach ($nearbyPatients as $patient) {
+            // Create app notification
+            \App\Models\PatientNotification::create([
+                'patient_id' => $patient->id,
+                'title' => "Besoin urgent à proximité !",
+                'message' => "L'hôpital {$hospital->name} a besoin de sang de type {$alert->blood_type}. Vous êtes à proximité !",
+                'type' => 'urgent',
+                'is_read' => false
+            ]);
+
+            // Send HTML Email
+            try {
+                $emailData = [
+                    'patient' => $patient,
+                    'alert' => $alert,
+                    'hospital' => $hospital,
+                    'appUrl' => 'http://localhost:8080',
+                ];
+                Mail::send('emails.alert', $emailData, function ($message) use ($patient) {
+                    $message->to($patient->email)
+                        ->subject('🚨 Alerte Urgente - Don de Sang à proximité');
+                });
+            } catch (\Exception $e) {
+                \Log::error("Email error: " . $e->getMessage());
+            }
+        }
     }
 
     public function updateAlert(Request $request, $id)
@@ -194,7 +286,9 @@ class DashboardController extends Controller
             'email' => 'sometimes|required|email|unique:hospitals,email,' . $hospital->id,
             'address' => 'nullable|string|max:500',
             'phone' => 'nullable|string|max:50',
-            'password' => 'nullable|string|min:6'
+            'password' => 'nullable|string|min:6',
+            'latitude' => 'nullable|numeric',
+            'longitude' => 'nullable|numeric'
         ]);
 
         if (!empty($validated['password'])) {

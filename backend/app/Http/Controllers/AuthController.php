@@ -20,20 +20,26 @@ class AuthController extends Controller
         // Check for Patient
         $patient = Patient::where('email', $request->email)->first();
         if ($patient && Hash::check($request->password, $patient->password)) {
+            $token = bin2hex(random_bytes(32));
+            $patient->user_type = 'patient';
             return response()->json([
                 'status' => 'success',
                 'user_type' => 'patient',
-                'user' => $patient
+                'user' => $patient,
+                'token' => $token
             ]);
         }
 
         // Check for Hospital
         $hospital = Hospital::where('email', $request->email)->first();
         if ($hospital && Hash::check($request->password, $hospital->password)) {
+            $token = bin2hex(random_bytes(32));
+            $hospital->user_type = 'hospital';
             return response()->json([
                 'status' => 'success',
                 'user_type' => 'hospital',
-                'user' => $hospital
+                'user' => $hospital,
+                'token' => $token
             ]);
         }
 
@@ -41,6 +47,39 @@ class AuthController extends Controller
             'status' => 'error',
             'message' => 'Identifiants invalides'
         ], 401);
+    }
+
+    public function register(Request $request)
+    {
+        $request->validate([
+            'full_name' => 'required|string|max:255',
+            'email' => 'required|email|unique:patients,email',
+            'password' => 'required|min:6|confirmed',
+            'phone' => 'required|string',
+            'blood_type' => 'sometimes|nullable|string',
+        ]);
+
+        $patient = Patient::create([
+            'full_name' => $request->full_name,
+            'email' => $request->email,
+            'password' => Hash::make($request->password),
+            'phone' => $request->phone,
+            'blood_type' => $request->blood_type ?? 'Non spécifié',
+            'hospital_id' => 1, // Default hospital
+            'status' => 'Actif',
+            'admission_date' => now(),
+        ]);
+
+        $token = bin2hex(random_bytes(32));
+        $patient->user_type = 'patient';
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Compte créé avec succès',
+            'user' => $patient,
+            'user_type' => 'patient',
+            'token' => $token
+        ]);
     }
     public function updatePassword(Request $request)
     {
@@ -83,7 +122,12 @@ class AuthController extends Controller
             'phone' => 'nullable|string|max:50',
             'address' => 'nullable|string|max:500',
             'birth_date' => 'nullable|date',
-            'blood_type' => 'sometimes|required|string|max:10',
+            'blood_type' => 'sometimes|required|string|max:20',
+            'emergency_contact_name' => 'nullable|string|max:255',
+            'emergency_contact_relation' => 'nullable|string|max:255',
+            'emergency_contact_phone' => 'nullable|string|max:50',
+            'latitude' => 'nullable|numeric',
+            'longitude' => 'nullable|numeric',
         ]);
 
         $user = null;
@@ -100,7 +144,11 @@ class AuthController extends Controller
             ], 404);
         }
 
-        $user->update($request->only(['full_name', 'phone', 'address', 'birth_date', 'blood_type']));
+        $user->update($request->only([
+            'full_name', 'phone', 'address', 'birth_date', 'blood_type',
+            'emergency_contact_name', 'emergency_contact_relation', 'emergency_contact_phone',
+            'latitude', 'longitude'
+        ]));
 
         return response()->json([
             'status' => 'success',

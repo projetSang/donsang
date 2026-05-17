@@ -5,6 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Mail, Lock, Eye, EyeOff, Droplets } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { apiFetch } from "@/lib/api";
+import { Link } from "react-router-dom";
 
 export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
@@ -104,7 +105,14 @@ export default function Login() {
             </Button>
           </form>
 
-
+          <div className="text-center pt-2">
+            <p className="text-slate-500 text-sm">
+              Vous n'avez pas de compte ?{" "}
+              <Link to="/register" className="text-primary font-bold hover:underline">
+                S'inscrire
+              </Link>
+            </p>
+          </div>
         </div>
        
       </div>

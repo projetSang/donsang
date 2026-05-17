@@ -57,7 +57,7 @@ export default function Index() {
             </p>
             
             <div className="pt-6 flex flex-col sm:flex-row gap-4 animate-in fade-in slide-in-from-bottom-10 duration-1000 delay-500">
-              <Link to="/contact">
+              <Link to="/register">
                 <Button size="lg" className="rounded-full px-8 h-14 text-lg font-bold bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 shadow-[0_8px_30px_rgba(225,29,72,0.4)] hover:shadow-[0_8px_40px_rgba(225,29,72,0.6)] transition-all hover:-translate-y-1 border-none w-full sm:w-auto text-white">
                   Rejoindre la communauté
                 </Button>

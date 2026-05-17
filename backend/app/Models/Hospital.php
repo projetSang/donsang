@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Hospital extends Model
 {
-    protected $fillable = ['name', 'city', 'email', 'password', 'address', 'phone'];
+    protected $fillable = ['name', 'city', 'email', 'password', 'address', 'phone', 'latitude', 'longitude'];
 
     protected $casts = [
         'password' => 'hashed',

@@ -1,6 +1,20 @@
-import { User, Lock, AlertTriangle } from "lucide-react";
+import { User, Lock, AlertTriangle, MapPin, Navigation } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import "leaflet/dist/leaflet.css";
+import L from "leaflet";
+import markerIcon2x from "leaflet/dist/images/marker-icon-2x.png";
+import markerIcon from "leaflet/dist/images/marker-icon.png";
+import markerShadow from "leaflet/dist/images/marker-shadow.png";
+
+// Fix missing marker icons for leaflet
+delete (L.Icon.Default.prototype as any)._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconUrl: markerIcon,
+  iconRetinaUrl: markerIcon2x,
+  shadowUrl: markerShadow,
+});
 
 const bloodGroups = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
 
@@ -33,6 +47,32 @@ export function ProfileTab({
   passSuccess,
   passError
 }: ProfileTabProps) {
+  const handleGetLocation = async () => {
+    if (!profileData?.address) {
+      alert("Veuillez d'abord saisir une adresse ou une ville dans le champ correspondant.");
+      return;
+    }
+    
+    try {
+      // Use OpenStreetMap Nominatim API to geocode the address
+      const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(profileData.address)}&limit=1`);
+      const data = await response.json();
+      
+      if (data && data.length > 0) {
+        setProfileData({
+          ...profileData,
+          latitude: parseFloat(data[0].lat),
+          longitude: parseFloat(data[0].lon)
+        });
+      } else {
+        alert("Adresse introuvable. Essayez d'ajouter plus de détails (ex: Rabat, Maroc).");
+      }
+    } catch (error) {
+      console.error("Error geocoding address:", error);
+      alert("Erreur lors de la recherche de l'adresse.");
+    }
+  };
+
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
       <h2 className="text-xl font-bold">Mon profil</h2>
@@ -97,6 +137,7 @@ export function ProfileTab({
                 value={profileData?.blood_type || ""}
                 onChange={(e) => setProfileData({...profileData, blood_type: e.target.value})}
               >
+                <option value="Non spécifié" disabled>Sélectionnez</option>
                 {bloodGroups.map((g) => (
                   <option key={g} value={g}>
                     {g}
@@ -105,6 +146,48 @@ export function ProfileTab({
               </select>
             </div>
           </div>
+
+          <div className="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4 p-4 bg-primary/5 border border-primary/10 rounded-2xl">
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                <MapPin className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <p className="text-sm font-bold text-slate-900">Localisation précise</p>
+                <p className="text-xs text-slate-500">Permet de recevoir des alertes proches de vous</p>
+              </div>
+            </div>
+            <Button 
+              type="button" 
+              variant="outline" 
+              onClick={handleGetLocation}
+              className="w-full sm:w-auto rounded-xl border-primary text-primary hover:bg-primary hover:text-white font-bold transition-all"
+            >
+              {profileData?.latitude ? "Localisation partagée ✓ (Mettre à jour)" : "Partager ma position"}
+            </Button>
+          </div>
+
+          {profileData?.latitude && profileData?.longitude && (
+            <div className="mt-4 rounded-xl overflow-hidden border border-border h-64 z-0 relative">
+              <MapContainer 
+                key={`${profileData.latitude}-${profileData.longitude}`}
+                center={[profileData.latitude, profileData.longitude]} 
+                zoom={14} 
+                style={{ height: '100%', width: '100%', zIndex: 0 }}
+              >
+                <TileLayer
+                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                />
+                <Marker position={[profileData.latitude, profileData.longitude]}>
+                  <Popup>
+                    Votre position actuelle
+                  </Popup>
+                </Marker>
+              </MapContainer>
+            </div>
+          )}
+
           <Button type="submit" variant="hero" className="mt-6" disabled={profileLoading}>
             {profileLoading ? "Enregistrement..." : "Enregistrer les modifications"}
           </Button>
@@ -120,15 +203,27 @@ export function ProfileTab({
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
             <label className="text-sm font-medium text-muted-foreground">Nom</label>
-            <Input defaultValue="Hassania El-Falah" className="mt-1" />
+            <Input 
+              value={profileData?.emergency_contact_name || ""} 
+              onChange={(e) => setProfileData({...profileData, emergency_contact_name: e.target.value})}
+              className="mt-1" 
+            />
           </div>
           <div>
             <label className="text-sm font-medium text-muted-foreground">Relation</label>
-            <Input defaultValue="Sœur" className="mt-1" />
+            <Input 
+              value={profileData?.emergency_contact_relation || ""} 
+              onChange={(e) => setProfileData({...profileData, emergency_contact_relation: e.target.value})}
+              className="mt-1" 
+            />
           </div>
           <div>
             <label className="text-sm font-medium text-muted-foreground">Téléphone</label>
-            <Input defaultValue="+212 600 789 012" className="mt-1" />
+            <Input 
+              value={profileData?.emergency_contact_phone || ""} 
+              onChange={(e) => setProfileData({...profileData, emergency_contact_phone: e.target.value})}
+              className="mt-1" 
+            />
           </div>
         </div>
       </div>

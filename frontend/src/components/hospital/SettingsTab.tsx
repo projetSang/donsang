@@ -12,7 +12,9 @@ export function SettingsTab() {
     email: "",
     address: "",
     phone: "",
-    password: ""
+    password: "",
+    latitude: null as number | null,
+    longitude: null as number | null
   });
 
   useEffect(() => {
@@ -25,7 +27,9 @@ export function SettingsTab() {
           email: data.email || "",
           address: data.address || "",
           phone: data.phone || "",
-          password: "" 
+          password: "",
+          latitude: data.latitude || null,
+          longitude: data.longitude || null
         });
       })
       .catch(console.error);
@@ -128,6 +132,37 @@ export function SettingsTab() {
                     onChange={(e) => setFormData({...formData, phone: e.target.value})}
                     className="pl-10 h-12 rounded-xl bg-slate-50 border-slate-200 focus:bg-white transition-all" 
                   />
+                </div>
+              </div>
+              <div className="space-y-2 md:col-span-2">
+                <label className="text-sm font-semibold text-slate-700 ml-1">Localisation GPS</label>
+                <div className="flex gap-4">
+                  <div className="relative flex-1">
+                    <Globe className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                    <Input 
+                      value={formData.latitude ? `${formData.latitude}, ${formData.longitude}` : "Non définie"} 
+                      readOnly
+                      className="pl-10 h-12 rounded-xl bg-slate-50 border-slate-200" 
+                    />
+                  </div>
+                  <Button 
+                    type="button" 
+                    variant="outline"
+                    onClick={() => {
+                      if (navigator.geolocation) {
+                        navigator.geolocation.getCurrentPosition((pos) => {
+                          setFormData({
+                            ...formData,
+                            latitude: pos.coords.latitude,
+                            longitude: pos.coords.longitude
+                          });
+                        });
+                      }
+                    }}
+                    className="h-12 px-6 rounded-xl border-primary text-primary hover:bg-primary hover:text-white font-bold transition-all"
+                  >
+                    Détecter ma position
+                  </Button>
                 </div>
               </div>
             </div>
