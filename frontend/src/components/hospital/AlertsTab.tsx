@@ -18,7 +18,8 @@ export function AlertsTab({ showNewAlert, setShowNewAlert, onViewDonors }: any) 
     quantity: "",
     description: "",
     direct_phone: "",
-    status: "Active"
+    status: "Active",
+    radius: "20"
   });
 
   const fetchAlerts = () => {
@@ -50,7 +51,8 @@ export function AlertsTab({ showNewAlert, setShowNewAlert, onViewDonors }: any) 
           quantity: "",
           description: "",
           direct_phone: "",
-          status: "Active"
+          status: "Active",
+          radius: "20"
         });
       }
     } catch (err) {
@@ -128,7 +130,7 @@ export function AlertsTab({ showNewAlert, setShowNewAlert, onViewDonors }: any) 
             </span>
             Formulaire de demande urgente
           </h4>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-5">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-5 mb-5">
             <div>
               <label className="text-sm font-medium text-slate-800">Groupes Sanguins Requis</label>
               <select 
@@ -163,7 +165,21 @@ export function AlertsTab({ showNewAlert, setShowNewAlert, onViewDonors }: any) 
                 <option value="moyenne">Moyenne (Cette semaine)</option>
               </select>
             </div>
-            <div className="md:col-span-3">
+            <div>
+              <label className="text-sm font-medium text-slate-800">Rayon (km)</label>
+              <select 
+                className="mt-1 h-11 w-full rounded-lg border border-input bg-white px-3 py-2 text-sm focus:ring-2 focus:ring-destructive/20 outline-none"
+                value={formData.radius}
+                onChange={(e) => setFormData({...formData, radius: e.target.value})}
+              >
+                <option value="5">5 km</option>
+                <option value="10">10 km</option>
+                <option value="20">20 km</option>
+                <option value="50">50 km</option>
+                <option value="100">100 km</option>
+              </select>
+            </div>
+            <div className="md:col-span-4">
               <label className="text-sm font-medium text-slate-800">Numéro de téléphone direct (Optionnel)</label>
               <Input 
                 type="text"
@@ -173,7 +189,7 @@ export function AlertsTab({ showNewAlert, setShowNewAlert, onViewDonors }: any) 
                 onChange={(e) => setFormData({...formData, direct_phone: e.target.value})}
               />
             </div>
-            <div className="md:col-span-3">
+            <div className="md:col-span-4">
               <label className="text-sm font-medium text-slate-800">Informations complémentaires</label>
               <textarea 
                 className="mt-1 flex w-full rounded-lg border border-input bg-white px-3 py-3 text-sm min-h-[80px] focus:ring-2 focus:ring-destructive/20 outline-none resize-none" 

@@ -46,7 +46,7 @@ export function SearchTab({ selectedBlood, setSelectedBlood, city, setCity }: an
         console.error("Search error:", err);
         setLoading(false);
       });
-  }, [selectedBlood, city]);
+  }, [selectedBlood, city, radius]);
 
   useEffect(() => {
     handleSearch();

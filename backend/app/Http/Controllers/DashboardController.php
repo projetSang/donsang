@@ -15,10 +15,10 @@ class DashboardController extends Controller
     public function getStats()
     {
         $donorsCount = BloodDonor::count();
-        $alertsCount = Alert::where('status','!=','Clôturée')-> count();
+        $alertsCount = Alert::where('status', '!=', 'Clôturée')->count();
         $patientsCount = Patient::count();
         $currentYear = date('Y');
-        
+
         // Optimisation : récupérer toutes les données en deux requêtes au lieu de 24
         $donationsByMonth = BloodDonor::selectRaw('MONTH(created_at) as month, COUNT(*) as count')
             ->whereYear('created_at', $currentYear)
@@ -109,10 +109,10 @@ class DashboardController extends Controller
             $bloodType = $request->blood_type;
             // Normaliser les tirets (court vs long)
             $bloodType = str_replace(['−', '–'], '-', $bloodType);
-            
-            $query->where(function($q) use ($bloodType) {
+
+            $query->where(function ($q) use ($bloodType) {
                 $q->where('blood_type', $bloodType)
-                  ->orWhere('blood_type', str_replace('-', '−', $bloodType));
+                    ->orWhere('blood_type', str_replace('-', '−', $bloodType));
             });
         }
 
@@ -124,17 +124,22 @@ class DashboardController extends Controller
         if ($request->has('radius') && $request->radius != '') {
             $hospital = Hospital::first(); // Should be authenticated hospital
             if ($hospital && $hospital->latitude && $hospital->longitude) {
-                $radius = (float)$request->radius;
-                
+                $radius = (float) $request->radius;
+
                 // Note: BloodDonor table needs latitude/longitude too for this to work accurately.
                 // If it doesn't have them, we might want to search Patients who are donors.
                 // Let's assume we want to search Patients who have blood_type.
-                
+
                 $query = Patient::query(); // Change to Patient for accurate GPS search
                 if ($request->has('blood_type')) {
-                    $query->where('blood_type', $request->blood_type);
+                    $bloodType = $request->blood_type;
+                    $bloodType = str_replace(['−', '–'], '-', $bloodType);
+                    $query->where(function ($q) use ($bloodType) {
+                        $q->where('blood_type', $bloodType)
+                            ->orWhere('blood_type', str_replace('-', '−', $bloodType));
+                    });
                 }
-                
+
                 $query->select('*')
                     ->selectRaw('(6371 * acos(cos(radians(?)) * cos(radians(latitude)) * cos(radians(longitude) - radians(?)) + sin(radians(?)) * sin(radians(latitude)))) AS distance', [$hospital->latitude, $hospital->longitude, $hospital->latitude])
                     ->having('distance', '<', $radius)
@@ -144,7 +149,7 @@ class DashboardController extends Controller
 
         return response()->json($query->get());
     }
-// modifier pour le dernier don
+    // modifier pour le dernier don
     public function updateDonor(Request $request, $id)
     {
         $donor = BloodDonor::findOrFail($id);
@@ -165,7 +170,7 @@ class DashboardController extends Controller
         $stats = BloodDonor::select('blood_type', \DB::raw('count(*) as count'))
             ->groupBy('blood_type')
             ->get()
-            ->map(function($item) use ($total) {
+            ->map(function ($item) use ($total) {
                 return [
                     'group' => $item->blood_type,
                     'count' => $item->count,
@@ -185,20 +190,21 @@ class DashboardController extends Controller
     {
         $validated = $request->validate($this->alertRules());
         $alert = Alert::create($validated);
-        
+
         // Notify nearby patients
-        $this->notifyNearbyPatients($alert);
+        $this->notifyNearbyPatients($alert, $request->radius);
 
         return response()->json($alert->load('hospital'), 201);
     }
 
-    private function notifyNearbyPatients($alert)
+    private function notifyNearbyPatients($alert, $requestedRadius = null)
     {
         $hospital = Hospital::find($alert->hospital_id);
-        if (!$hospital || !$hospital->latitude || !$hospital->longitude) return;
+        if (!$hospital || !$hospital->latitude || !$hospital->longitude)
+            return;
 
         // Radius in kilometers
-        $radius = 20;
+        $radius = $requestedRadius ? (float) $requestedRadius : 20;
 
         $nearbyPatientsQuery = Patient::select('*')
             ->selectRaw('(6371 * acos(cos(radians(?)) * cos(radians(latitude)) * cos(radians(longitude) - radians(?)) + sin(radians(?)) * sin(radians(latitude)))) AS distance', [$hospital->latitude, $hospital->longitude, $hospital->latitude])
@@ -215,10 +221,10 @@ class DashboardController extends Controller
                 }
                 $nearbyPatientsQuery->whereIn('blood_type', $groups);
             } else {
-                $nearbyPatientsQuery->where(function($q) use ($alert) {
+                $nearbyPatientsQuery->where(function ($q) use ($alert) {
                     $q->where('blood_type', $alert->blood_type)
-                      ->orWhere('blood_type', str_replace('−', '-', $alert->blood_type))
-                      ->orWhere('blood_type', str_replace('-', '−', $alert->blood_type));
+                        ->orWhere('blood_type', str_replace('−', '-', $alert->blood_type))
+                        ->orWhere('blood_type', str_replace('-', '−', $alert->blood_type));
                 });
             }
         }
@@ -279,7 +285,7 @@ class DashboardController extends Controller
     public function updateHospitalSettings(Request $request)
     {
         $hospital = Hospital::first();
-        
+
         $validated = $request->validate([
             'name' => 'sometimes|required|string|max:255',
             'city' => 'sometimes|required|string|max:255',
@@ -342,7 +348,7 @@ class DashboardController extends Controller
     public function deleteDocument($id)
     {
         $doc = \App\Models\MedicalDocument::findOrFail($id);
-        
+
         // Delete file from storage
         if (\Illuminate\Support\Facades\Storage::disk('public')->exists($doc->file_path)) {
             \Illuminate\Support\Facades\Storage::disk('public')->delete($doc->file_path);
@@ -359,18 +365,18 @@ class DashboardController extends Controller
 
         // Compatibility Map: Donor -> Recipients (Who can they donate TO?)
         $compatibility = [
-            'A+'  => ['A+', 'AB+'],
-            'A-'  => ['A+', 'A-', 'AB+', 'AB-'],
-            'B+'  => ['B+', 'AB+'],
-            'B-'  => ['B+', 'B-', 'AB+', 'AB-'],
+            'A+' => ['A+', 'AB+'],
+            'A-' => ['A+', 'A-', 'AB+', 'AB-'],
+            'B+' => ['B+', 'AB+'],
+            'B-' => ['B+', 'B-', 'AB+', 'AB-'],
             'AB+' => ['AB+'],
             'AB-' => ['AB+', 'AB-'],
-            'O+'  => ['O+', 'A+', 'B+', 'AB+'],
-            'O-'  => ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'],
+            'O+' => ['O+', 'A+', 'B+', 'AB+'],
+            'O-' => ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'],
         ];
 
         $compatibleGroups = $compatibility[$patientBlood] ?? [$patientBlood];
-        
+
         // Add versions with the other minus sign just in case
         $altCompatibleGroups = array_map(fn($g) => str_replace('-', '−', $g), $compatibleGroups);
         $allCompatibleGroups = array_unique(array_merge($compatibleGroups, $altCompatibleGroups, ['Tous groupes']));
@@ -443,18 +449,18 @@ class DashboardController extends Controller
         if ($request->status === 'available') {
             $patient = Patient::find($request->patient_id);
             $alert = Alert::with('hospital')->find($request->alert_id);
-            
+
             if ($patient && $alert) {
                 $hospitalName = $alert->hospital ? $alert->hospital->name : 'CHU Casablanca';
                 $hospitalCity = $alert->hospital ? $alert->hospital->city : ($alert->city ?? 'Casablanca');
-                
+
                 try {
                     $data = [
                         'patient' => $patient,
                         'hospitalName' => $hospitalName,
                         'hospitalCity' => $hospitalCity
                     ];
-                    
+
                     Mail::send('emails.appointment', $data, function ($message) use ($patient) {
                         $message->to($patient->email)
                             ->subject('Confirmation de rendez-vous - Don de Sang urgent');
@@ -517,7 +523,8 @@ class DashboardController extends Controller
             'quantity' => 'nullable|string',
             'description' => 'nullable|string',
             'direct_phone' => 'nullable|string',
-            'status' => 'nullable|string'
+            'status' => 'nullable|string',
+            'radius' => 'nullable|numeric'
         ];
     }
 
@@ -532,7 +539,7 @@ class DashboardController extends Controller
             'last_donation_date' => 'nullable|date',
         ];
     }
-//fonction pour trouver les hopitaux proches en fonction de la localisation du patient
+    //fonction pour trouver les hopitaux proches en fonction de la localisation du patient
     public function getNearbyHospitals(Request $request)
     {
         $request->validate([
@@ -541,9 +548,9 @@ class DashboardController extends Controller
             'radius' => 'nullable|numeric'
         ]);
 
-        $lat = (float)$request->latitude;
-        $lng = (float)$request->longitude;
-        $radius = $request->radius ? (float)$request->radius : 100.0;
+        $lat = (float) $request->latitude;
+        $lng = (float) $request->longitude;
+        $radius = $request->radius ? (float) $request->radius : 100.0;
 
         $hospitals = Hospital::select('*')
             ->selectRaw('(6371 * acos(cos(radians(?)) * cos(radians(latitude)) * cos(radians(longitude) - radians(?)) + sin(radians(?)) * sin(radians(latitude)))) AS distance', [$lat, $lng, $lat])

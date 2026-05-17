@@ -1,7 +1,7 @@
 import { User, Lock, AlertTriangle, MapPin, Navigation } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup, useMapEvents } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import markerIcon2x from "leaflet/dist/images/marker-icon-2x.png";
@@ -71,6 +71,42 @@ export function ProfileTab({
       console.error("Error geocoding address:", error);
       alert("Erreur lors de la recherche de l'adresse.");
     }
+  };
+
+  const LocationMarker = () => {
+    useMapEvents({
+      async click(e) {
+        const lat = e.latlng.lat;
+        const lon = e.latlng.lng;
+        
+        try {
+          // Use OpenStreetMap Nominatim API for reverse geocoding
+          const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`);
+          const data = await response.json();
+          
+          setProfileData({
+            ...profileData,
+            latitude: lat,
+            longitude: lon,
+            address: data.display_name || profileData.address // Update address if found
+          });
+        } catch (error) {
+          console.error("Error reverse geocoding:", error);
+          // Still update location even if address fetch fails
+          setProfileData({
+            ...profileData,
+            latitude: lat,
+            longitude: lon
+          });
+        }
+      },
+    });
+
+    return profileData?.latitude && profileData?.longitude ? (
+      <Marker position={[profileData.latitude, profileData.longitude]}>
+        <Popup>Votre position sélectionnée</Popup>
+      </Marker>
+    ) : null;
   };
 
   return (
@@ -157,20 +193,24 @@ export function ProfileTab({
                 <p className="text-xs text-slate-500">Permet de recevoir des alertes proches de vous</p>
               </div>
             </div>
-            <Button 
-              type="button" 
-              variant="outline" 
-              onClick={handleGetLocation}
-              className="w-full sm:w-auto rounded-xl border-primary text-primary hover:bg-primary hover:text-white font-bold transition-all"
-            >
-              {profileData?.latitude ? "Localisation partagée ✓ (Mettre à jour)" : "Partager ma position"}
-            </Button>
+            <div className="flex flex-col sm:flex-row w-full sm:w-auto gap-2">
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={handleGetLocation}
+                className="w-full sm:w-auto rounded-xl border-primary text-primary hover:bg-primary hover:text-white font-bold transition-all"
+              >
+                {profileData?.latitude ? "Localisation partagée ✓ (Mettre à jour)" : "Partager ma position"}
+              </Button>
+            </div>
           </div>
 
           {profileData?.latitude && profileData?.longitude && (
             <div className="mt-4 rounded-xl overflow-hidden border border-border h-64 z-0 relative">
+              <div className="absolute top-2 right-2 z-[400] bg-white/90 text-xs px-2 py-1 rounded shadow pointer-events-none font-medium">
+                Cliquez sur la carte pour ajuster votre position
+              </div>
               <MapContainer 
-                key={`${profileData.latitude}-${profileData.longitude}`}
                 center={[profileData.latitude, profileData.longitude]} 
                 zoom={14} 
                 style={{ height: '100%', width: '100%', zIndex: 0 }}
@@ -179,11 +219,7 @@ export function ProfileTab({
                   url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                   attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                 />
-                <Marker position={[profileData.latitude, profileData.longitude]}>
-                  <Popup>
-                    Votre position actuelle
-                  </Popup>
-                </Marker>
+                <LocationMarker />
               </MapContainer>
             </div>
           )}
