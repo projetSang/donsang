@@ -22,7 +22,7 @@
             border: 1px solid #f1f5f9;
         }
         .header {
-            background: linear-gradient(135deg, #059669 0%, #047857 50%, #065f46 100%);
+            background: linear-gradient(135deg, #e11d48 0%, #be123c 100%);
             padding: 28px 24px;
             text-align: center;
             color: #ffffff;
@@ -36,7 +36,7 @@
             transform: translateX(-50%);
             width: 40px;
             height: 40px;
-            background-color: #047857;
+            background-color:  #be123c;
             clip-path: polygon(50% 100%, 0 0, 100% 0);
         }
         .logo {
@@ -88,8 +88,8 @@
 
         /* Credentials card */
         .credentials-card {
-            background: linear-gradient(135deg, #f0fdf4, #ecfdf5);
-            border: 2px solid #86efac;
+            background: linear-gradient(135deg, #fdf0f0ff, #fdececff);
+            border: 2px solid #e11d48;
             padding: 24px;
             border-radius: 12px;
             margin: 25px 0;
@@ -98,14 +98,14 @@
         .credentials-title {
             font-size: 14px;
             font-weight: 700;
-            color: #065f46;
+            color: #5f0606ff;
             text-transform: uppercase;
             letter-spacing: 1px;
             margin-bottom: 15px;
         }
         .credential-item {
             background: #ffffff;
-            border: 1px solid #d1fae5;
+            border: 1px solid #fad4d1ff;
             border-radius: 8px;
             padding: 12px 16px;
             margin: 10px 0;
@@ -146,7 +146,7 @@
         }
         .cta-button {
             display: inline-block;
-            background: linear-gradient(135deg, #059669, #047857);
+            background: linear-gradient(135deg, #960505ff, #780404ff);
             color: #ffffff !important;
             text-decoration: none;
             padding: 14px 40px;
@@ -154,7 +154,7 @@
             font-size: 16px;
             font-weight: 700;
             letter-spacing: 0.5px;
-            box-shadow: 0 4px 15px rgba(5, 150, 105, 0.3);
+            box-shadow: 0 4px 15px rgba(150, 15, 5, 0.3);
         }
 
         .footer {
@@ -169,7 +169,7 @@
         }
         .footer-brand {
             font-weight: 600;
-            color: #059669;
+            color: #960505ff;
         }
     </style>
 </head>
@@ -180,7 +180,7 @@
             <div class="motif-bg"></div>
             <div class="logo">
                 <img src="{{ $message->embed(public_path('logo_sangg.png')) }}" alt="DonSang" width="140" height="80" style="object-fit: cover;">
-            </div>
+            </div><br/>
             <div class="welcome-badge">✅ Bienvenue</div>
             <p style="margin: 8px 0 0 0; opacity: 0.9; font-size: 14px;">Votre dossier médical a été créé avec succès</p>
         </div>
