@@ -27,7 +27,7 @@ export default function Index() {
       <section className="relative min-h-[80vh] flex items-center justify-center lg:justify-start overflow-hidden">
         <div className="absolute inset-0 z-0">
           <img
-            src="/image.png"
+            src="/Don du sang _ les réserves sont au plus bas.jpeg"
             alt="Hero background"
             className="w-full h-full object-cover"
             style={{ transform: 'scale(1.1)', objectPosition: 'center 30%' }}

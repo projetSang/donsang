@@ -532,4 +532,25 @@ class DashboardController extends Controller
             'last_donation_date' => 'nullable|date',
         ];
     }
+//fonction pour trouver les hopitaux proches en fonction de la localisation du patient
+    public function getNearbyHospitals(Request $request)
+    {
+        $request->validate([
+            'latitude' => 'required|numeric',
+            'longitude' => 'required|numeric',
+            'radius' => 'nullable|numeric'
+        ]);
+
+        $lat = (float)$request->latitude;
+        $lng = (float)$request->longitude;
+        $radius = $request->radius ? (float)$request->radius : 100.0;
+
+        $hospitals = Hospital::select('*')
+            ->selectRaw('(6371 * acos(cos(radians(?)) * cos(radians(latitude)) * cos(radians(longitude) - radians(?)) + sin(radians(?)) * sin(radians(latitude)))) AS distance', [$lat, $lng, $lat])
+            ->having('distance', '<', $radius)
+            ->orderBy('distance')
+            ->get();
+
+        return response()->json($hospitals);
+    }
 }

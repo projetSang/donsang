@@ -7,6 +7,7 @@ use App\Models\Patient;
 use App\Models\Hospital;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
 
 class AuthController extends Controller
 {
@@ -208,6 +209,125 @@ class AuthController extends Controller
         return response()->json([
             'status' => 'success',
             'patient' => $patient
+        ]);
+    }
+
+    public function sendResetLinkEmail(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email',
+        ]);
+
+        $user = null;
+        $name = '';
+        $patient = Patient::where('email', $request->email)->first();
+        if ($patient) {
+            $user = $patient;
+            $name = $patient->full_name;
+        } else {
+            $hospital = Hospital::where('email', $request->email)->first();
+            if ($hospital) {
+                $user = $hospital;
+                $name = $hospital->name;
+            }
+        }
+
+        if (!$user) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Aucun utilisateur trouvé avec cette adresse email.'
+            ], 404);
+        }
+//generer le token 
+        $token = bin2hex(random_bytes(32));
+
+        \DB::table('password_reset_tokens')->updateOrInsert(
+            ['email' => $request->email],
+            [
+                'token' => $token,
+                'created_at' => now()
+            ]
+        );
+
+        $resetUrl = 'http://localhost:8080/reset-password?token=' . $token . '&email=' . urlencode($request->email);
+
+        try {
+            $emailData = [
+                'name' => $name,
+                'resetUrl' => $resetUrl,
+            ];
+            Mail::send('emails.reset_password', $emailData, function ($message) use ($request) {
+                $message->to($request->email)
+                    ->subject('Réinitialisation de votre mot de passe - DonSang');
+            });
+        } catch (\Exception $e) {
+            \Log::error("Erreur d'envoi d'email de réinitialisation : " . $e->getMessage());
+            // Pour le développement local, si le serveur de mail échoue, on peut aussi retourner le token pour faciliter le test
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Lien de réinitialisation généré (erreur d\'envoi email)',
+                'dev_reset_url' => $resetUrl
+            ]);
+        }
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Un email de réinitialisation de mot de passe a été envoyé.'
+        ]);
+    }
+
+    public function resetPassword(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email',
+            'token' => 'required|string',
+            'password' => 'required|min:6|confirmed',
+        ]);
+
+        $record = \DB::table('password_reset_tokens')
+            ->where('email', $request->email)
+            ->where('token', $request->token)
+            ->first();
+
+        if (!$record) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Le lien de réinitialisation est invalide ou a expiré.'
+            ], 400);
+        }
+
+        // Vérification de l'expiration (par exemple 60 minutes)
+        $createdAt = \Carbon\Carbon::parse($record->created_at);
+        if ($createdAt->addMinutes(60)->isPast()) {
+            \DB::table('password_reset_tokens')->where('email', $request->email)->delete();
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Le lien de réinitialisation a expiré.'
+            ], 400);
+        }
+
+        // Mettre à jour le mot de passe
+        $user = Patient::where('email', $request->email)->first();
+        if (!$user) {
+            $user = Hospital::where('email', $request->email)->first();
+        }
+
+        if (!$user) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Utilisateur introuvable.'
+            ], 404);
+        }
+
+        $user->password = Hash::make($request->password);
+        $user->save();
+
+        // Supprimer le jeton utilisé
+        \DB::table('password_reset_tokens')->where('email', $request->email)->delete();
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Votre mot de passe a été réinitialisé avec succès.'
         ]);
     }
 }
