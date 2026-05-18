@@ -167,7 +167,28 @@ class DashboardController extends Controller
     public function storeDonor(Request $request)
     {
         $validated = $request->validate($this->donorRules());
+
+        $password = Str::random(10);
+        $validated['password'] = \Illuminate\Support\Facades\Hash::make($password);
+
         $donor = BloodDonor::create($validated);
+
+        if (!empty($donor->email)) {
+            try {
+                $emailData = [
+                    'donor' => $donor,
+                    'password' => $password,
+                    'appUrl' => 'http://localhost:8080',
+                ];
+                Mail::send('emails.welcome_donor', $emailData, function ($message) use ($donor) {
+                    $message->to($donor->email)
+                        ->subject('Bienvenue sur DonSang - Vos identifiants de connexion donneur');
+                });
+            } catch (\Exception $e) {
+                \Log::error("Erreur d'envoi d'email donneur : " . $e->getMessage());
+            }
+        }
+
         return response()->json($donor, 201);
     }
 

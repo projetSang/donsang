@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search, Filter, MapPin, Phone, Mail, Calendar, Edit2, X ,Users, Crown, Award, Droplets } from "lucide-react";
 import { useState, useEffect, useCallback } from "react";
+import { toast } from "sonner";
 import {
   Dialog,
   DialogContent,
@@ -74,7 +75,10 @@ export function SearchTab({ selectedBlood, setSelectedBlood, city, setCity }: an
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(newDonor)
     })
-      .then(res => res.json())
+      .then(res => {
+        if (!res.ok) throw new Error("Server error");
+        return res.json();
+      })
       .then(data => {
         setDonors([data, ...donors]);
         setShowAddDonor(false);
@@ -86,8 +90,12 @@ export function SearchTab({ selectedBlood, setSelectedBlood, city, setCity }: an
           email: "",
           last_donation_date: ""
         });
+        toast.success("Donneur ajouté avec succès ! Un email avec ses identifiants lui a été envoyé.");
       })
-      .catch(console.error);
+      .catch(err => {
+        console.error(err);
+        toast.error("Erreur lors de l'ajout du donneur.");
+      });
   };
 
   return (

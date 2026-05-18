@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Patient;
 use App\Models\Hospital;
+use App\Models\BloodDonor;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
@@ -27,6 +28,19 @@ class AuthController extends Controller
                 'status' => 'success',
                 'user_type' => 'patient',
                 'user' => $patient,
+                'token' => $token
+            ]);
+        }
+
+        // Check for BloodDonor
+        $donor = BloodDonor::where('email', $request->email)->first();
+        if ($donor && $donor->password && Hash::check($request->password, $donor->password)) {
+            $token = bin2hex(random_bytes(32));
+            $donor->user_type = 'patient';
+            return response()->json([
+                'status' => 'success',
+                'user_type' => 'patient',
+                'user' => $donor,
                 'token' => $token
             ]);
         }
@@ -94,6 +108,9 @@ class AuthController extends Controller
         $user = null;
         if ($request->user_type === 'patient') {
             $user = Patient::where('email', $request->email)->first();
+            if (!$user) {
+                $user = BloodDonor::where('email', $request->email)->first();
+            }
         } else {
             $user = Hospital::where('email', $request->email)->first();
         }
@@ -134,6 +151,9 @@ class AuthController extends Controller
         $user = null;
         if ($request->user_type === 'patient') {
             $user = Patient::where('email', $request->email)->first();
+            if (!$user) {
+                $user = BloodDonor::where('email', $request->email)->first();
+            }
         } else {
             $user = Hospital::where('email', $request->email)->first();
         }
@@ -145,11 +165,19 @@ class AuthController extends Controller
             ], 404);
         }
 
-        $user->update($request->only([
-            'full_name', 'phone', 'address', 'birth_date', 'blood_type',
-            'emergency_contact_name', 'emergency_contact_relation', 'emergency_contact_phone',
-            'latitude', 'longitude'
-        ]));
+        if ($user instanceof BloodDonor) {
+            $dataToUpdate = $request->only(['full_name', 'phone', 'blood_type']);
+            if ($request->has('address')) {
+                $dataToUpdate['city'] = $request->address;
+            }
+            $user->update($dataToUpdate);
+        } else {
+            $user->update($request->only([
+                'full_name', 'phone', 'address', 'birth_date', 'blood_type',
+                'emergency_contact_name', 'emergency_contact_relation', 'emergency_contact_phone',
+                'latitude', 'longitude'
+            ]));
+        }
 
         return response()->json([
             'status' => 'success',
@@ -225,10 +253,16 @@ class AuthController extends Controller
             $user = $patient;
             $name = $patient->full_name;
         } else {
-            $hospital = Hospital::where('email', $request->email)->first();
-            if ($hospital) {
-                $user = $hospital;
-                $name = $hospital->name;
+            $donor = BloodDonor::where('email', $request->email)->first();
+            if ($donor) {
+                $user = $donor;
+                $name = $donor->full_name;
+            } else {
+                $hospital = Hospital::where('email', $request->email)->first();
+                if ($hospital) {
+                    $user = $hospital;
+                    $name = $hospital->name;
+                }
             }
         }
 
@@ -308,6 +342,9 @@ class AuthController extends Controller
 
         // Mettre à jour le mot de passe
         $user = Patient::where('email', $request->email)->first();
+        if (!$user) {
+            $user = BloodDonor::where('email', $request->email)->first();
+        }
         if (!$user) {
             $user = Hospital::where('email', $request->email)->first();
         }
