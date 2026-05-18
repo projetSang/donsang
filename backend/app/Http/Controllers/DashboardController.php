@@ -103,7 +103,7 @@ class DashboardController extends Controller
 
     public function searchDonors(Request $request)
     {
-        $query = BloodDonor::query();
+        $query = BloodDonor::select('*')->selectRaw('0 as is_patient');
 
         if ($request->has('blood_type')) {
             $bloodType = $request->blood_type;
@@ -130,7 +130,7 @@ class DashboardController extends Controller
                 // If it doesn't have them, we might want to search Patients who are donors.
                 // Let's assume we want to search Patients who have blood_type.
 
-                $query = Patient::query(); // Change to Patient for accurate GPS search
+                $query = Patient::select('*')->selectRaw('1 as is_patient');
                 if ($request->has('blood_type')) {
                     $bloodType = $request->blood_type;
                     $bloodType = str_replace(['−', '–'], '-', $bloodType);
@@ -140,8 +140,7 @@ class DashboardController extends Controller
                     });
                 }
 
-                $query->select('*')
-                    ->selectRaw('(6371 * acos(cos(radians(?)) * cos(radians(latitude)) * cos(radians(longitude) - radians(?)) + sin(radians(?)) * sin(radians(latitude)))) AS distance', [$hospital->latitude, $hospital->longitude, $hospital->latitude])
+                $query->selectRaw('(6371 * acos(cos(radians(?)) * cos(radians(latitude)) * cos(radians(longitude) - radians(?)) + sin(radians(?)) * sin(radians(latitude)))) AS distance', [$hospital->latitude, $hospital->longitude, $hospital->latitude])
                     ->having('distance', '<', $radius)
                     ->orderBy('distance');
             }
@@ -152,8 +151,16 @@ class DashboardController extends Controller
     // modifier pour le dernier don
     public function updateDonor(Request $request, $id)
     {
+        if ($request->is_patient || $request->has('is_patient') && $request->is_patient == 1) {
+            $patient = Patient::findOrFail($id);
+            $patient->update($request->only(['full_name', 'email', 'phone', 'address', 'blood_type', 'last_donation_date', 'donations_count']));
+            $patient->is_patient = 1;
+            return response()->json($patient);
+        }
+
         $donor = BloodDonor::findOrFail($id);
-        $donor->update($request->only(['full_name', 'email', 'phone', 'city', 'blood_type', 'last_donation_date']));
+        $donor->update($request->only(['full_name', 'email', 'phone', 'city', 'blood_type', 'last_donation_date', 'donations_count']));
+        $donor->is_patient = 0;
         return response()->json($donor);
     }
 

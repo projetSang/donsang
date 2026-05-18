@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import {
-  User, Droplets, FileText, Share2, Bell, RefreshCw
+  User, Droplets, FileText, Share2, Bell, RefreshCw, Crown, Award
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { usePatientData } from "@/hooks/usePatientData";
@@ -59,7 +59,9 @@ export default function PatientDashboard() {
         blood_type: userData.blood_type || "",
         emergency_contact_name: userData.emergency_contact_name || "",
         emergency_contact_relation: userData.emergency_contact_relation || "",
-        emergency_contact_phone: userData.emergency_contact_phone || ""
+        emergency_contact_phone: userData.emergency_contact_phone || "",
+        is_king: userData.is_king,
+        donations_count: userData.donations_count || 0
       });
     }
   }, [userData, authLoading]);
@@ -190,11 +192,99 @@ export default function PatientDashboard() {
                 </button>
               ))}
             </div>
-            <div className="bg-card rounded-xl border border-border p-4 text-center shadow-sm">
-              <Droplets className="h-8 w-8 text-primary mx-auto mb-2" />
+            <div className="bg-card rounded-xl border border-border p-4 text-center shadow-sm flex flex-col items-center justify-center">
+              <Droplets className="h-8 w-8 text-primary mb-2 animate-pulse" />
               <div className="text-3xl font-bold text-primary">{userData.blood_type}</div>
               <div className="text-xs text-muted-foreground mt-1">Votre groupe sanguin</div>
             </div>
+
+            {(() => {
+              const count = userData.donations_count || 0;
+              if (count === 0) {
+                return (
+                  <div className="bg-card rounded-xl border border-border p-4 text-center shadow-sm flex flex-col items-center justify-center transition-all duration-300 hover:shadow-md hover:border-slate-300 relative overflow-hidden group">
+                    <div className="relative mb-2 flex flex-col items-center opacity-40">
+                      {/* Rosette Outer Border */}
+                      <div className="w-14 h-14 rounded-full bg-slate-350 border-2 border-slate-450 shadow-md flex items-center justify-center z-10 relative">
+                        <div className="w-11 h-11 rounded-full bg-gradient-to-b from-slate-100 to-slate-200 flex items-center justify-center border border-slate-300 shadow-sm relative">
+                          <div className="w-8 h-8 rounded-full bg-white/90 flex flex-col items-center justify-center">
+                            <span className="font-black text-lg leading-none text-slate-400">?</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="text-3xl font-extrabold text-slate-400">0</div>
+                    <div className="text-xs text-slate-500 font-bold mt-1">Nombre de dons</div>
+                  </div>
+                );
+              }
+
+              // Otherwise show Bronze, Silver, or Gold medal
+              let medalClass = "from-orange-200 via-orange-300 to-orange-500 border-orange-400/60";
+              let outerRosette = "bg-orange-500 border-orange-600";
+              let textNumClass = "text-orange-950";
+              let numStr = "3";
+              let bgGlow = "from-orange-50/60 to-white border-orange-200/80";
+              let countTextClass = "text-orange-800";
+              let numColor = "text-orange-600";
+
+              if (count >= 6) {
+                medalClass = "from-amber-200 via-yellow-300 to-amber-500 border-amber-400/60";
+                outerRosette = "bg-amber-500 border-amber-600";
+                textNumClass = "text-amber-950";
+                numStr = "1";
+                bgGlow = "from-amber-50/60 to-white border-amber-200/80";
+                countTextClass = "text-amber-800";
+                numColor = "text-amber-600";
+              } else if (count >= 3) {
+                medalClass = "from-slate-100 via-slate-200 to-slate-400 border-slate-300";
+                outerRosette = "bg-slate-400 border-slate-500";
+                textNumClass = "text-slate-950";
+                numStr = "2";
+                bgGlow = "from-slate-50/60 to-white border-slate-200/80";
+                countTextClass = "text-slate-800";
+                numColor = "text-slate-600";
+              }
+
+              return (
+                <div className={`bg-gradient-to-br ${bgGlow} rounded-xl border p-4 text-center shadow-sm flex flex-col items-center justify-center transition-all duration-300 hover:shadow-md hover:border-amber-300 relative overflow-hidden group`}>
+                  {/* Rosette Medal Icon with Ribbons */}
+                  <div className="relative mb-2 flex flex-col items-center animate-reveal">
+                    {/* Rosette Outer Pleated Border */}
+                    <div className={`w-14 h-14 rounded-full ${outerRosette} border-2 shadow-md flex items-center justify-center z-10 relative`}>
+                      {/* Inner Ring */}
+                      <div className={`w-11 h-11 rounded-full bg-gradient-to-b ${medalClass} flex items-center justify-center border shadow-sm relative`}>
+                        {/* Center */}
+                        <div className="w-8 h-8 rounded-full bg-white/95 flex flex-col items-center justify-center border border-white/40 shadow-inner">
+                          <span className={`font-black text-lg leading-none ${textNumClass}`}>{numStr}</span>
+                        </div>
+                      </div>
+                    </div>
+                    {/* Ribbons */}
+                    <div className="flex gap-2 -mt-2 z-0 relative">
+                      {/* Left Ribbon */}
+                      <div className="w-4.5 h-6 bg-gradient-to-b from-red-600 to-red-700 border-x border-amber-400 rounded-b-sm transform -rotate-12 origin-top relative overflow-hidden">
+                        <div className="absolute inset-y-0 left-1.5 right-1.5 bg-amber-400/80"></div>
+                      </div>
+                      {/* Right Ribbon */}
+                      <div className="w-4.5 h-6 bg-gradient-to-b from-red-600 to-red-700 border-x border-amber-400 rounded-b-sm transform rotate-12 origin-top relative overflow-hidden">
+                        <div className="absolute inset-y-0 left-1.5 right-1.5 bg-amber-400/80"></div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className={`text-3xl font-extrabold ${numColor}`}>{userData.donations_count || 0}</div>
+                  <div className={`text-xs ${countTextClass} font-bold mt-1`}>Nombre de dons</div>
+                </div>
+              );
+            })()}
+
+            {userData.is_king && (
+              <div className="bg-gradient-to-br from-amber-400 to-amber-200 border border-amber-300 rounded-xl p-4 text-center shadow-md animate-bounce flex flex-col items-center justify-center">
+                <Crown className="h-8 w-8 text-amber-800 mb-2" />
+                <div className="text-lg font-black text-amber-900">L'Héro (Roi)</div>
+                <div className="text-[10px] text-amber-800 font-semibold leading-tight">Vous êtes le meilleur donneur !</div>
+              </div>
+            )}
           </div>
         </aside>
 

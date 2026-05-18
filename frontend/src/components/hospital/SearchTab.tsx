@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, Filter, MapPin, Phone, Mail, Calendar, Edit2, X ,Users } from "lucide-react";
+import { Search, Filter, MapPin, Phone, Mail, Calendar, Edit2, X ,Users, Crown, Award, Droplets } from "lucide-react";
 import { useState, useEffect, useCallback } from "react";
 import {
   Dialog,
@@ -62,7 +62,7 @@ export function SearchTab({ selectedBlood, setSelectedBlood, city, setCity }: an
     })
       .then(res => res.json())
       .then(updatedDonor => {
-        setDonors(donors.map(d => d.id === updatedDonor.id ? updatedDonor : d));
+        setDonors(donors.map(d => (d.id === updatedDonor.id && d.is_patient === updatedDonor.is_patient) ? updatedDonor : d));
         setEditingDonor(null);
       })
       .catch(console.error);
@@ -167,15 +167,31 @@ export function SearchTab({ selectedBlood, setSelectedBlood, city, setCity }: an
         </div>
 
         <div className="grid grid-cols-1 gap-4">
-          {donors.length > 0 ? donors.map((donor, i) => (
-            <div key={i} className="bg-white rounded-2xl border border-slate-200 p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 hover:shadow-xl hover:shadow-slate-100/50 hover:border-primary/20 transition-all duration-300 group">
+          {donors.length > 0 ? (() => {
+            const maxDonations = Math.max(...donors.map(d => d.donations_count || 0), 0);
+            return donors.map((donor, i) => (
+            <div key={i} className={`bg-white rounded-2xl border ${donor.donations_count === maxDonations && maxDonations > 0 ? 'border-amber-400 shadow-amber-100/50' : 'border-slate-200'} p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 hover:shadow-xl hover:shadow-slate-100/50 transition-all duration-300 group relative overflow-hidden`}>
+              {donor.donations_count === maxDonations && maxDonations > 0 && (
+                <div className="absolute top-0 right-0 bg-gradient-to-l from-amber-400 to-amber-200 text-amber-900 text-xs font-bold px-3 py-1 rounded-bl-xl flex items-center gap-1 shadow-sm">
+                  <Crown className="h-3.5 w-3.5" /> L'Héro (Roi)
+                </div>
+              )}
               <div className="flex items-center gap-5">
-                <div className="h-12 w-12 rounded-2xl bg-primary/5 flex items-center justify-center text-primary font-black text-xl border-2 border-primary/10 group-hover:bg-primary group-hover:text-white group-hover:border-primary transition-all duration-300">
+                <div className={`h-12 w-12 rounded-2xl flex items-center justify-center font-black text-xl border-2 transition-all duration-300 ${
+                  donor.donations_count === maxDonations && maxDonations > 0
+                    ? 'bg-amber-100 text-amber-600 border-amber-300 group-hover:bg-amber-500 group-hover:text-white'
+                    : 'bg-primary/5 text-primary border-primary/10 group-hover:bg-primary group-hover:text-white'
+                }`}>
                   {donor.blood_type}
                 </div>
                 <div>
                   <div className="font-bold text-lg text-slate-900 flex items-center gap-2">
                     {donor.full_name}
+                    {donor.donations_count > 0 && (
+                      <span className="flex items-center gap-1 text-sm bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full border border-blue-100">
+                        <Award className="h-3.5 w-3.5" /> {donor.donations_count} {donor.donations_count > 1 ? 'dons' : 'don'}
+                      </span>
+                    )}
                   </div>
                   <div className="text-sm text-slate-500 flex flex-wrap items-center gap-x-5 gap-y-1.5 mt-1.5">
                     <div className="flex items-center gap-1.5 hover:text-primary transition-colors cursor-pointer" onClick={() => window.location.href = `tel:${donor.phone}`}>
@@ -213,6 +229,18 @@ export function SearchTab({ selectedBlood, setSelectedBlood, city, setCity }: an
                   Email
                 </Button>
                 <Button
+                  variant="outline"
+                  size="sm"
+                  className="flex-1 sm:flex-none h-11 rounded-xl border-slate-200 hover:bg-slate-50 hover:text-primary transition-all gap-2"
+                  onClick={() => {
+                    setEditingDonor({ ...donor, donations_count: (donor.donations_count || 0) + 1 });
+                    setNewDonationDate(new Date().toISOString().split('T')[0]);
+                  }}
+                >
+                  <Droplets className="h-4 w-4 text-red-500" />
+                  +1 Don
+                </Button>
+                <Button
                   variant="hero"
                   size="sm"
                   className="flex-1 sm:flex-none h-11 rounded-xl shadow-lg shadow-primary/10 gap-2"
@@ -223,7 +251,8 @@ export function SearchTab({ selectedBlood, setSelectedBlood, city, setCity }: an
                 </Button>
               </div>
             </div>
-          )) : (
+          ));
+          })() : (
             <div className="bg-slate-50 border-2 border-dashed border-slate-200 rounded-3xl p-16 text-center">
               <div className="h-16 w-16 bg-white rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-sm">
                 <Search className="h-8 w-8 text-slate-300" />
@@ -261,6 +290,15 @@ export function SearchTab({ selectedBlood, setSelectedBlood, city, setCity }: an
                 type="date"
                 value={newDonationDate}
                 onChange={(e) => setNewDonationDate(e.target.value)}
+                className="rounded-xl"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-bold text-slate-700">Points (Nombre de dons)</label>
+              <Input
+                type="number"
+                value={editingDonor?.donations_count || 0}
+                onChange={(e) => setEditingDonor({ ...editingDonor, donations_count: parseInt(e.target.value) || 0 })}
                 className="rounded-xl"
               />
             </div>
