@@ -19,18 +19,7 @@ class AuthController extends Controller
             'password' => 'required',
         ]);
 
-        // Check for Patient
-        $patient = Patient::where('email', $request->email)->first();
-        if ($patient && Hash::check($request->password, $patient->password)) {
-            $token = bin2hex(random_bytes(32));
-            $patient->user_type = 'patient';
-            return response()->json([
-                'status' => 'success',
-                'user_type' => 'patient',
-                'user' => $patient,
-                'token' => $token
-            ]);
-        }
+        
 
         // Check for BloodDonor
         $donor = BloodDonor::where('email', $request->email)->first();

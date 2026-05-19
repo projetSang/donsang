@@ -1,8 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, Filter, MapPin, Phone, Mail, Calendar, Edit2, X ,Users, Crown, Award, Droplets } from "lucide-react";
+import { Search, Filter, MapPin, Phone, Mail, Calendar, Edit2, X , Crown, Award, Droplets } from "lucide-react";
 import { useState, useEffect, useCallback } from "react";
-import { toast } from "sonner";
 import {
   Dialog,
   DialogContent,
@@ -18,16 +17,7 @@ export function SearchTab({ selectedBlood, setSelectedBlood, city, setCity }: an
   const [loading, setLoading] = useState(false);
   const [editingDonor, setEditingDonor] = useState<any>(null);
   const [newDonationDate, setNewDonationDate] = useState("");
-  const [showAddDonor, setShowAddDonor] = useState(false);
   const [radius, setRadius] = useState("");
-  const [newDonor, setNewDonor] = useState({
-    full_name: "",
-    blood_type: "",
-    city: "",
-    phone: "",
-    email: "",
-    last_donation_date: ""
-  });
 
   const handleSearch = useCallback(() => {
     setLoading(true);
@@ -69,34 +59,7 @@ export function SearchTab({ selectedBlood, setSelectedBlood, city, setCity }: an
       .catch(console.error);
   };
 
-  const handleAddDonor = () => {
-    fetch("http://localhost:8000/api/hospital/donors", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(newDonor)
-    })
-      .then(res => {
-        if (!res.ok) throw new Error("Server error");
-        return res.json();
-      })
-      .then(data => {
-        setDonors([data, ...donors]);
-        setShowAddDonor(false);
-        setNewDonor({
-          full_name: "",
-          blood_type: "",
-          city: "",
-          phone: "",
-          email: "",
-          last_donation_date: ""
-        });
-        toast.success("Donneur ajouté avec succès ! Un email avec ses identifiants lui a été envoyé.");
-      })
-      .catch(err => {
-        console.error(err);
-        toast.error("Erreur lors de l'ajout du donneur.");
-      });
-  };
+    
 
   return (
     <div className="space-y-6 animate-reveal">
@@ -168,10 +131,6 @@ export function SearchTab({ selectedBlood, setSelectedBlood, city, setCity }: an
           <h3 className="font-bold text-slate-800">
             {donors.length} {donors.length === 1 ? 'donneur' : 'donneurs'} {selectedBlood} trouvés à {city}
           </h3>
-          <Button variant="hero" onClick={() => setShowAddDonor(true)} className="rounded-xl shadow-lg shadow-primary/20 flex gap-2">
-            <Users className="h-4 w-4" />
-            Ajouter un Donneur
-          </Button>
         </div>
 
         <div className="grid grid-cols-1 gap-4">
@@ -314,97 +273,6 @@ export function SearchTab({ selectedBlood, setSelectedBlood, city, setCity }: an
           <DialogFooter className="gap-2 sm:gap-0">
             <Button variant="outline" onClick={() => setEditingDonor(null)} className="rounded-xl">Annuler</Button>
             <Button variant="hero" onClick={handleUpdateDate} className="rounded-xl">Enregistrer</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Add Donor Dialog */}
-      <Dialog open={showAddDonor} onOpenChange={setShowAddDonor}>
-        <DialogContent className="sm:max-w-[500px] rounded-3xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="text-2xl font-black flex items-center gap-2">
-              <Users className="h-6 w-6 text-primary" />
-              Nouveau Donneur
-            </DialogTitle>
-          </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <label className="text-sm font-bold text-slate-700">Nom complet</label>
-                <Input
-                  placeholder="nom complet de donneur"
-                  value={newDonor.full_name}
-                  onChange={(e) => setNewDonor({ ...newDonor, full_name: e.target.value })}
-                  className="rounded-xl"
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-bold text-slate-700">Groupe sanguin</label>
-                <select
-                  className="flex h-10 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 transition-all cursor-pointer"
-                  value={newDonor.blood_type}
-                  onChange={(e) => setNewDonor({ ...newDonor, blood_type: e.target.value })}
-                >
-                  <option value="">Sélectionner</option>
-                  {bloodGroups.map((g) => (
-                    <option key={g} value={g}>{g}</option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <label className="text-sm font-bold text-slate-700">Ville</label>
-                <Input
-                  placeholder="Ville"
-                  value={newDonor.city}
-                  onChange={(e) => setNewDonor({ ...newDonor, city: e.target.value })}
-                  className="rounded-xl"
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-bold text-slate-700">Téléphone </label>
-                <Input
-                  placeholder="Téléphone"
-                  value={newDonor.phone}
-                  onChange={(e) => setNewDonor({ ...newDonor, phone: e.target.value })}
-                  className="rounded-xl"
-                />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-bold text-slate-700">Email</label>
-              <Input
-                type="email"
-                placeholder="Email"
-                value={newDonor.email}
-                onChange={(e) => setNewDonor({ ...newDonor, email: e.target.value })}
-                className="rounded-xl"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-bold text-slate-700">Date du dernier don</label>
-              <Input
-                type="date"
-                value={newDonor.last_donation_date}
-                onChange={(e) => setNewDonor({ ...newDonor, last_donation_date: e.target.value })}
-                className="rounded-xl"
-              />
-            </div>
-          </div>
-          <DialogFooter className="gap-2 sm:gap-0">
-            <Button variant="outline" onClick={() => setShowAddDonor(false)} className="rounded-xl">Annuler</Button>
-            <Button 
-              variant="hero" 
-              onClick={handleAddDonor} 
-              className="rounded-xl"
-              disabled={!newDonor.full_name || !newDonor.blood_type || !newDonor.phone || !newDonor.city}
-            >
-              Enregistrer le Donneur
-            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
