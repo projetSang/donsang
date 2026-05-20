@@ -17,6 +17,7 @@ import ForgotPassword from "./pages/ForgotPassword.tsx";
 import ResetPassword from "./pages/ResetPassword.tsx";
 import { AuthProvider, useAuth } from "./contexts/AuthContext.tsx";
 import VoiceAssistant from "./components/ui/VoiceAssistant.tsx";
+import { slugify } from "@/lib/utils";
 const queryClient = new QueryClient();
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -27,6 +28,27 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   return isAuthenticated ? <>{children}</> : <Navigate to="/login" replace />;
 };
 
+const HospitalRedirect = () => {
+  const { user, isAuthenticated, userType } = useAuth();
+  
+  if (isAuthenticated && userType === "hospital" && user?.name) {
+    return <Navigate to={`/Donsang/${slugify(user.name)}`} replace />;
+  }
+  
+  return <Navigate to="/login" replace />;
+};
+
+const PatientRedirect = () => {
+  const { user, isAuthenticated, userType } = useAuth();
+  
+  if (isAuthenticated && userType === "patient") {
+    const patientName = user?.full_name || user?.name || "patient";
+    return <Navigate to={`/Donsang/Mon-dossier/${slugify(patientName)}`} replace />;
+  }
+  
+  return <Navigate to="/login" replace />;
+};
+
 const routesConfig = [
   { path: "/", element: <Index /> },
   { path: "/UrgentAlerts", element: <UrgentAlerts /> },
@@ -35,8 +57,10 @@ const routesConfig = [
   { path: "/register", element: <Register /> },
   { path: "/forgot-password", element: <ForgotPassword /> },
   { path: "/reset-password", element: <ResetPassword /> },
-  { path: "/patient", element: <PatientDashboard />, protected: true },
-  { path: "/hospital", element: <HospitalDashboard />, protected: true },
+  { path: "/patient", element: <PatientRedirect />, protected: true },
+  { path: "/Donsang/Mon-dossier/:userName", element: <PatientDashboard />, protected: true },
+  { path: "/hospital", element: <HospitalRedirect />, protected: true },
+  { path: "/Donsang/:hospitalName", element: <HospitalDashboard />, protected: true },
   { path: "/admin", element: <AdminDashboard />, protected: true },
   { path: "/dossier/partage/:token", element: <SharedDossier /> },
   { path: "*", element: <NotFound /> },

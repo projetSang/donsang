@@ -4,6 +4,7 @@ import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { useAuth } from "@/contexts/AuthContext";
 import { apiFetch } from "@/lib/api";
+import { slugify } from "@/lib/utils";
 import {
   User, Activity, FileText, Download, Droplets, Phone, MapPin, Calendar, AlertCircle, RefreshCw, Printer, ShieldCheck
 } from "lucide-react";
@@ -177,7 +178,8 @@ export default function SharedDossier() {
 
   useEffect(() => {
     if (!authLoading && isAuthenticated && userType === "patient") {
-      navigate("/patient");
+      const patientSlug = slugify(user?.full_name || user?.name || "patient");
+      navigate(`/Donsang/Mon-dossier/${patientSlug}`);
       return;
     }
 

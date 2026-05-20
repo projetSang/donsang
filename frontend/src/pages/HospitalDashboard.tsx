@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useParams, Navigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
   Heart, Search, Users, Droplets, Building2,
@@ -16,6 +16,7 @@ import { MessagesTab } from "@/components/hospital/MessagesTab";
 import TableBord from "@/components/hospital/TableBord";
 import { useAuth } from "@/contexts/AuthContext";
 import { apiFetch } from "@/lib/api";
+import { slugify } from "@/lib/utils";
 
 const tabs = [
   { id: "table", label: "Tableau de bord", icon: LayoutDashboard },
@@ -28,18 +29,28 @@ const tabs = [
 
 export default function HospitalDashboard() {
   const { user: hospitalInfo, logout, loading: authLoading } = useAuth();
+  const { hospitalName } = useParams();
   const [activeTab, setActiveTab] = useState("table");
   const [showAddPatient, setShowAddPatient] = useState(false);
   const [showNewAlert, setShowNewAlert] = useState(false);
   const [selectedBlood, setSelectedBlood] = useState("");
   const [city, setCity] = useState("");
 
-  if (authLoading || !hospitalInfo) {
+  if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Droplets className="h-8 w-8 text-primary animate-bounce" />
       </div>
     );
+  }
+
+  if (!hospitalInfo) {
+    return <Navigate to="/login" replace />;
+  }
+
+  const expectedSlug = slugify(hospitalInfo.name || "");
+  if (hospitalName !== expectedSlug) {
+    return <Navigate to={`/Donsang/${expectedSlug}`} replace />;
   }
 
   return (

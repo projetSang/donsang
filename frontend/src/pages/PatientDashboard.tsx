@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams, Navigate } from "react-router-dom";
 import { toast } from "sonner";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
@@ -9,6 +9,7 @@ import {
 import { useAuth } from "@/contexts/AuthContext";
 import { usePatientData } from "@/hooks/usePatientData";
 import { apiFetch } from "@/lib/api";
+import { slugify } from "@/lib/utils";
 
 // Import sub-components
 import { ProfileTab } from "@/components/patient/ProfileTab";
@@ -169,13 +170,24 @@ export default function PatientDashboard() {
     }
   };
 
-  if (authLoading || !userData) {
+  const { userName } = useParams();
+
+  if (authLoading) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center gap-4 bg-muted/30">
         <RefreshCw className="h-8 w-8 text-primary animate-spin" />
         <p className="text-muted-foreground font-medium">Chargement de votre profil...</p>
       </div>
     );
+  }
+
+  if (!userData) {
+    return <Navigate to="/login" replace />;
+  }
+
+  const expectedSlug = slugify(userData.full_name || userData.name || "patient");
+  if (userName !== expectedSlug) {
+    return <Navigate to={`/Donsang/Mon-dossier/${expectedSlug}`} replace />;
   }
 
   return (

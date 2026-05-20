@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { slugify } from "../lib/utils";
 
 interface AuthContextType {
   user: any;
@@ -50,8 +51,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     
     // Redirect based on user type
     if (type === "admin") navigate("/admin");
-    else if (type === "patient") navigate("/patient");
-    else navigate("/hospital");
+    else if (type === "patient") {
+      const patientSlug = slugify(userData.full_name || userData.name || "patient");
+      navigate(`/Donsang/Mon-dossier/${patientSlug}`);
+    } else {
+      const hospitalSlug = slugify(userData.name || "hospital");
+      navigate(`/Donsang/${hospitalSlug}`);
+    }
   };
 
   const logout = () => {

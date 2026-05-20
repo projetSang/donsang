@@ -3,6 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Menu, X, Droplets, LogOut, ChevronRight } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { slugify } from "@/lib/utils";
 
 interface NavbarProps {
   // propUser removed as we use AuthContext now
@@ -14,6 +15,8 @@ export function Navbar({}: NavbarProps) {
   const location = useLocation();
 
   const displayName = user?.full_name || user?.name || "Utilisateur";
+  const hospitalPath = user?.name ? `/Donsang/${slugify(user.name)}` : "/hospital";
+  const patientPath = user ? `/Donsang/Mon-dossier/${slugify(user.full_name || user.name || "patient")}` : "/patient";
 
   // Compute dynamic nav items based on login status and role
   const activeNavItems = (() => {
@@ -26,10 +29,10 @@ export function Navbar({}: NavbarProps) {
     if (isAuthenticated) {
       if (userType === "hospital") {
         // Hospital is the Admin dashboard
-        items.push({ label: "Dashboard Admin", path: "/hospital" });
+        items.push({ label: "Dashboard Admin", path: hospitalPath });
       } else if (userType === "patient") {
         // Patient dashboard
-        items.push({ label: "Mon Dossier", path: "/patient" });
+        items.push({ label: "Mon Dossier", path: patientPath });
       }
     }
 
@@ -86,7 +89,7 @@ export function Navbar({}: NavbarProps) {
         <div className="absolute inset-0 flex items-center justify-center pl-10">
           {isAuthenticated ? (
             <div className="flex items-center gap-3 text-white">
-              <Link to={userType === "hospital" ? "/hospital" : "/patient"} className="flex items-center gap-3 text-white hover:opacity-90 transition-opacity cursor-pointer">
+              <Link to={userType === "hospital" ? hospitalPath : patientPath} className="flex items-center gap-3 text-white hover:opacity-90 transition-opacity cursor-pointer">
                 <span className="text-sm font-bold hidden xl:block truncate max-w-[120px]">{displayName}</span>
                 <div className="h-8 w-8 rounded-full bg-white text-primary flex items-center justify-center text-xs font-black shadow-lg">
                   {displayName.charAt(0).toUpperCase() ?? "?"}
@@ -140,7 +143,7 @@ export function Navbar({}: NavbarProps) {
             <div className="flex flex-col gap-4 w-full">
               {/* User Profile Card */}
               <Link 
-                to={userType === "hospital" ? "/hospital" : "/patient"} 
+                to={userType === "hospital" ? hospitalPath : patientPath} 
                 className="flex items-center gap-3 p-3.5 rounded-2xl bg-slate-50 hover:bg-slate-100 transition-colors"
                 onClick={() => setMobileOpen(false)}
               >
