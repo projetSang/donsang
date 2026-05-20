@@ -159,11 +159,22 @@ export function SearchTab({ selectedBlood, setSelectedBlood, city, setCity }: an
                 <div>
                   <div className="font-bold text-lg text-slate-900 flex items-center gap-2">
                     {donor.full_name}
-                    {donor.donations_count > 0 && (
-                      <span className="flex items-center gap-1 text-sm bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full border border-blue-100">
-                        <Award className="h-3.5 w-3.5" /> {donor.donations_count} {donor.donations_count > 1 ? 'dons' : 'don'}
-                      </span>
-                    )}
+                    {donor.donations_count > 0 && (() => {
+                      let badgeStyle = "bg-orange-50 text-orange-600 border-orange-200";
+                      let title = "Bronze";
+                      if (donor.donations_count >= 6) {
+                        badgeStyle = "bg-amber-50 text-amber-600 border-amber-200 font-semibold";
+                        title = "Or";
+                      } else if (donor.donations_count >= 3) {
+                        badgeStyle = "bg-slate-100 text-slate-600 border-slate-250";
+                        title = "Argent";
+                      }
+                      return (
+                        <span className={`flex items-center gap-1 text-xs px-2 py-0.5 rounded-full border ${badgeStyle} shadow-sm`}>
+                          <Award className="h-3.5 w-3.5" /> {donor.donations_count} {donor.donations_count > 1 ? 'dons' : 'don'} ({title})
+                        </span>
+                      );
+                    })()}
                   </div>
                   <div className="text-sm text-slate-500 flex flex-wrap items-center gap-x-5 gap-y-1.5 mt-1.5">
                     <div className="flex items-center gap-1.5 hover:text-primary transition-colors cursor-pointer" onClick={() => window.location.href = `tel:${donor.phone}`}>
@@ -174,32 +185,13 @@ export function SearchTab({ selectedBlood, setSelectedBlood, city, setCity }: an
                       <MapPin className="h-3.5 w-3.5 text-slate-400" />
                       {donor.city} {donor.distance && <span className="text-primary font-bold">({Math.round(donor.distance)} km)</span>}
                     </div>
-                    <div className="flex items-center gap-1.5 group/date cursor-pointer hover:text-primary transition-colors" onClick={() => {
-                      setEditingDonor(donor);
-                      setNewDonationDate(donor.last_donation_date || "");
-                    }}>
-                      <Calendar className="h-3.5 w-3.5 text-slate-400 group-hover/date:text-primary" />
-                      {donor.last_donation_date ? (
-                        <span>Dernier don: {donor.last_donation_date}</span>
-                      ) : (
-                        <span className="text-emerald-600 font-medium italic">Prêt pour un premier don</span>
-                      )}
-                      <Edit2 className="h-3 w-3 opacity-0 group-hover/date:opacity-100 ml-1" />
-                    </div>
+                    
                   </div>
                 </div>
               </div>
 
               <div className="flex items-center gap-3 w-full sm:w-auto">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="flex-1 sm:flex-none h-11 rounded-xl border-slate-200 hover:bg-slate-50 hover:text-primary transition-all gap-2"
-                  onClick={() => donor.email ? window.location.href = `mailto:${donor.email}` : alert("Email non disponible")}
-                >
-                  <Mail className="h-4 w-4" />
-                  Email
-                </Button>
+                
                 <Button
                   variant="outline"
                   size="sm"
@@ -209,8 +201,17 @@ export function SearchTab({ selectedBlood, setSelectedBlood, city, setCity }: an
                     setNewDonationDate(new Date().toISOString().split('T')[0]);
                   }}
                 >
-                  <Droplets className="h-4 w-4 text-red-500" />
-                  +1 Don
+                  <Edit2 className="h-4 w-4 " />
+                  modifier
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="flex-1  sm:flex-none h-11 rounded-xl border-slate-200 hover:bg-slate-50 hover:text-primary transition-all gap-2"
+                  onClick={() => donor.email ? window.location.href = `mailto:${donor.email}` : alert("Email non disponible")}
+                >
+                  <Mail className="h-4 w-4" />
+                  Email
                 </Button>
                 <Button
                   variant="hero"

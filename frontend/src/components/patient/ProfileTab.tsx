@@ -31,6 +31,7 @@ interface ProfileTabProps {
   passLoading: boolean;
   passSuccess: string;
   passError: string;
+  onViewCertificate?: () => void;
 }
 
 export function ProfileTab({
@@ -45,7 +46,8 @@ export function ProfileTab({
   handleUpdatePassword,
   passLoading,
   passSuccess,
-  passError
+  passError,
+  onViewCertificate
 }: ProfileTabProps) {
   const handleGetLocation = async () => {
     if (!profileData?.address) {
@@ -114,9 +116,20 @@ export function ProfileTab({
       <div className="flex flex-wrap items-center gap-3">
         <h2 className="text-xl font-bold">Mon profil</h2>
         {profileData?.donations_count > 0 && (
-          <span className="flex items-center gap-1 text-sm bg-blue-50 text-blue-600 px-3 py-1 rounded-full border border-blue-100 font-semibold shadow-sm animate-reveal">
-            <Award className="h-4 w-4" /> {profileData.donations_count} {profileData.donations_count > 1 ? 'dons' : 'don'}
-          </span>
+          <>
+            <span className="flex items-center gap-1 text-sm bg-blue-50 text-blue-600 px-3 py-1 rounded-full border border-blue-100 font-semibold shadow-sm animate-reveal">
+              <Award className="h-4 w-4" /> {profileData.donations_count} {profileData.donations_count > 1 ? 'dons' : 'don'}
+            </span>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={onViewCertificate}
+              className="text-xs font-bold border-primary/30 text-primary hover:bg-primary hover:text-white rounded-full h-8 px-3 shadow-sm flex items-center gap-1 transition-all"
+            >
+              Voir mon certificat
+            </Button>
+          </>
         )}
         {profileData?.is_king && (
           <span className="flex items-center gap-1.5 text-sm bg-gradient-to-r from-amber-400 to-amber-200 text-amber-950 px-3 py-1 rounded-full border border-amber-300 font-extrabold shadow-sm animate-pulse">
