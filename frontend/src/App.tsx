@@ -8,6 +8,7 @@ import Login from "./pages/Login.tsx";
 import Contact from "./pages/Contact.tsx";
 import PatientDashboard from "./pages/PatientDashboard.tsx";
 import HospitalDashboard from "./pages/HospitalDashboard.tsx";
+import AdminDashboard from "./pages/AdminDashboard.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import UrgentAlerts from "./pages/UrgentAlerts.tsx";
 import SharedDossier from "./pages/SharedDossier.tsx";
@@ -36,6 +37,7 @@ const routesConfig = [
   { path: "/reset-password", element: <ResetPassword /> },
   { path: "/patient", element: <PatientDashboard />, protected: true },
   { path: "/hospital", element: <HospitalDashboard />, protected: true },
+  { path: "/admin", element: <AdminDashboard />, protected: true },
   { path: "/dossier/partage/:token", element: <SharedDossier /> },
   { path: "*", element: <NotFound /> },
 ];

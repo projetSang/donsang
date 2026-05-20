@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 interface AuthContextType {
   user: any;
   isAuthenticated: boolean;
-  userType: "patient" | "hospital" | null;
+  userType: "patient" | "hospital" | "admin" | null;
   login: (userData: any, token?: string) => void;
   logout: () => void;
   updateUser: (newUserData: any) => void;
@@ -49,7 +49,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (token) localStorage.setItem("token", token);
     
     // Redirect based on user type
-    if (type === "patient") navigate("/patient");
+    if (type === "admin") navigate("/admin");
+    else if (type === "patient") navigate("/patient");
     else navigate("/hospital");
   };
 

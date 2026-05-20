@@ -66,6 +66,30 @@ export default function PatientDashboard() {
     }
   }, [userData, authLoading]);
 
+  const refreshUserData = async () => {
+    if (!userData?.email) return;
+    try {
+      const data = await apiFetch("/get-profile", {
+        method: "POST",
+        body: JSON.stringify({
+          email: userData.email,
+          user_type: "patient"
+        })
+      });
+      if (data.status === "success") {
+        updateUser(data.user);
+      }
+    } catch (err) {
+      console.error("Failed to refresh user profile:", err);
+    }
+  };
+
+  useEffect(() => {
+    if (userData?.email) {
+      refreshUserData();
+    }
+  }, [userData?.email]);
+
   const handleGenerateShareToken = async () => {
     const token = await generateShareToken();
     if (token) {

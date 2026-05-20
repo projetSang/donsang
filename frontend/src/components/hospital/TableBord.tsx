@@ -5,14 +5,19 @@ import {
 } from "lucide-react";
 import ReactApexChart from "react-apexcharts";
 
+import { useAuth } from "@/contexts/AuthContext";
+
 export default function TableBord() {
+  const { user } = useAuth();
   const [statsData, setStatsData] = useState<any>(null);
   useEffect(() => {
-    fetch("http://localhost:8000/api/hospital/stats")
-      .then(res => res.json())
-      .then(data => setStatsData(data))
-      .catch(err => console.error("Erreur de récupération des statistiques backend", err));
-  }, []);
+    if (user?.id) {
+      fetch(`http://localhost:8000/api/hospital/stats?hospital_id=${user.id}`)
+        .then(res => res.json())
+        .then(data => setStatsData(data))
+        .catch(err => console.error("Erreur de récupération des statistiques backend", err));
+    }
+  }, [user]);
  
   const dynamicStats = [
     { label: "Donneurs dans la région", value: statsData?.donors_region || "0", icon: Users, color: "text-blue-500", bg: "bg-blue-50" },

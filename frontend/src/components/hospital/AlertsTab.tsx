@@ -2,17 +2,19 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Bell, Activity, AlertTriangle, MapPin, Users, Phone, X, CheckCircle2, XCircle, Droplets } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 
 const bloodGroups = ["A+", "A−", "B+", "B−", "AB+", "AB−", "O+", "O−"];
 
 export function AlertsTab({ showNewAlert, setShowNewAlert, onViewDonors }: any) {
+  const { user } = useAuth();
   const [alerts, setAlerts] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [selectedAlertResponses, setSelectedAlertResponses] = useState<any[] | null>(null);
   const [showResponsesModal, setShowResponsesModal] = useState(false);
   
   const [formData, setFormData] = useState({
-    hospital_id: 1, // CHU Casablanca par défaut
+    hospital_id: user?.id || 1, // CHU Casablanca par défaut
     blood_type: "Tous groupes",
     urgency_level: "critique",
     quantity: "",
@@ -23,15 +25,17 @@ export function AlertsTab({ showNewAlert, setShowNewAlert, onViewDonors }: any) 
   });
 
   const fetchAlerts = () => {
-    fetch("http://localhost:8000/api/hospital/alerts")
-      .then(res => res.json())
-      .then(data => setAlerts(data))
-      .catch(console.error);
+    if (user?.id) {
+      fetch(`http://localhost:8000/api/hospital/alerts?hospital_id=${user.id}`)
+        .then(res => res.json())
+        .then(data => setAlerts(data))
+        .catch(console.error);
+    }
   };
 
   useEffect(() => {
     fetchAlerts();
-  }, []);
+  }, [user]);
 
   const handleCreateAlert = async () => {
     setLoading(true);
@@ -45,7 +49,7 @@ export function AlertsTab({ showNewAlert, setShowNewAlert, onViewDonors }: any) 
         setShowNewAlert(false);
         fetchAlerts();
         setFormData({
-          hospital_id: 1,
+          hospital_id: user?.id || 1,
           blood_type: "Tous groupes",
           urgency_level: "critique",
           quantity: "",

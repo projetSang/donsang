@@ -3,11 +3,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Plus, FileText, Edit, User, Search, Filter, Users, Trash2 } from "lucide-react";
 import { PatientDetails } from "./PatientDetails";
-
 import { useEffect } from "react";
+import { useAuth } from "@/contexts/AuthContext";
 const bloodGroups = ["A+", "A−", "B+", "B−", "AB+", "AB−", "O+", "O−"];
 
 export function PatientsTab({ showAddPatient, setShowAddPatient }: any) {
+  const { user } = useAuth();
   const [showOtherDisease, setShowOtherDisease] = useState(false);
   const [selectedPatient, setSelectedPatient] = useState<any>(null);
   const [searchTerm, setSearchTerm] = useState("");
@@ -75,7 +76,7 @@ export function PatientsTab({ showAddPatient, setShowAddPatient }: any) {
         body: JSON.stringify({
           ...formData,
           chronic_diseases: finalDiseases,
-          hospital_id: 1, // default for CHU Casablanca
+          hospital_id: user?.id || 1,
         })
       });
 
@@ -114,6 +115,12 @@ export function PatientsTab({ showAddPatient, setShowAddPatient }: any) {
         const errorData = await res.json();
         if (errorData.errors) {
           setErrors(errorData.errors);
+          setTimeout(() => {
+            const formElement = document.getElementById("patient-form");
+            if (formElement) {
+              formElement.scrollIntoView({ behavior: "smooth", block: "start" });
+            }
+          }, 50);
         }
       } else {
         console.error("Server error", res.status);
@@ -145,19 +152,58 @@ export function PatientsTab({ showAddPatient, setShowAddPatient }: any) {
     setErrors({});
     setEditingPatientId(patient.id);
     setFormData({
-      ...patient,
+      hospital_id: patient.hospital_id ?? 1,
+      full_name: patient.full_name ?? "",
+      email: patient.email ?? "",
+      cin: patient.cin ?? "",
+      birth_date: patient.birth_date ?? "",
+      phone: patient.phone ?? "",
+      address: patient.address ?? "",
+      height: patient.height ?? "",
+      weight: patient.weight ?? "",
+      blood_type: patient.blood_type ?? "",
+      chronic_diseases: Array.isArray(patient.chronic_diseases) ? patient.chronic_diseases : JSON.parse(patient.chronic_diseases || "[]"),
       other_disease: "",
-      chronic_diseases: Array.isArray(patient.chronic_diseases) ? patient.chronic_diseases : JSON.parse(patient.chronic_diseases || "[]")
+      allergies: patient.allergies ?? "",
+      current_treatments: patient.current_treatments ?? "",
+      medical_history: patient.medical_history ?? "",
+      admission_date: patient.admission_date ?? new Date().toISOString().split('T')[0]
     });
     setShowAddPatient(true);
   };
 
+  const resetForm = () => {
+    setEditingPatientId(null);
+    setErrors({});
+    setFormData({
+      hospital_id: user?.id || 1,
+      full_name: "",
+      email: "",
+      cin: "",
+      birth_date: "",
+      phone: "",
+      address: "",
+      height: "",
+      weight: "",
+      blood_type: "",
+      chronic_diseases: [],
+      other_disease: "",
+      allergies: "",
+      current_treatments: "",
+      medical_history: "",
+      admission_date: new Date().toISOString().split('T')[0]
+    });
+    setShowOtherDisease(false);
+  };
+
   useEffect(() => {
-    fetch("http://localhost:8000/api/hospital/patients")
-      .then(res => res.json())
-      .then(data => setPatients(data))
-      .catch(console.error);
-  }, []);
+    if (user?.id) {
+      fetch(`http://localhost:8000/api/hospital/patients?hospital_id=${user.id}`)
+        .then(res => res.json())
+        .then(data => setPatients(data))
+        .catch(console.error);
+    }
+  }, [user]);
 
   if (selectedPatient) {
     return (
@@ -178,7 +224,7 @@ export function PatientsTab({ showAddPatient, setShowAddPatient }: any) {
           </h1>
           <p className="text-slate-500 mt-1">Consultez et gérez les dossiers médicaux des patients.</p>
         </div>
-        <Button variant="hero" size="sm" onClick={() => setShowAddPatient(true)} className="shadow-lg hover:shadow-primary/20">
+        <Button variant="hero" size="sm" onClick={() => { resetForm(); setShowAddPatient(true); }} className="shadow-lg hover:shadow-primary/20">
           <Plus className="h-4 w-4 mr-2" />
           Nouveau Patient
         </Button>
@@ -201,7 +247,7 @@ export function PatientsTab({ showAddPatient, setShowAddPatient }: any) {
       </div>
 
       {showAddPatient && (
-        <div className="bg-card rounded-2xl border border-border p-6 mb-6 shadow-xl animate-reveal border-t-4 border-t-primary">
+        <div id="patient-form" className="bg-card rounded-2xl border border-border p-6 mb-6 shadow-xl animate-reveal border-t-4 border-t-primary">
           <div className="flex items-center gap-2 mb-6">
             <div className="p-2 bg-accent text-primary rounded-lg">
               <User className="h-5 w-5" />
@@ -209,14 +255,57 @@ export function PatientsTab({ showAddPatient, setShowAddPatient }: any) {
             <h4 className="font-bold text-lg">{editingPatientId ? "Modifier le Dossier" : "Nouveau Dossier Patient"}</h4>
           </div>
 
+          {Object.keys(errors).length > 0 && (
+            <div className="bg-destructive/10 border border-destructive/20 text-destructive text-sm p-4 rounded-xl mb-6 font-bold animate-reveal">
+              {Object.keys(errors).some(k => !["full_name", "cin", "email", "birth_date", "phone", "address", "height", "weight", "blood_type"].includes(k)) ? (
+                <div>
+                  <p className="mb-2">Certains champs requis ou paramètres du serveur sont invalides :</p>
+                  <ul className="list-disc pl-5 font-normal">
+                    {Object.entries(errors).map(([key, messages]) => (
+                      <li key={key}>{key} : {messages.join(", ")}</li>
+                    ))}
+                  </ul>
+                </div>
+              ) : (
+                "Veuillez corriger les erreurs ci-dessous avant de soumettre le formulaire."
+              )}
+            </div>
+          )}
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             <div className="space-y-1.5">
               <label className="text-sm font-medium text-muted-foreground">Nom complet</label>
-              <Input placeholder="entre votre nom" className="bg-muted/30 border-transparent focus:bg-background" value={formData.full_name} onChange={(e) => setFormData({ ...formData, full_name: e.target.value })} />
+              <Input 
+                placeholder="entre votre nom" 
+                className={`bg-muted/30 focus:bg-background ${errors.full_name && errors.full_name.length > 0 ? 'border-red-500 focus-visible:ring-red-500' : 'border-transparent'}`} 
+                value={formData.full_name} 
+                onChange={(e) => {
+                  setFormData({ ...formData, full_name: e.target.value });
+                  if (errors.full_name) {
+                    setErrors(prev => ({ ...prev, full_name: [] }));
+                  }
+                }} 
+              />
+              {errors.full_name && errors.full_name.length > 0 && (
+                <p className="text-xs text-red-500 mt-1">{errors.full_name[0]}</p>
+              )}
             </div>
             <div className="space-y-1.5">
               <label className="text-sm font-medium text-muted-foreground">CIN </label>
-              <Input placeholder="entre votre CIN" className="bg-muted/30 border-transparent focus:bg-background" value={formData.cin} onChange={(e) => setFormData({ ...formData, cin: e.target.value })} />
+              <Input 
+                placeholder="entre votre CIN" 
+                className={`bg-muted/30 focus:bg-background ${errors.cin && errors.cin.length > 0 ? 'border-red-500 focus-visible:ring-red-500' : 'border-transparent'}`} 
+                value={formData.cin} 
+                onChange={(e) => {
+                  setFormData({ ...formData, cin: e.target.value });
+                  if (errors.cin) {
+                    setErrors(prev => ({ ...prev, cin: [] }));
+                  }
+                }} 
+              />
+              {errors.cin && errors.cin.length > 0 && (
+                <p className="text-xs text-red-500 mt-1">{errors.cin[0]}</p>
+              )}
             </div>
             <div className="space-y-1.5">
               <label className="text-sm font-medium text-muted-foreground">Email</label>
@@ -228,7 +317,7 @@ export function PatientsTab({ showAddPatient, setShowAddPatient }: any) {
                 onChange={(e) => {
                   setFormData({ ...formData, email: e.target.value });
                   if (errors.email) {
-                    setErrors({ ...errors, email: [] });
+                    setErrors(prev => ({ ...prev, email: [] }));
                   }
                 }} 
               />
@@ -238,35 +327,111 @@ export function PatientsTab({ showAddPatient, setShowAddPatient }: any) {
             </div>
             <div className="space-y-1.5">
               <label className="text-sm font-medium text-muted-foreground">Date de naissance</label>
-              <Input type="date" className="bg-muted/30 border-transparent focus:bg-background" value={formData.birth_date} onChange={(e) => setFormData({ ...formData, birth_date: e.target.value })} />
+              <Input 
+                type="date" 
+                className={`bg-muted/30 focus:bg-background ${errors.birth_date && errors.birth_date.length > 0 ? 'border-red-500 focus-visible:ring-red-500' : 'border-transparent'}`} 
+                value={formData.birth_date} 
+                onChange={(e) => {
+                  setFormData({ ...formData, birth_date: e.target.value });
+                  if (errors.birth_date) {
+                    setErrors(prev => ({ ...prev, birth_date: [] }));
+                  }
+                }} 
+              />
+              {errors.birth_date && errors.birth_date.length > 0 && (
+                <p className="text-xs text-red-500 mt-1">{errors.birth_date[0]}</p>
+              )}
             </div>
             <div className="space-y-1.5">
               <label className="text-sm font-medium text-muted-foreground">Téléphone</label>
-              <Input placeholder="entre votre numéro téléphone" className="bg-muted/30 border-transparent focus:bg-background" value={formData.phone} onChange={(e) => setFormData({ ...formData, phone: e.target.value })} />
+              <Input 
+                placeholder="entre votre numéro téléphone" 
+                className={`bg-muted/30 focus:bg-background ${errors.phone && errors.phone.length > 0 ? 'border-red-500 focus-visible:ring-red-500' : 'border-transparent'}`} 
+                value={formData.phone} 
+                onChange={(e) => {
+                  setFormData({ ...formData, phone: e.target.value });
+                  if (errors.phone) {
+                    setErrors(prev => ({ ...prev, phone: [] }));
+                  }
+                }} 
+              />
+              {errors.phone && errors.phone.length > 0 && (
+                <p className="text-xs text-red-500 mt-1">{errors.phone[0]}</p>
+              )}
             </div>
             <div className="space-y-1.5">
               <label className="text-sm font-medium text-muted-foreground">Adresse</label>
-              <Input placeholder="entre votre adresse" className="bg-muted/30 border-transparent focus:bg-background" value={formData.address} onChange={(e) => setFormData({ ...formData, address: e.target.value })} />
+              <Input 
+                placeholder="entre votre adresse" 
+                className={`bg-muted/30 focus:bg-background ${errors.address && errors.address.length > 0 ? 'border-red-500 focus-visible:ring-red-500' : 'border-transparent'}`} 
+                value={formData.address} 
+                onChange={(e) => {
+                  setFormData({ ...formData, address: e.target.value });
+                  if (errors.address) {
+                    setErrors(prev => ({ ...prev, address: [] }));
+                  }
+                }} 
+              />
+              {errors.address && errors.address.length > 0 && (
+                <p className="text-xs text-red-500 mt-1">{errors.address[0]}</p>
+              )}
             </div>
             <div className="space-y-1.5">
               <label className="text-sm font-medium text-muted-foreground">Taille (cm)</label>
-              <Input type="number" placeholder="entre votre taille" className="bg-muted/30 border-transparent focus:bg-background" value={formData.height} onChange={(e) => setFormData({ ...formData, height: e.target.value })} />
+              <Input 
+                type="number" 
+                placeholder="entre votre taille" 
+                className={`bg-muted/30 focus:bg-background ${errors.height && errors.height.length > 0 ? 'border-red-500 focus-visible:ring-red-500' : 'border-transparent'}`} 
+                value={formData.height} 
+                onChange={(e) => {
+                  setFormData({ ...formData, height: e.target.value });
+                  if (errors.height) {
+                    setErrors(prev => ({ ...prev, height: [] }));
+                  }
+                }} 
+              />
+              {errors.height && errors.height.length > 0 && (
+                <p className="text-xs text-red-500 mt-1">{errors.height[0]}</p>
+              )}
             </div>
             <div className="space-y-1.5">
               <label className="text-sm font-medium text-muted-foreground">Poids (kg)</label>
-              <Input type="number" placeholder="entre votre poids" className="bg-muted/30 border-transparent focus:bg-background" value={formData.weight} onChange={(e) => setFormData({ ...formData, weight: e.target.value })} />
+              <Input 
+                type="number" 
+                placeholder="entre votre poids" 
+                className={`bg-muted/30 focus:bg-background ${errors.weight && errors.weight.length > 0 ? 'border-red-500 focus-visible:ring-red-500' : 'border-transparent'}`} 
+                value={formData.weight} 
+                onChange={(e) => {
+                  setFormData({ ...formData, weight: e.target.value });
+                  if (errors.weight) {
+                    setErrors(prev => ({ ...prev, weight: [] }));
+                  }
+                }} 
+              />
+              {errors.weight && errors.weight.length > 0 && (
+                <p className="text-xs text-red-500 mt-1">{errors.weight[0]}</p>
+              )}
             </div>
             <div className="space-y-1.5">
               <label className="text-sm font-medium text-muted-foreground">Groupe sanguin</label>
-              <select className="h-11 w-full rounded-xl border border-input bg-muted/30 px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 appearance-none bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20width%3D%2220%22%20height%3D%2220%22%20viewBox%3D%220%200%2020%2020%22%20fill%3D%22none%22%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%3E%3Cpath%20d%3D%22M5%207.5L10%2012.5L15%207.5%22%20stroke%3D%22%2364748b%22%20stroke-width%3D%221.5%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22/%3E%3C/svg%3E')] bg-[length:20px_20px] bg-[right_10px_center] bg-no-repeat"
+              <select 
+                className={`h-11 w-full rounded-xl border bg-muted/30 px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 appearance-none bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20width%3D%2220%22%20height%3D%2220%22%20viewBox%3D%220%200%2020%2020%22%20fill%3D%22none%22%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%3E%3Cpath%20d%3D%22M5%207.5L10%2012.5L15%207.5%22%20stroke%3D%22%2364748b%22%20stroke-width%3D%221.5%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22/%3E%3C/svg%3E')] bg-[length:20px_20px] bg-[right_10px_center] bg-no-repeat ${errors.blood_type && errors.blood_type.length > 0 ? 'border-red-500 focus:ring-red-500' : 'border-transparent'}`}
                 value={formData.blood_type}
-                onChange={(e) => setFormData({ ...formData, blood_type: e.target.value })}
+                onChange={(e) => {
+                  setFormData({ ...formData, blood_type: e.target.value });
+                  if (errors.blood_type) {
+                    setErrors(prev => ({ ...prev, blood_type: [] }));
+                  }
+                }}
               >
                 <option value="">Sélectionner</option>
                 {bloodGroups.map((g) => (
                   <option key={g} value={g}>{g}</option>
                 ))}
               </select>
+              {errors.blood_type && errors.blood_type.length > 0 && (
+                <p className="text-xs text-red-500 mt-1">{errors.blood_type[0]}</p>
+              )}
             </div>
             <div className="md:col-span-2 space-y-3">
               <label className="text-sm font-bold text-foreground">Maladies chroniques</label>
@@ -338,8 +503,7 @@ export function PatientsTab({ showAddPatient, setShowAddPatient }: any) {
           <div className="flex justify-end gap-3 pt-4 border-t border-border">
             <Button variant="ghost" className="rounded-xl px-6" onClick={() => {
               setShowAddPatient(false);
-              setEditingPatientId(null);
-              setErrors({});
+              resetForm();
             }}>Annuler</Button>
             <Button variant="hero" className="rounded-xl px-8 shadow-lg shadow-primary/20" onClick={handleAddPatient}>
               {editingPatientId ? "Enregistrer les modifications" : "Créer le dossier"}

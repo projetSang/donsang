@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search, Filter, MapPin, Phone, Mail, Calendar, Edit2, X , Crown, Award, Droplets } from "lucide-react";
 import { useState, useEffect, useCallback } from "react";
+import { useAuth } from "@/contexts/AuthContext";
 import {
   Dialog,
   DialogContent,
@@ -13,6 +14,7 @@ import {
 const bloodGroups = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
 
 export function SearchTab({ selectedBlood, setSelectedBlood, city, setCity }: any) {
+  const { user } = useAuth();
   const [donors, setDonors] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [editingDonor, setEditingDonor] = useState<any>(null);
@@ -26,6 +28,9 @@ export function SearchTab({ selectedBlood, setSelectedBlood, city, setCity }: an
       city: city,
       radius: radius
     });
+    if (user?.id) {
+      queryParams.append("hospital_id", String(user.id));
+    }
 
     fetch(`http://localhost:8000/api/hospital/search-donors?${queryParams.toString()}`)
       .then(res => res.json())

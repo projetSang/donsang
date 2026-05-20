@@ -24,6 +24,12 @@ class DatabaseSeeder extends Seeder
             'password' => bcrypt('password'),
         ]);
 
+        User::create([
+            'name' => 'Super Admin',
+            'email' => 'Donsang@donsang.ma',
+            'password' => bcrypt('admin123'),
+        ]);
+
         BloodDonor::create(['full_name' => 'Ahmed Ali', 'blood_type' => 'O+', 'city' => 'Casablanca', 'phone' => '0600000000']);
         BloodDonor::create(['full_name' => 'Sara Nouri', 'blood_type' => 'A-', 'city' => 'Rabat', 'phone' => '0611111111']);
 

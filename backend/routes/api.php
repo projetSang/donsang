@@ -13,6 +13,7 @@ Route::post('/forgot-password', [AuthController::class, 'sendResetLinkEmail']);
 Route::post('/reset-password', [AuthController::class, 'resetPassword']);
 Route::post('/update-password', [AuthController::class, 'updatePassword']);
 Route::post('/update-profile', [AuthController::class, 'updateProfile']);
+Route::post('/get-profile', [AuthController::class, 'getProfile']);
 Route::post('/generate-share-token', [AuthController::class, 'generateShareToken']);
 Route::post('/disable-share-token', [AuthController::class, 'disableShareToken']);
 Route::get('/shared-dossier/{token}', [AuthController::class, 'getSharedDossier']);
@@ -48,3 +49,10 @@ Route::post('/alerts/respond', [DashboardController::class, 'respondToAlert']);
 Route::get('/hospital/alerts/{id}/responses', [DashboardController::class, 'getAlertResponses']);
 
 Route::post('/assistant/chat', [AssistantController::class, 'chat']);
+
+// Admin Routes for managing hospitals
+use App\Http\Controllers\AdminController;
+Route::get('/admin/hospitals', [AdminController::class, 'getHospitals']);
+Route::post('/admin/hospitals', [AdminController::class, 'storeHospital']);
+Route::put('/admin/hospitals/{id}', [AdminController::class, 'updateHospital']);
+Route::delete('/admin/hospitals/{id}', [AdminController::class, 'deleteHospital']);

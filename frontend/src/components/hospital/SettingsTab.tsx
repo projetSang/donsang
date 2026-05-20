@@ -2,10 +2,13 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Building2, Mail, MapPin, Phone, Lock, Save, Globe, Shield } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 
 export function SettingsTab() {
+  const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string[]>>({});
   const [formData, setFormData] = useState({
     name: "",
     city: "",
@@ -18,35 +21,46 @@ export function SettingsTab() {
   });
 
   useEffect(() => {
-    fetch("http://localhost:8000/api/hospital/settings")
-      .then(res => res.json())
-      .then(data => {
-        setFormData({
-          name: data.name || "",
-          city: data.city || "",
-          email: data.email || "",
-          address: data.address || "",
-          phone: data.phone || "",
-          password: "",
-          latitude: data.latitude || null,
-          longitude: data.longitude || null
-        });
-      })
-      .catch(console.error);
-  }, []);
+    if (user?.id) {
+      fetch(`http://localhost:8000/api/hospital/settings?hospital_id=${user.id}`)
+        .then(res => res.json())
+        .then(data => {
+          setFormData({
+            name: data.name || "",
+            city: data.city || "",
+            email: data.email || "",
+            address: data.address || "",
+            phone: data.phone || "",
+            password: "",
+            latitude: data.latitude || null,
+            longitude: data.longitude || null
+          });
+        })
+        .catch(console.error);
+    }
+  }, [user]);
 
   const handleSave = async () => {
     setLoading(true);
     setSuccess(false);
+    setErrors({});
     try {
       const res = await fetch("http://localhost:8000/api/hospital/settings", {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData)
+        headers: { 
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+        },
+        body: JSON.stringify({ ...formData, hospital_id: user?.id })
       });
       if (res.ok) {
         setSuccess(true);
         setTimeout(() => setSuccess(false), 3000);
+      } else if (res.status === 422) {
+        const data = await res.json();
+        if (data.errors) {
+          setErrors(data.errors);
+        }
       }
     } catch (err) {
       console.error(err);
@@ -67,6 +81,12 @@ export function SettingsTab() {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         <div className="md:col-span-2 space-y-6">
+          {Object.keys(errors).length > 0 && (
+            <div className="bg-destructive/10 border border-destructive/20 text-destructive text-sm p-4 rounded-xl font-bold animate-reveal">
+              Veuillez corriger les erreurs ci-dessous avant d'enregistrer.
+            </div>
+          )}
+
           <div className="bg-white rounded-2xl border border-slate-200 p-8 shadow-sm space-y-6">
             <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2 border-b border-slate-100 pb-4">
               <Building2 className="h-5 w-5 text-primary" />
@@ -80,10 +100,16 @@ export function SettingsTab() {
                   <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
                   <Input 
                     value={formData.name} 
-                    onChange={(e) => setFormData({...formData, name: e.target.value})}
-                    className="pl-10 h-12 rounded-xl bg-slate-50 border-slate-200 focus:bg-white transition-all" 
+                    onChange={(e) => {
+                      setFormData({...formData, name: e.target.value});
+                      if (errors.name) setErrors(prev => ({...prev, name: []}));
+                    }}
+                    className={`pl-10 h-12 rounded-xl bg-slate-50 focus:bg-white transition-all ${errors.name && errors.name.length > 0 ? 'border-red-500 focus:ring-red-500' : 'border-slate-200'}`} 
                   />
                 </div>
+                {errors.name && errors.name.length > 0 && (
+                  <p className="text-xs text-red-500 mt-1">{errors.name[0]}</p>
+                )}
               </div>
               
               <div className="space-y-2">
@@ -92,10 +118,16 @@ export function SettingsTab() {
                   <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
                   <Input 
                     value={formData.city} 
-                    onChange={(e) => setFormData({...formData, city: e.target.value})}
-                    className="pl-10 h-12 rounded-xl bg-slate-50 border-slate-200 focus:bg-white transition-all" 
+                    onChange={(e) => {
+                      setFormData({...formData, city: e.target.value});
+                      if (errors.city) setErrors(prev => ({...prev, city: []}));
+                    }}
+                    className={`pl-10 h-12 rounded-xl bg-slate-50 focus:bg-white transition-all ${errors.city && errors.city.length > 0 ? 'border-red-500 focus:ring-red-500' : 'border-slate-200'}`} 
                   />
                 </div>
+                {errors.city && errors.city.length > 0 && (
+                  <p className="text-xs text-red-500 mt-1">{errors.city[0]}</p>
+                )}
               </div>
 
               <div className="space-y-2 md:col-span-2">
@@ -104,11 +136,17 @@ export function SettingsTab() {
                   <MapPin className="absolute left-3 top-4 h-4 w-4 text-slate-400" />
                   <textarea 
                     value={formData.address} 
-                    onChange={(e) => setFormData({...formData, address: e.target.value})}
-                    className="w-full pl-10 pr-3 py-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-primary/20 outline-none transition-all min-h-[60px] text-sm"
+                    onChange={(e) => {
+                      setFormData({...formData, address: e.target.value});
+                      if (errors.address) setErrors(prev => ({...prev, address: []}));
+                    }}
+                    className={`w-full pl-10 pr-3 py-3 rounded-xl border bg-slate-50 focus:bg-white focus:ring-2 focus:ring-primary/20 outline-none transition-all min-h-[60px] text-sm ${errors.address && errors.address.length > 0 ? 'border-red-500 focus:ring-red-500' : 'border-slate-200'}`}
                     placeholder="Adresse de l'hôpital"
                   />
                 </div>
+                {errors.address && errors.address.length > 0 && (
+                  <p className="text-xs text-red-500 mt-1">{errors.address[0]}</p>
+                )}
               </div>
 
               <div className="space-y-2">
@@ -117,10 +155,16 @@ export function SettingsTab() {
                   <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
                   <Input 
                     value={formData.email} 
-                    onChange={(e) => setFormData({...formData, email: e.target.value})}
-                    className="pl-10 h-12 rounded-xl bg-slate-50 border-slate-200 focus:bg-white transition-all" 
+                    onChange={(e) => {
+                      setFormData({...formData, email: e.target.value});
+                      if (errors.email) setErrors(prev => ({...prev, email: []}));
+                    }}
+                    className={`pl-10 h-12 rounded-xl bg-slate-50 focus:bg-white transition-all ${errors.email && errors.email.length > 0 ? 'border-red-500 focus:ring-red-500' : 'border-slate-200'}`} 
                   />
                 </div>
+                {errors.email && errors.email.length > 0 && (
+                  <p className="text-xs text-red-500 mt-1">{errors.email[0]}</p>
+                )}
               </div>
 
               <div className="space-y-2">
@@ -129,10 +173,16 @@ export function SettingsTab() {
                   <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
                   <Input 
                     value={formData.phone} 
-                    onChange={(e) => setFormData({...formData, phone: e.target.value})}
-                    className="pl-10 h-12 rounded-xl bg-slate-50 border-slate-200 focus:bg-white transition-all" 
+                    onChange={(e) => {
+                      setFormData({...formData, phone: e.target.value});
+                      if (errors.phone) setErrors(prev => ({...prev, phone: []}));
+                    }}
+                    className={`pl-10 h-12 rounded-xl bg-slate-50 focus:bg-white transition-all ${errors.phone && errors.phone.length > 0 ? 'border-red-500 focus:ring-red-500' : 'border-slate-200'}`} 
                   />
                 </div>
+                {errors.phone && errors.phone.length > 0 && (
+                  <p className="text-xs text-red-500 mt-1">{errors.phone[0]}</p>
+                )}
               </div>
               <div className="space-y-2 md:col-span-2">
                 <label className="text-sm font-semibold text-slate-700 ml-1">Localisation GPS</label>
@@ -182,11 +232,17 @@ export function SettingsTab() {
                     type="password"
                     placeholder="Laissez vide pour ne pas changer"
                     value={formData.password}
-                    onChange={(e) => setFormData({...formData, password: e.target.value})}
-                    className="pl-10 h-12 rounded-xl bg-slate-50 border-slate-200 focus:bg-white transition-all" 
+                    onChange={(e) => {
+                      setFormData({...formData, password: e.target.value});
+                      if (errors.password) setErrors(prev => ({...prev, password: []}));
+                    }}
+                    className={`pl-10 h-12 rounded-xl bg-slate-50 focus:bg-white transition-all ${errors.password && errors.password.length > 0 ? 'border-red-500 focus:ring-red-500' : 'border-slate-200'}`} 
                   />
                 </div>
                 <p className="text-[11px] text-slate-400 ml-1 mt-1 italic">Utilisez au moins 8 caractères avec des chiffres et symboles.</p>
+                {errors.password && errors.password.length > 0 && (
+                  <p className="text-xs text-red-500 mt-1">{errors.password[0]}</p>
+                )}
               </div>
             </div>
           </div>

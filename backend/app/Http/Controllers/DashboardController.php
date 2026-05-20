@@ -12,11 +12,23 @@ use Illuminate\Support\Facades\Mail;
 
 class DashboardController extends Controller
 {
-    public function getStats()
+    public function getStats(Request $request)
     {
+        $hospitalId = $request->query('hospital_id');
         $donorsCount = BloodDonor::count();
-        $alertsCount = Alert::where('status', '!=', 'Clôturée')->count();
-        $patientsCount = Patient::count();
+
+        $alertsQuery = Alert::where('status', '!=', 'Clôturée');
+        if ($hospitalId) {
+            $alertsQuery->where('hospital_id', $hospitalId);
+        }
+        $alertsCount = $alertsQuery->count();
+
+        $patientsQuery = Patient::query();
+        if ($hospitalId) {
+            $patientsQuery->where('hospital_id', $hospitalId);
+        }
+        $patientsCount = $patientsQuery->count();
+
         $currentYear = date('Y');
 
         // Optimisation : récupérer toutes les données en deux requêtes au lieu de 24
@@ -26,9 +38,12 @@ class DashboardController extends Controller
             ->pluck('count', 'month')
             ->toArray();
 
-        $requestsByMonth = Alert::selectRaw('MONTH(created_at) as month, COUNT(*) as count')
-            ->whereYear('created_at', $currentYear)
-            ->groupBy('month')
+        $requestsQuery = Alert::selectRaw('MONTH(created_at) as month, COUNT(*) as count')
+            ->whereYear('created_at', $currentYear);
+        if ($hospitalId) {
+            $requestsQuery->where('hospital_id', $hospitalId);
+        }
+        $requestsByMonth = $requestsQuery->groupBy('month')
             ->pluck('count', 'month')
             ->toArray();
 
@@ -37,9 +52,15 @@ class DashboardController extends Controller
             $requestsData[] = $requestsByMonth[$m] ?? 0;
         }
 
+        $requestsMonthQuery = Alert::whereMonth('created_at', date('m'))->whereYear('created_at', $currentYear);
+        if ($hospitalId) {
+            $requestsMonthQuery->where('hospital_id', $hospitalId);
+        }
+        $requestsMonthCount = $requestsMonthQuery->count();
+
         return response()->json([
             'donors_region' => $donorsCount,
-            'requests_month' => Alert::whereMonth('created_at', date('m'))->whereYear('created_at', $currentYear)->count(),
+            'requests_month' => $requestsMonthCount,
             'established_contacts' => 156,
             'critical_stocks' => "2/8",
             'alerts' => $alertsCount,
@@ -51,13 +72,53 @@ class DashboardController extends Controller
         ]);
     }
 
-    public function getPatients()
+    public function getPatients(Request $request)
     {
+        $hospitalId = $request->query('hospital_id');
+        if ($hospitalId) {
+            return response()->json(Patient::where('hospital_id', $hospitalId)->get());
+        }
         return response()->json(Patient::all());
     }
 
     public function storePatient(Request $request)
     {
+        // Check if patient already exists by CIN or Email
+        $existingPatient = null;
+        if ($request->filled('cin')) {
+            $existingPatient = Patient::where('cin', $request->cin)->first();
+        }
+        if (!$existingPatient && $request->filled('email')) {
+            $existingPatient = Patient::where('email', $request->email)->first();
+        }
+
+        if ($existingPatient) {
+            $validated = $request->validate([
+                'full_name' => 'required|string|max:255',
+                'email' => 'required|email|unique:patients,email,' . $existingPatient->id,
+                'blood_type' => 'required|string|max:10',
+                'admission_date' => 'required|date',
+                'hospital_id' => 'required|exists:hospitals,id',
+                'cin' => 'nullable|string|max:50',
+                'birth_date' => 'nullable|date',
+                'phone' => 'nullable|string|max:50',
+                'address' => 'nullable|string|max:500',
+                'height' => 'nullable|string|max:10',
+                'weight' => 'nullable|string|max:10',
+                'chronic_diseases' => 'nullable|array',
+                'allergies' => 'nullable|string',
+                'current_treatments' => 'nullable|string',
+                'medical_history' => 'nullable|string',
+            ]);
+
+            $existingPatient->update($validated);
+
+            return response()->json([
+                'patient' => $existingPatient,
+                'temporary_password' => null
+            ], 200);
+        }
+
         $validated = $request->validate($this->patientRules());
 
         $password = Str::random(10);// cree mdp auto avec 10 caracteres
@@ -103,50 +164,67 @@ class DashboardController extends Controller
 
     public function searchDonors(Request $request)
     {
-        $query = BloodDonor::select('*')->selectRaw('0 as is_patient');
+        $bloodType = $request->blood_type;
+        $city = $request->city;
+        $radius = $request->radius;
+        $hospitalId = $request->query('hospital_id') ?: 1;
 
-        if ($request->has('blood_type')) {
-            $bloodType = $request->blood_type;
-            // Normaliser les tirets (court vs long)
+        if ($bloodType) {
             $bloodType = str_replace(['−', '–'], '-', $bloodType);
+        }
 
-            $query->where(function ($q) use ($bloodType) {
+        // 1. Query BloodDonor table
+        $donorsQuery = BloodDonor::select('*')->selectRaw('0 as is_patient, NULL as distance');
+        if ($bloodType) {
+            $donorsQuery->where(function ($q) use ($bloodType) {
                 $q->where('blood_type', $bloodType)
-                    ->orWhere('blood_type', str_replace('-', '−', $bloodType));
+                  ->orWhere('blood_type', str_replace('-', '−', $bloodType));
             });
         }
+        if ($city && $city != '') {
+            $donorsQuery->where('city', 'LIKE', '%' . $city . '%');
+        }
+        $donors = $donorsQuery->get();
 
-        if ($request->has('city') && $request->city != '') {
-            $query->where('city', 'LIKE', '%' . $request->city . '%');
+        // 2. Query Patient table (representing self-registered donors or general patients with blood type)
+        $patientsQuery = Patient::select('*')->selectRaw('1 as is_patient');
+        if ($bloodType) {
+            $patientsQuery->where(function ($q) use ($bloodType) {
+                $q->where('blood_type', $bloodType)
+                  ->orWhere('blood_type', str_replace('-', '−', $bloodType));
+            });
+        }
+        if ($city && $city != '') {
+            $patientsQuery->where('address', 'LIKE', '%' . $city . '%');
         }
 
-        // Location-based search
-        if ($request->has('radius') && $request->radius != '') {
-            $hospital = Hospital::first(); // Should be authenticated hospital
+        if ($radius && $radius != '') {
+            $hospital = Hospital::find($hospitalId);
             if ($hospital && $hospital->latitude && $hospital->longitude) {
-                $radius = (float) $request->radius;
-
-                // Note: BloodDonor table needs latitude/longitude too for this to work accurately.
-                // If it doesn't have them, we might want to search Patients who are donors.
-                // Let's assume we want to search Patients who have blood_type.
-
-                $query = Patient::select('*')->selectRaw('1 as is_patient');
-                if ($request->has('blood_type')) {
-                    $bloodType = $request->blood_type;
-                    $bloodType = str_replace(['−', '–'], '-', $bloodType);
-                    $query->where(function ($q) use ($bloodType) {
-                        $q->where('blood_type', $bloodType)
-                            ->orWhere('blood_type', str_replace('-', '−', $bloodType));
-                    });
-                }
-
-                $query->selectRaw('(6371 * acos(cos(radians(?)) * cos(radians(latitude)) * cos(radians(longitude) - radians(?)) + sin(radians(?)) * sin(radians(latitude)))) AS distance', [$hospital->latitude, $hospital->longitude, $hospital->latitude])
-                    ->having('distance', '<', $radius)
-                    ->orderBy('distance');
+                $radiusVal = (float) $radius;
+                $patientsQuery->selectRaw('(6371 * acos(cos(radians(?)) * cos(radians(latitude)) * cos(radians(longitude) - radians(?)) + sin(radians(?)) * sin(radians(latitude)))) AS distance', [$hospital->latitude, $hospital->longitude, $hospital->latitude])
+                    ->having('distance', '<', $radiusVal);
+            } else {
+                $patientsQuery->selectRaw('NULL as distance');
             }
+        } else {
+            $patientsQuery->selectRaw('NULL as distance');
+        }
+        $patients = $patientsQuery->get();
+
+        foreach ($patients as $p) {
+            $p->city = $p->address ?: 'Non spécifiée';
         }
 
-        return response()->json($query->get());
+        $merged = $donors->concat($patients);
+
+        if ($radius && $radius != '') {
+            $merged = $merged->sortBy(function ($item) {
+                return $item->distance ?? 999999;
+            })->values();
+        }
+
+        return response()->json($merged);
     }
     // modifier pour le dernier don
     public function updateDonor(Request $request, $id)
@@ -193,8 +271,12 @@ class DashboardController extends Controller
         return response()->json($stats);
     }
 
-    public function getAlerts()
+    public function getAlerts(Request $request)
     {
+        $hospitalId = $request->query('hospital_id');
+        if ($hospitalId) {
+            return response()->json(Alert::with('hospital')->where('hospital_id', $hospitalId)->get());
+        }
         return response()->json(Alert::with('hospital')->get());
     }
 
@@ -286,17 +368,17 @@ class DashboardController extends Controller
         return response()->json(['message' => 'Alerte supprimée avec succès']);
     }
 
-    public function getHospitalSettings()
+    public function getHospitalSettings(Request $request)
     {
-        // Pour l'instant on prend le premier hôpital (CHU Casablanca)
-        // En prod, on prendrait l'utilisateur authentifié
-        $hospital = Hospital::first();
+        $hospitalId = $request->query('hospital_id') ?: 1;
+        $hospital = Hospital::findOrFail($hospitalId);
         return response()->json($hospital);
     }
 
     public function updateHospitalSettings(Request $request)
     {
-        $hospital = Hospital::first();
+        $hospitalId = $request->input('hospital_id') ?: 1;
+        $hospital = Hospital::findOrFail($hospitalId);
 
         $validated = $request->validate([
             'name' => 'sometimes|required|string|max:255',
@@ -312,7 +394,7 @@ class DashboardController extends Controller
         if (!empty($validated['password'])) {
             $validated['password'] = \Illuminate\Support\Facades\Hash::make($validated['password']);
         } else {
-            unset($validated['password']);//annuler le chemps password si n'est pas vide pour n'enregestre pas vide
+            unset($validated['password']);
         }
 
         $hospital->update($validated);

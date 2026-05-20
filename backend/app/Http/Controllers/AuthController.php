@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Patient;
 use App\Models\Hospital;
 use App\Models\BloodDonor;
+use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
@@ -20,6 +21,32 @@ class AuthController extends Controller
         ]);
 
         
+
+        // Check for Admin (User model)
+        $admin = User::where('email', $request->email)->first();
+        if ($admin && Hash::check($request->password, $admin->password)) {
+            $token = bin2hex(random_bytes(32));
+            $admin->user_type = 'admin';
+            return response()->json([
+                'status' => 'success',
+                'user_type' => 'admin',
+                'user' => $admin,
+                'token' => $token
+            ]);
+        }
+
+        // Check for Patient
+        $patient = Patient::where('email', $request->email)->first();
+        if ($patient && $patient->password && Hash::check($request->password, $patient->password)) {
+            $token = bin2hex(random_bytes(32));
+            $patient->user_type = 'patient';
+            return response()->json([
+                'status' => 'success',
+                'user_type' => 'patient',
+                'user' => $patient,
+                'token' => $token
+            ]);
+        }
 
         // Check for BloodDonor
         $donor = BloodDonor::where('email', $request->email)->first();
@@ -69,7 +96,7 @@ class AuthController extends Controller
             'password' => Hash::make($request->password),
             'phone' => $request->phone,
             'blood_type' => $request->blood_type ?? 'Non spécifié',
-            'hospital_id' => 1, // Default hospital
+            'hospital_id' => null, // No hospital by default for self-registered donors
             'status' => 'Actif',
             'admission_date' => now(),
         ]);
@@ -171,6 +198,36 @@ class AuthController extends Controller
         return response()->json([
             'status' => 'success',
             'message' => 'Profil mis à jour avec succès',
+            'user' => $user
+        ]);
+    }
+
+    public function getProfile(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email',
+            'user_type' => 'required|in:patient,hospital',
+        ]);
+
+        $user = null;
+        if ($request->user_type === 'patient') {
+            $user = Patient::where('email', $request->email)->first();
+            if (!$user) {
+                $user = BloodDonor::where('email', $request->email)->first();
+            }
+        } else {
+            $user = Hospital::where('email', $request->email)->first();
+        }
+
+        if (!$user) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Utilisateur introuvable'
+            ], 404);
+        }
+
+        return response()->json([
+            'status' => 'success',
             'user' => $user
         ]);
     }
