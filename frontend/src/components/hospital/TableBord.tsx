@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { 
   Heart, Search, Users, Droplets, Bell, BarChart3, LayoutDashboard,
-  
 } from "lucide-react";
 import ReactApexChart from "react-apexcharts";
 
@@ -21,8 +20,8 @@ export default function TableBord() {
  
   const dynamicStats = [
     { label: "Donneurs dans la région", value: statsData?.donors_region || "0", icon: Users, color: "text-blue-500", bg: "bg-blue-50" },
+    { label: "Contacts établis", value: statsData?.established_contacts || "0", icon: Heart, color: "text-primary", bg: "bg-primary/5" },
     { label: "Demandes ce mois", value: statsData?.requests_month || "0", icon: Search, color: "text-purple-500", bg: "bg-purple-50" },
-    { label: "Patients", value: statsData?.patients || "0", icon: Heart, color: "text-primary", bg: "bg-primary/5" },
     { label: "Alertes en cours", value: statsData?.alerts || "0", icon: Droplets, color: "text-orange-500", bg: "bg-orange-50" },
   ];
 

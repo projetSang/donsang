@@ -23,11 +23,8 @@ class DashboardController extends Controller
         }
         $alertsCount = $alertsQuery->count();
 
-        $patientsQuery = Patient::query();
-        if ($hospitalId) {
-            $patientsQuery->where('hospital_id', $hospitalId);
-        }
-        $patientsCount = $patientsQuery->count();
+        $establishedContacts = \App\Models\AlertResponse::where('status', 'available')->count();
+        $patientsCount = 0;
 
         $currentYear = date('Y');
 
@@ -61,7 +58,7 @@ class DashboardController extends Controller
         return response()->json([
             'donors_region' => $donorsCount,
             'requests_month' => $requestsMonthCount,
-            'established_contacts' => 156,
+            'established_contacts' => $establishedContacts,
             'critical_stocks' => "2/8",
             'alerts' => $alertsCount,
             'patients' => $patientsCount,
@@ -173,69 +170,48 @@ class DashboardController extends Controller
             $bloodType = str_replace(['−', '–'], '-', $bloodType);
         }
 
-        // 1. Query BloodDonor table
+        // Initialize blood donors query
         $donorsQuery = BloodDonor::select('*')->selectRaw('0 as is_patient, NULL as distance');
+
+        // Apply filters
+        if ($radius && $radius != '') {
+            $hospital = Hospital::find($hospitalId);
+            if ($hospital && $hospital->latitude && $hospital->longitude) {
+                $radiusVal = (float) $radius;
+                $donorsQuery = BloodDonor::select('*')
+                    ->selectRaw('(6371 * acos(cos(radians(?)) * cos(radians(latitude)) * cos(radians(longitude) - radians(?)) + sin(radians(?)) * sin(radians(latitude)))) AS distance', [$hospital->latitude, $hospital->longitude, $hospital->latitude])
+                    ->having('distance', '<', $radiusVal);
+            }
+        }
+
         if ($bloodType) {
             $donorsQuery->where(function ($q) use ($bloodType) {
                 $q->where('blood_type', $bloodType)
                   ->orWhere('blood_type', str_replace('-', '−', $bloodType));
             });
         }
+
         if ($city && $city != '') {
             $donorsQuery->where('city', 'LIKE', '%' . $city . '%');
         }
+
         $donors = $donorsQuery->get();
 
-        // 2. Query Patient table (representing self-registered donors or general patients with blood type)
-        $patientsQuery = Patient::select('*')->selectRaw('1 as is_patient');
-        if ($bloodType) {
-            $patientsQuery->where(function ($q) use ($bloodType) {
-                $q->where('blood_type', $bloodType)
-                  ->orWhere('blood_type', str_replace('-', '−', $bloodType));
-            });
-        }
-        if ($city && $city != '') {
-            $patientsQuery->where('address', 'LIKE', '%' . $city . '%');
+        foreach ($donors as $d) {
+            $d->is_patient = 0;
         }
 
         if ($radius && $radius != '') {
-            $hospital = Hospital::find($hospitalId);
-            if ($hospital && $hospital->latitude && $hospital->longitude) {
-                $radiusVal = (float) $radius;
-                $patientsQuery->selectRaw('(6371 * acos(cos(radians(?)) * cos(radians(latitude)) * cos(radians(longitude) - radians(?)) + sin(radians(?)) * sin(radians(latitude)))) AS distance', [$hospital->latitude, $hospital->longitude, $hospital->latitude])
-                    ->having('distance', '<', $radiusVal);
-            } else {
-                $patientsQuery->selectRaw('NULL as distance');
-            }
-        } else {
-            $patientsQuery->selectRaw('NULL as distance');
-        }
-        $patients = $patientsQuery->get();
-
-        foreach ($patients as $p) {
-            $p->city = $p->address ?: 'Non spécifiée';
-        }
-
-        $merged = $donors->concat($patients);
-
-        if ($radius && $radius != '') {
-            $merged = $merged->sortBy(function ($item) {
+            $donors = $donors->sortBy(function ($item) {
                 return $item->distance ?? 999999;
             })->values();
         }
 
-        return response()->json($merged);
+        return response()->json($donors);
     }
-    // modifier pour le dernier don
+
     public function updateDonor(Request $request, $id)
     {
-        if ($request->is_patient || $request->has('is_patient') && $request->is_patient == 1) {
-            $patient = Patient::findOrFail($id);
-            $patient->update($request->only(['full_name', 'email', 'phone', 'address', 'blood_type', 'last_donation_date', 'donations_count']));
-            $patient->is_patient = 1;
-            return response()->json($patient);
-        }
-
         $donor = BloodDonor::findOrFail($id);
         $donor->update($request->only(['full_name', 'email', 'phone', 'city', 'blood_type', 'last_donation_date', 'donations_count']));
         $donor->is_patient = 0;
@@ -244,6 +220,25 @@ class DashboardController extends Controller
 
     public function storeDonor(Request $request)
     {
+        $existingDonor = null;
+        if ($request->filled('email')) {
+            $existingDonor = BloodDonor::where('email', $request->email)->first();
+        }
+
+        if ($existingDonor) {
+            $validated = $request->validate([
+                'full_name' => 'required|string|max:255',
+                'email' => 'required|email|unique:blood_donors,email,' . $existingDonor->id,
+                'blood_type' => 'required|string|max:10',
+                'phone' => 'required|string|max:50',
+                'city' => 'required|string|max:255',
+                'last_donation_date' => 'nullable|date',
+            ]);
+
+            $existingDonor->update($validated);
+            return response()->json($existingDonor, 200);
+        }
+
         $validated = $request->validate($this->donorRules());
 
         $password = Str::random(10);
@@ -294,15 +289,24 @@ class DashboardController extends Controller
     private function notifyNearbyPatients($alert, $requestedRadius = null)
     {
         $hospital = Hospital::find($alert->hospital_id);
-        if (!$hospital || !$hospital->latitude || !$hospital->longitude)
+        if (!$hospital)
             return;
 
         // Radius in kilometers
         $radius = $requestedRadius ? (float) $requestedRadius : 20;
 
-        $nearbyPatientsQuery = Patient::select('*')
-            ->selectRaw('(6371 * acos(cos(radians(?)) * cos(radians(latitude)) * cos(radians(longitude) - radians(?)) + sin(radians(?)) * sin(radians(latitude)))) AS distance', [$hospital->latitude, $hospital->longitude, $hospital->latitude])
-            ->having('distance', '<', $radius);
+        $nearbyDonorsQuery = BloodDonor::query();
+
+        if ($hospital->latitude && $hospital->longitude) {
+            $nearbyDonorsQuery->select('*')
+                ->selectRaw('(6371 * acos(cos(radians(?)) * cos(radians(latitude)) * cos(radians(longitude) - radians(?)) + sin(radians(?)) * sin(radians(latitude)))) AS distance', [$hospital->latitude, $hospital->longitude, $hospital->latitude])
+                ->where(function($query) use ($radius, $hospital) {
+                    $query->whereRaw('(6371 * acos(cos(radians(?)) * cos(radians(latitude)) * cos(radians(longitude) - radians(?)) + sin(radians(?)) * sin(radians(latitude)))) < ?', [$hospital->latitude, $hospital->longitude, $hospital->latitude, $radius])
+                          ->orWhere('city', 'LIKE', '%' . $hospital->city . '%');
+                });
+        } else {
+            $nearbyDonorsQuery->where('city', 'LIKE', '%' . $hospital->city . '%');
+        }
 
         if ($alert->blood_type !== 'Tous groupes') {
             if (str_contains($alert->blood_type, ',')) {
@@ -313,9 +317,9 @@ class DashboardController extends Controller
                     $groups[] = str_replace('−', '-', $g);
                     $groups[] = str_replace('-', '−', $g);
                 }
-                $nearbyPatientsQuery->whereIn('blood_type', $groups);
+                $nearbyDonorsQuery->whereIn('blood_type', $groups);
             } else {
-                $nearbyPatientsQuery->where(function ($q) use ($alert) {
+                $nearbyDonorsQuery->where(function ($q) use ($alert) {
                     $q->where('blood_type', $alert->blood_type)
                         ->orWhere('blood_type', str_replace('−', '-', $alert->blood_type))
                         ->orWhere('blood_type', str_replace('-', '−', $alert->blood_type));
@@ -323,28 +327,22 @@ class DashboardController extends Controller
             }
         }
 
-        $nearbyPatients = $nearbyPatientsQuery->get();
+        $nearbyDonors = $nearbyDonorsQuery->get();
 
-        foreach ($nearbyPatients as $patient) {
-            // Create app notification
-            \App\Models\PatientNotification::create([
-                'patient_id' => $patient->id,
-                'title' => "Besoin urgent à proximité !",
-                'message' => "L'hôpital {$hospital->name} a besoin de sang de type {$alert->blood_type}. Vous êtes à proximité !",
-                'type' => 'urgent',
-                'is_read' => false
-            ]);
-
+        foreach ($nearbyDonors as $donor) {
+            if (empty($donor->email)) {
+                continue;
+            }
             // Send HTML Email
             try {
                 $emailData = [
-                    'patient' => $patient,
+                    'patient' => $donor, // Keep name as patient to work with existing email templates
                     'alert' => $alert,
                     'hospital' => $hospital,
                     'appUrl' => 'http://localhost:8080',
                 ];
-                Mail::send('emails.alert', $emailData, function ($message) use ($patient) {
-                    $message->to($patient->email)
+                Mail::send('emails.alert', $emailData, function ($message) use ($donor) {
+                    $message->to($donor->email)
                         ->subject('🚨 Alerte Urgente - Don de Sang à proximité');
                 });
             } catch (\Exception $e) {
@@ -454,8 +452,16 @@ class DashboardController extends Controller
 
     public function getNotifications($id)
     {
-        $patient = Patient::findOrFail($id);
-        $patientBlood = str_replace('−', '-', trim($patient->blood_type));
+        $donor = BloodDonor::find($id);
+        if (!$donor) {
+            $donor = Patient::find($id);
+        }
+
+        if (!$donor) {
+            return response()->json([]);
+        }
+
+        $donorBlood = str_replace('−', '-', trim($donor->blood_type));
 
         // Compatibility Map: Donor -> Recipients (Who can they donate TO?)
         $compatibility = [
@@ -469,7 +475,7 @@ class DashboardController extends Controller
             'O-' => ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'],
         ];
 
-        $compatibleGroups = $compatibility[$patientBlood] ?? [$patientBlood];
+        $compatibleGroups = $compatibility[$donorBlood] ?? [$donorBlood];
 
         // Add versions with the other minus sign just in case
         $altCompatibleGroups = array_map(fn($g) => str_replace('-', '−', $g), $compatibleGroups);
@@ -487,9 +493,10 @@ class DashboardController extends Controller
                 'is_read' => $n->is_read
             ]);
 
-        // Fetch public urgent alerts that this patient can donate to
+        // Fetch public urgent alerts that this donor can donate to (filtered by compatibility and city)
         $alerts = Alert::where('status', 'active')
             ->whereIn('blood_type', $allCompatibleGroups)
+            ->where('city', 'LIKE', '%' . $donor->city . '%')
             ->orderBy('created_at', 'desc')
             ->take(5)
             ->get()
@@ -530,33 +537,45 @@ class DashboardController extends Controller
     {
         $request->validate([
             'alert_id' => 'required|integer',
-            'patient_id' => 'required|integer',
-            'status' => 'required|string|in:available,unavailable'
+            'patient_id' => 'nullable|integer',
+            'blood_donor_id' => 'nullable|integer',
+            'status' => 'required|string|in:available,unavailable',
         ]);
 
+        $donorId = $request->blood_donor_id ?? $request->patient_id;
+
+        if (!$donorId) {
+            return response()->json(['status' => 'error', 'message' => 'Identifiant du donneur requis'], 400);
+        }
+
+        $donor = BloodDonor::find($donorId);
+
+        if (!$donor) {
+            return response()->json(['status' => 'error', 'message' => 'Donneur introuvable'], 404);
+        }
+
         $response = \App\Models\AlertResponse::updateOrCreate(
-            ['alert_id' => $request->alert_id, 'patient_id' => $request->patient_id],
+            ['alert_id' => $request->alert_id, 'blood_donor_id' => $donor->id],
             ['status' => $request->status]
         );
 
-        // Envoyer l'email si le patient est disponible
+        // Envoyer l'email si le donneur est disponible
         if ($request->status === 'available') {
-            $patient = Patient::find($request->patient_id);
             $alert = Alert::with('hospital')->find($request->alert_id);
 
-            if ($patient && $alert) {
+            if ($donor && $alert) {
                 $hospitalName = $alert->hospital ? $alert->hospital->name : 'CHU Casablanca';
                 $hospitalCity = $alert->hospital ? $alert->hospital->city : ($alert->city ?? 'Casablanca');
 
                 try {
                     $data = [
-                        'patient' => $patient,
+                        'patient' => $donor, // Keep 'patient' alias to avoid breaking welcome/appointment email template
                         'hospitalName' => $hospitalName,
                         'hospitalCity' => $hospitalCity
                     ];
 
-                    Mail::send('emails.appointment', $data, function ($message) use ($patient) {
-                        $message->to($patient->email)
+                    Mail::send('emails.appointment', $data, function ($message) use ($donor) {
+                        $message->to($donor->email)
                             ->subject('Confirmation de rendez-vous - Don de Sang urgent');
                     });
                 } catch (\Exception $e) {
@@ -571,17 +590,19 @@ class DashboardController extends Controller
     public function getAlertResponses($id)
     {
         $responses = \App\Models\AlertResponse::where('alert_id', $id)
-            ->with('patient')
+            ->with('bloodDonor')
             ->orderBy('created_at', 'desc')
             ->get()
-            ->map(fn($r) => [
-                'id' => $r->id,
-                'patient_name' => $r->patient->full_name,
-                'blood_type' => $r->patient->blood_type,
-                'phone' => $r->patient->phone,
-                'status' => $r->status,
-                'time' => $r->created_at->diffForHumans()
-            ]);
+            ->map(function ($r) {
+                return [
+                    'id' => $r->id,
+                    'patient_name' => $r->bloodDonor ? $r->bloodDonor->full_name : 'Donneur anonyme',
+                    'blood_type' => $r->bloodDonor ? $r->bloodDonor->blood_type : 'Non spécifié',
+                    'phone' => $r->bloodDonor ? $r->bloodDonor->phone : 'Non disponible',
+                    'status' => $r->status,
+                    'time' => $r->created_at->diffForHumans()
+                ];
+            });
 
         return response()->json($responses);
     }

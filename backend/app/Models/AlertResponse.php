@@ -6,10 +6,10 @@ use Illuminate\Database\Eloquent\Model;
 
 class AlertResponse extends Model
 {
-    protected $fillable = ['alert_id', 'patient_id', 'status'];
+    protected $fillable = ['alert_id', 'blood_donor_id', 'status'];
 
-    public function patient()
+    public function bloodDonor()
     {
-        return $this->belongsTo(Patient::class);
+        return $this->belongsTo(BloodDonor::class);
     }
 }

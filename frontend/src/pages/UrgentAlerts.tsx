@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
@@ -15,6 +15,7 @@ export default function UrgentAlerts() {
     
     // Auth and donation modal states
     const { user, isAuthenticated } = useAuth();
+    const navigate = useNavigate();
     const [selectedAlert, setSelectedAlert] = useState<any | null>(null);
     const [showDonateModal, setShowDonateModal] = useState(false);
     const [donorForm, setDonorForm] = useState({
@@ -42,8 +43,8 @@ export default function UrgentAlerts() {
       if (!selectedAlert) return;
       setDonorSubmitting(true);
       try {
-        // 1. Register guest as patient first (which allows alert response)
-        const resPatient = await fetch("http://localhost:8000/api/hospital/patients", {
+        // 1. Register guest as donor first (which allows alert response)
+        const resDonor = await fetch("http://localhost:8000/api/hospital/donors", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -55,18 +56,18 @@ export default function UrgentAlerts() {
             phone: donorForm.phone,
             blood_type: selectedAlert.blood_type,
             city: donorForm.city,
-            address: donorForm.city,
-            admission_date: new Date().toISOString().split('T')[0],
-            hospital_id: selectedAlert.hospital_id || 1, // Default CHU Casablanca
           })
         });
 
-        if (!resPatient.ok) {
+        if (!resDonor.ok) {
           throw new Error("Erreur de création de profil donneur");
         }
 
-        const patientData = await resPatient.json();
-        const patientId = patientData.patient.id;
+        const donorData = await resDonor.ok ? await resDonor.json() : null;
+        if (!donorData || !donorData.id) {
+          throw new Error("Erreur lors de la récupération des informations du donneur.");
+        }
+        const donorId = donorData.id;
 
         // 2. Respond to alert
         const resResponse = await fetch("http://localhost:8000/api/alerts/respond", {
@@ -77,14 +78,14 @@ export default function UrgentAlerts() {
           },
           body: JSON.stringify({
             alert_id: selectedAlert.id,
-            patient_id: patientId,
+            blood_donor_id: donorId,
             status: "available"
           })
         });
 
         if (resResponse.ok) {
           toast.success("Merci ! Votre proposition de don a été envoyée avec succès.", {
-            description: `Un email avec vos identifiants a été envoyé à ${donorForm.email}. L'hôpital vous contactera bientôt.`,
+            description: `Un email avec les détails du rendez-vous a été envoyé à ${donorForm.email}. L'hôpital vous contactera bientôt.`,
             duration: 6000
           });
           setShowDonateModal(false);
@@ -112,7 +113,7 @@ export default function UrgentAlerts() {
           },
           body: JSON.stringify({
             alert_id: selectedAlert.id,
-            patient_id: user.id,
+            blood_donor_id: user.id,
             status: "available"
           })
         });
@@ -379,8 +380,12 @@ export default function UrgentAlerts() {
                           variant="hero"
                           className="w-full rounded-xl"
                           onClick={() => {
-                            setSelectedAlert(alert);
-                            setShowDonateModal(true);
+                            if (!isAuthenticated) {
+                              navigate("/register");
+                            } else {
+                              setSelectedAlert(alert);
+                              setShowDonateModal(true);
+                            }
                           }}
                         >
                           Je souhaite donner

@@ -2,10 +2,10 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Mail, Lock, Eye, EyeOff, User, Phone, Droplets } from "lucide-react";
+import { Mail, Lock, Eye, EyeOff, User, Phone, Droplets, MapPin } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { apiFetch } from "@/lib/api";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 
 export default function Register() {
@@ -14,13 +14,17 @@ export default function Register() {
     full_name: "",
     email: "",
     phone: "",
+    city: "",
+    blood_type: "",
     password: "",
     password_confirmation: "",
   });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const { login } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
+
+  const bloodGroups = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFormData({ ...formData, [e.target.id]: e.target.value });
@@ -45,10 +49,12 @@ export default function Register() {
 
       if (data.status === "success") {
         toast({
-          title: "Succès",
-          description: "Votre compte a été créé avec succès",
+          title: "Inscription Réussie",
+          description: "Votre compte de donneur a été créé avec succès ! Vous serez contacté par les hôpitaux en cas de besoin urgent.",
         });
-        login(data.user, data.token);
+        setTimeout(() => {
+          navigate("/login");
+        }, 3000);
       } else {
         setError(data.message || "Erreur lors de l'inscription");
       }
@@ -127,6 +133,43 @@ export default function Register() {
                   placeholder="06 00 00 00 00" 
                   className="h-12 rounded-xl border-slate-200 focus:border-primary transition-all pl-12 text-base" 
                 />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="city" className="text-slate-900 font-bold">Ville</Label>
+              <div className="relative">
+                <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 h-5 w-5" />
+                <Input 
+                  id="city" 
+                  type="text" 
+                  required
+                  value={formData.city}
+                  onChange={handleChange}
+                  placeholder="Ex: Casablanca" 
+                  className="h-12 rounded-xl border-slate-200 focus:border-primary transition-all pl-12 text-base" 
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="blood_type" className="text-slate-900 font-bold">Groupe Sanguin</Label>
+              <div className="relative">
+                <Droplets className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 h-5 w-5" />
+                <select
+                  id="blood_type"
+                  required
+                  value={formData.blood_type}
+                  onChange={handleChange}
+                  className="h-12 w-full rounded-xl border border-slate-200 bg-white focus:border-primary focus:ring-1 focus:ring-primary transition-all pl-12 pr-4 text-base appearance-none"
+                >
+                  <option value="">Sélectionner votre groupe</option>
+                  {bloodGroups.map((group) => (
+                    <option key={group} value={group}>
+                      {group}
+                    </option>
+                  ))}
+                </select>
               </div>
             </div>
 

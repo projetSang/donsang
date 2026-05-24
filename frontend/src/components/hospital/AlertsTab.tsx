@@ -339,9 +339,9 @@ export function AlertsTab({ showNewAlert, setShowNewAlert, onViewDonors }: any) 
             <div className="bg-slate-900 p-6 text-white flex items-center justify-between">
               <div>
                 <h3 className="text-xl font-bold flex items-center gap-2">
-                  <Users className="h-5 w-5" /> Réponses des patients
+                  <Users className="h-5 w-5" /> Réponses des donneurs
                 </h3>
-                <p className="text-slate-400 text-sm mt-1">Liste des personnes ayant répondu à cette alerte.</p>
+                <p className="text-slate-400 text-sm mt-1">Liste des donneurs ayant répondu à cette alerte.</p>
               </div>
               <Button 
                 variant="ghost" 

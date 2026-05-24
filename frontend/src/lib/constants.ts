@@ -5,56 +5,56 @@ import {
 export const steps = [
   {
     icon: UserPlus,
-    title: "Complétez votre profil",
-    description: "Connectez-vous avec les identifiants fournis par l'hôpital, complétez votre compte et changez votre mot de passe.",
+    title: "Devenez donneur de sang",
+    description: "Inscrivez-vous sur notre plateforme, précisez votre groupe sanguin et vos coordonnées en toute sécurité.",
   },
   {
     icon: Droplets,
-    title: "Demande de sang",
-    description: "Si vous avez besoin de sang, faites une demande en précisant le groupe sanguin, vos coordonnées et le lieu.",
+    title: "Alertes d'hôpitaux",
+    description: "Les centres hospitaliers lancent des alertes locales lorsqu'ils ont besoin de poches de sang urgentes.",
   },
   {
     icon: Bell,
-    title: "Envoi d'alertes",
-    description: "Le système envoie instantanément des notifications à tous les donneurs .",
+    title: "Notification instantanée",
+    description: "Notre système envoie instantanément des alertes par email aux donneurs compatibles à proximité.",
   },
   {
     icon: Users,
-    title: "Réponse des donneurs",
-    description: "Si vous êtes un donateur admissible, vous pourrez intervenir et offrir votre aide.",
+    title: "Sauvez des vies",
+    description: "Répondez aux alertes urgentes et rendez-vous à l'hôpital demandeur pour faire votre don.",
   },
 ];
 
 export const features = [
   {
     icon: Droplets,
-    title: "Groupe sanguin",
-    description: "Enregistrez votre groupe sanguin ABO + Rh pour un accès rapide en cas d'urgence.",
-  },
-  {
-    icon: FileText,
-    title: "Dossier médical complet",
-    description: "Conservez vos informations médicales, allergies et traitements en un seul endroit sécurisé.",
-  },
-  {
-    icon: Share2,
-    title: "Lien de partage sécurisé",
-    description: "Générez un lien unique pour que votre médecin consulte votre dossier en lecture seule.",
+    title: "Groupe sanguin ciblé",
+    description: "Enregistrez votre groupe sanguin ABO + Rh pour être immédiatement alerté en cas de besoin compatible.",
   },
   {
     icon: Search,
-    title: "Recherche de donneurs",
-    description: "Les hôpitaux trouvent des donneurs compatibles par groupe sanguin et proximité en quelques secondes.",
+    title: "Géolocalisation précise",
+    description: "Les hôpitaux recherchent les donneurs par distance afin de cibler les personnes à proximité immédiate.",
+  },
+  {
+    icon: Users,
+    title: "Recherche en quelques secondes",
+    description: "Un algorithme de recherche rapide qui filtre les donneurs par compatibilité et ville en temps réel.",
   },
   {
     icon: Bell,
-    title: "Alertes d'urgence",
-    description: "Recevez des notifications quand un hôpital proche a besoin de votre groupe sanguin.",
+    title: "Alertes d'urgence locales",
+    description: "Les hôpitaux diffusent des alertes ciblées par rayon kilométrique pour une efficacité maximale.",
   },
   {
     icon: Shield,
-    title: "Sécurité maximale",
-    description: "Vos données médicales sont chiffrées et protégées selon les normes de confidentialité locales.",
+    title: "Confidentialité totale",
+    description: "Vos données de contact ne sont visibles que par les centres hospitaliers autorisés pour les besoins de santé.",
+  },
+  {
+    icon: Heart,
+    title: "Suivi des dons de sang",
+    description: "Aidez la communauté médicale à maintenir des réserves suffisantes et à stabiliser les stocks de sang.",
   },
 ];
 

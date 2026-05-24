@@ -16,7 +16,7 @@ export function Navbar({}: NavbarProps) {
 
   const displayName = user?.full_name || user?.name || "Utilisateur";
   const hospitalPath = user?.name ? `/Donsang/${slugify(user.name)}` : "/hospital";
-  const patientPath = user ? `/Donsang/Mon-dossier/${slugify(user.full_name || user.name || "patient")}` : "/patient";
+  const patientPath = user?.full_name ? `/Donsang/Mon-dossier/${slugify(user.full_name)}` : "/login";
 
   // Compute dynamic nav items based on login status and role
   const activeNavItems = (() => {
@@ -30,9 +30,10 @@ export function Navbar({}: NavbarProps) {
       if (userType === "hospital") {
         // Hospital is the Admin dashboard
         items.push({ label: "Dashboard Admin", path: hospitalPath });
+      } else if (userType === "admin") {
+        items.push({ label: "Dashboard Admin", path: "/admin" });
       } else if (userType === "patient") {
-        // Patient dashboard
-        items.push({ label: "Mon Dossier", path: patientPath });
+        items.push({ label: "Mon dossier", path: patientPath });
       }
     }
 
@@ -89,7 +90,7 @@ export function Navbar({}: NavbarProps) {
         <div className="absolute inset-0 flex items-center justify-center pl-10">
           {isAuthenticated ? (
             <div className="flex items-center gap-3 text-white">
-              <Link to={userType === "hospital" ? hospitalPath : patientPath} className="flex items-center gap-3 text-white hover:opacity-90 transition-opacity cursor-pointer">
+              <Link to={userType === "hospital" ? hospitalPath : (userType === "admin" ? "/admin" : patientPath)} className="flex items-center gap-3 text-white hover:opacity-90 transition-opacity cursor-pointer">
                 <span className="text-sm font-bold hidden xl:block truncate max-w-[120px]">{displayName}</span>
                 <div className="h-8 w-8 rounded-full bg-white text-primary flex items-center justify-center text-xs font-black shadow-lg">
                   {displayName.charAt(0).toUpperCase() ?? "?"}
@@ -143,7 +144,7 @@ export function Navbar({}: NavbarProps) {
             <div className="flex flex-col gap-4 w-full">
               {/* User Profile Card */}
               <Link 
-                to={userType === "hospital" ? hospitalPath : patientPath} 
+                to={userType === "hospital" ? hospitalPath : (userType === "admin" ? "/admin" : patientPath)} 
                 className="flex items-center gap-3 p-3.5 rounded-2xl bg-slate-50 hover:bg-slate-100 transition-colors"
                 onClick={() => setMobileOpen(false)}
               >
@@ -153,7 +154,7 @@ export function Navbar({}: NavbarProps) {
                 <div className="flex flex-col text-left">
                   <span className="font-black text-sm text-slate-900 leading-tight">{displayName}</span>
                   <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">
-                    {userType === "hospital" ? "Hôpital" : "Patient"}
+                    {userType === "hospital" ? "Hôpital" : (userType === "admin" ? "Administrateur" : "Donneur")}
                   </span>
                 </div>
               </Link>

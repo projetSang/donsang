@@ -30,7 +30,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const parsedUser = JSON.parse(storedUser);
         setUser(parsedUser);
         setIsAuthenticated(true);
-        setUserType(parsedUser.user_type || (parsedUser.hospital_id ? "patient" : "hospital"));
+        setUserType((parsedUser.user_type === "donor" || parsedUser.user_type === "patient") ? "patient" : (parsedUser.user_type || (parsedUser.hospital_id ? "patient" : "hospital")));
       } catch (error) {
         console.error("Failed to parse stored user", error);
         localStorage.clear();
@@ -42,7 +42,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const login = (userData: any, token?: string) => {
     setUser(userData);
     setIsAuthenticated(true);
-    const type = userData.user_type || (userData.hospital_id ? "patient" : "hospital");
+    const type = (userData.user_type === "donor" || userData.user_type === "patient") ? "patient" : (userData.user_type || (userData.hospital_id ? "patient" : "hospital"));
     setUserType(type);
     
     localStorage.setItem("userData", JSON.stringify(userData));

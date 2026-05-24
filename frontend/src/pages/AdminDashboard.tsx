@@ -80,7 +80,7 @@ export default function AdminDashboard() {
   };
 
   const handleDelete = async (id: number) => {
-    if (!confirm("Voulez-vous vraiment supprimer cet hôpital ? Tous ses patients et alertes associés seront supprimés.")) return;
+    if (!confirm("Voulez-vous vraiment supprimer cet hôpital ? Toutes ses alertes associées seront supprimées.")) return;
     try {
       await apiFetch(`/admin/hospitals/${id}`, {
         method: "DELETE"

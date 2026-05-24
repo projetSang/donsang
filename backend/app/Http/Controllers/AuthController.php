@@ -35,32 +35,6 @@ class AuthController extends Controller
             ]);
         }
 
-        // Check for Patient
-        $patient = Patient::where('email', $request->email)->first();
-        if ($patient && $patient->password && Hash::check($request->password, $patient->password)) {
-            $token = bin2hex(random_bytes(32));
-            $patient->user_type = 'patient';
-            return response()->json([
-                'status' => 'success',
-                'user_type' => 'patient',
-                'user' => $patient,
-                'token' => $token
-            ]);
-        }
-
-        // Check for BloodDonor
-        $donor = BloodDonor::where('email', $request->email)->first();
-        if ($donor && $donor->password && Hash::check($request->password, $donor->password)) {
-            $token = bin2hex(random_bytes(32));
-            $donor->user_type = 'patient';
-            return response()->json([
-                'status' => 'success',
-                'user_type' => 'patient',
-                'user' => $donor,
-                'token' => $token
-            ]);
-        }
-
         // Check for Hospital
         $hospital = Hospital::where('email', $request->email)->first();
         if ($hospital && Hash::check($request->password, $hospital->password)) {
@@ -70,6 +44,19 @@ class AuthController extends Controller
                 'status' => 'success',
                 'user_type' => 'hospital',
                 'user' => $hospital,
+                'token' => $token
+            ]);
+        }
+
+        // Check for Blood Donor
+        $donor = BloodDonor::where('email', $request->email)->first();
+        if ($donor && Hash::check($request->password, $donor->password)) {
+            $token = bin2hex(random_bytes(32));
+            $donor->user_type = 'donor';
+            return response()->json([
+                'status' => 'success',
+                'user_type' => 'donor',
+                'user' => $donor,
                 'token' => $token
             ]);
         }
@@ -84,31 +71,30 @@ class AuthController extends Controller
     {
         $request->validate([
             'full_name' => 'required|string|max:255',
-            'email' => 'required|email|unique:patients,email',
+            'email' => 'required|email|unique:blood_donors,email',
             'password' => 'required|min:6|confirmed',
             'phone' => 'required|string',
-            'blood_type' => 'sometimes|nullable|string',
+            'city' => 'required|string|max:255',
+            'blood_type' => 'required|string|max:10',
         ]);
 
-        $patient = Patient::create([
+        $donor = BloodDonor::create([
             'full_name' => $request->full_name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
             'phone' => $request->phone,
-            'blood_type' => $request->blood_type ?? 'Non spécifié',
-            'hospital_id' => null, // No hospital by default for self-registered donors
-            'status' => 'Actif',
-            'admission_date' => now(),
+            'city' => $request->city,
+            'blood_type' => $request->blood_type,
+            'donations_count' => 0,
         ]);
 
         $token = bin2hex(random_bytes(32));
-        $patient->user_type = 'patient';
 
         return response()->json([
             'status' => 'success',
             'message' => 'Compte créé avec succès',
-            'user' => $patient,
-            'user_type' => 'patient',
+            'user' => $donor,
+            'user_type' => 'donor',
             'token' => $token
         ]);
     }
@@ -195,6 +181,10 @@ class AuthController extends Controller
             ]));
         }
 
+        if ($user && $request->user_type === 'patient') {
+            $user->is_patient = ($user instanceof Patient) ? 1 : 0;
+        }
+
         return response()->json([
             'status' => 'success',
             'message' => 'Profil mis à jour avec succès',
@@ -224,6 +214,10 @@ class AuthController extends Controller
                 'status' => 'error',
                 'message' => 'Utilisateur introuvable'
             ], 404);
+        }
+
+        if ($user && $request->user_type === 'patient') {
+            $user->is_patient = ($user instanceof Patient) ? 1 : 0;
         }
 
         return response()->json([

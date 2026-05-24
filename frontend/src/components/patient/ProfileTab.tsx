@@ -255,40 +255,6 @@ export function ProfileTab({
         </form>
       </div>
 
-      {/* Emergency contact */}
-      <div className="bg-card rounded-xl border border-border p-6">
-        <h3 className="font-semibold mb-4 flex items-center gap-2">
-          <AlertTriangle className="h-4 w-4 text-warning" />
-          Contact d'urgence
-        </h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div>
-            <label className="text-sm font-medium text-muted-foreground">Nom</label>
-            <Input 
-              value={profileData?.emergency_contact_name || ""} 
-              onChange={(e) => setProfileData({...profileData, emergency_contact_name: e.target.value})}
-              className="mt-1" 
-            />
-          </div>
-          <div>
-            <label className="text-sm font-medium text-muted-foreground">Relation</label>
-            <Input 
-              value={profileData?.emergency_contact_relation || ""} 
-              onChange={(e) => setProfileData({...profileData, emergency_contact_relation: e.target.value})}
-              className="mt-1" 
-            />
-          </div>
-          <div>
-            <label className="text-sm font-medium text-muted-foreground">Téléphone</label>
-            <Input 
-              value={profileData?.emergency_contact_phone || ""} 
-              onChange={(e) => setProfileData({...profileData, emergency_contact_phone: e.target.value})}
-              className="mt-1" 
-            />
-          </div>
-        </div>
-      </div>
-
       {/* Security section */}
       <div className="bg-card rounded-xl border border-border p-6 shadow-sm">
         <h3 className="font-bold text-slate-900 mb-6 flex items-center gap-2">

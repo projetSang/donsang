@@ -30,8 +30,24 @@ class DatabaseSeeder extends Seeder
             'password' => bcrypt('admin123'),
         ]);
 
-        BloodDonor::create(['full_name' => 'Ahmed Ali', 'blood_type' => 'O+', 'city' => 'Casablanca', 'phone' => '0600000000']);
-        BloodDonor::create(['full_name' => 'Sara Nouri', 'blood_type' => 'A-', 'city' => 'Rabat', 'phone' => '0611111111']);
+        BloodDonor::create([
+            'full_name' => 'Ahmed Ali',
+            'email' => 'ahmed@test.com',
+            'password' => bcrypt('password'),
+            'blood_type' => 'O+',
+            'city' => 'Casablanca',
+            'phone' => '0600000000',
+            'donations_count' => 5
+        ]);
+        BloodDonor::create([
+            'full_name' => 'Sara Nouri',
+            'email' => 'sara@test.com',
+            'password' => bcrypt('password'),
+            'blood_type' => 'A-',
+            'city' => 'Rabat',
+            'phone' => '0611111111',
+            'donations_count' => 12
+        ]);
 
 
         Alert::create([

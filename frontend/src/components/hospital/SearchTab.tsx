@@ -205,15 +205,6 @@ export function SearchTab({ selectedBlood, setSelectedBlood, city, setCity }: an
                   modifier
                 </Button>
                 <Button
-                  variant="outline"
-                  size="sm"
-                  className="flex-1  sm:flex-none h-11 rounded-xl border-slate-200 hover:bg-slate-50 hover:text-primary transition-all gap-2"
-                  onClick={() => donor.email ? window.location.href = `mailto:${donor.email}` : alert("Email non disponible")}
-                >
-                  <Mail className="h-4 w-4" />
-                  Email
-                </Button>
-                <Button
                   variant="hero"
                   size="sm"
                   className="flex-1 sm:flex-none h-11 rounded-xl shadow-lg shadow-primary/10 gap-2"

@@ -7,12 +7,10 @@ import {
   Settings, HelpCircle, Mail
 } from "lucide-react";
 
-import { PatientsTab } from "@/components/hospital/PatientsTab";
 import { SearchTab } from "@/components/hospital/SearchTab";
 import { StatsTab } from "@/components/hospital/StatsTab";
 import { AlertsTab } from "@/components/hospital/AlertsTab";
 import { SettingsTab } from "@/components/hospital/SettingsTab";
-import { MessagesTab } from "@/components/hospital/MessagesTab";
 import TableBord from "@/components/hospital/TableBord";
 import { useAuth } from "@/contexts/AuthContext";
 import { apiFetch } from "@/lib/api";
@@ -20,18 +18,16 @@ import { slugify } from "@/lib/utils";
 
 const tabs = [
   { id: "table", label: "Tableau de bord", icon: LayoutDashboard },
-  { id: "patients", label: "Gestion Patients", icon: Users },
   { id: "search", label: "Recherche Donneurs", icon: Search },
   { id: "stats", label: "Statistiques", icon: BarChart3 },
   { id: "alerts", label: "Alertes Urgence", icon: Bell },
-  { id: "messages", label: "Messages Reçus", icon: Mail },
+  { id: "settings", label: "Paramètres", icon: Settings },
 ];
 
 export default function HospitalDashboard() {
   const { user: hospitalInfo, logout, loading: authLoading } = useAuth();
   const { hospitalName } = useParams();
   const [activeTab, setActiveTab] = useState("table");
-  const [showAddPatient, setShowAddPatient] = useState(false);
   const [showNewAlert, setShowNewAlert] = useState(false);
   const [selectedBlood, setSelectedBlood] = useState("");
   const [city, setCity] = useState("");
@@ -114,19 +110,6 @@ export default function HospitalDashboard() {
                 </button>
               ))}
 
-              <div className="pt-4 mt-4 border-t border-slate-100">
-                <p className="px-4 py-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Support & Config</p>
-                <button
-                  onClick={() => setActiveTab("settings")}
-                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all group ${activeTab === "settings"
-                    ? "bg-primary text-white shadow-lg shadow-primary/20"
-                    : "text-slate-600 hover:bg-slate-50 hover:text-primary"
-                    }`}
-                >
-                  <Settings className={`h-5 w-5 ${activeTab === "settings" ? "text-white" : "text-slate-400 group-hover:text-primary"}`} />
-                  Paramètres
-                </button>
-              </div>
             </div>
           </aside>
 
@@ -136,7 +119,6 @@ export default function HospitalDashboard() {
 
             <div className="min-h-[500px]">
               {activeTab === "table" && <TableBord />}
-              {activeTab === "patients" && <PatientsTab showAddPatient={showAddPatient} setShowAddPatient={setShowAddPatient} />}
               {activeTab === "search" && <SearchTab selectedBlood={selectedBlood} setSelectedBlood={setSelectedBlood} city={city} setCity={setCity} />}
               {activeTab === "stats" && <StatsTab />}
               {activeTab === "alerts" && (
@@ -149,7 +131,6 @@ export default function HospitalDashboard() {
                   }}
                 />
               )}
-              {activeTab === "messages" && <MessagesTab />}
               {activeTab === "settings" && <SettingsTab />}
             </div>
           </main>
@@ -158,3 +139,4 @@ export default function HospitalDashboard() {
     </div>
   );
 }
+

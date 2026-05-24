@@ -6,12 +6,10 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import Index from "./pages/Index.tsx";
 import Login from "./pages/Login.tsx";
 import Contact from "./pages/Contact.tsx";
-import PatientDashboard from "./pages/PatientDashboard.tsx";
 import HospitalDashboard from "./pages/HospitalDashboard.tsx";
 import AdminDashboard from "./pages/AdminDashboard.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import UrgentAlerts from "./pages/UrgentAlerts.tsx";
-import SharedDossier from "./pages/SharedDossier.tsx";
 import Register from "./pages/Register.tsx";
 import ForgotPassword from "./pages/ForgotPassword.tsx";
 import ResetPassword from "./pages/ResetPassword.tsx";
@@ -38,16 +36,7 @@ const HospitalRedirect = () => {
   return <Navigate to="/login" replace />;
 };
 
-const PatientRedirect = () => {
-  const { user, isAuthenticated, userType } = useAuth();
-  
-  if (isAuthenticated && userType === "patient") {
-    const patientName = user?.full_name || user?.name || "patient";
-    return <Navigate to={`/Donsang/Mon-dossier/${slugify(patientName)}`} replace />;
-  }
-  
-  return <Navigate to="/login" replace />;
-};
+import PatientDashboard from "./pages/PatientDashboard.tsx";
 
 const routesConfig = [
   { path: "/", element: <Index /> },
@@ -57,12 +46,10 @@ const routesConfig = [
   { path: "/register", element: <Register /> },
   { path: "/forgot-password", element: <ForgotPassword /> },
   { path: "/reset-password", element: <ResetPassword /> },
-  { path: "/patient", element: <PatientRedirect />, protected: true },
-  { path: "/Donsang/Mon-dossier/:userName", element: <PatientDashboard />, protected: true },
   { path: "/hospital", element: <HospitalRedirect />, protected: true },
   { path: "/Donsang/:hospitalName", element: <HospitalDashboard />, protected: true },
+  { path: "/Donsang/Mon-dossier/:userName", element: <PatientDashboard />, protected: true },
   { path: "/admin", element: <AdminDashboard />, protected: true },
-  { path: "/dossier/partage/:token", element: <SharedDossier /> },
   { path: "*", element: <NotFound /> },
 ];
 
