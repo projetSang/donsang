@@ -13,13 +13,10 @@ return new class extends Migration
     {
         Schema::create('alert_responses', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('alert_id');
-            $table->unsignedBigInteger('patient_id');
+            $table->foreignId('alert_id')->constrained('alerts')->onDelete('cascade');
+            $table->foreignId('blood_donor_id')->nullable()->constrained('blood_donors')->onDelete('cascade');
             $table->string('status'); // available, unavailable
             $table->timestamps();
-
-            $table->foreign('alert_id')->references('id')->on('alerts')->onDelete('cascade');
-            $table->foreign('patient_id')->references('id')->on('patients')->onDelete('cascade');
         });
     }
 

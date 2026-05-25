@@ -11,6 +11,10 @@ return new class extends Migration {
             $table->string('city');
             $table->string('email')->unique();
             $table->string('password');
+            $table->string('address')->nullable();
+            $table->string('phone')->nullable();
+            $table->decimal('latitude', 10, 8)->nullable();
+            $table->decimal('longitude', 11, 8)->nullable();
             $table->timestamps();
         });
     }

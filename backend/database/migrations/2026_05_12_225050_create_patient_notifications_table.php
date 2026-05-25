@@ -13,14 +13,12 @@ return new class extends Migration
     {
         Schema::create('patient_notifications', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('patient_id')->nullable(); // null means global
+            $table->foreignId('patient_id')->nullable()->constrained('patients')->onDelete('cascade');
             $table->string('title');
             $table->text('message')->nullable();
             $table->string('type')->default('normal'); // urgent, normal
             $table->boolean('is_read')->default(false);
             $table->timestamps();
-
-            $table->foreign('patient_id')->references('id')->on('patients')->onDelete('cascade');
         });
     }
 

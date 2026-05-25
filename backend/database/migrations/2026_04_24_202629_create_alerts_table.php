@@ -9,6 +9,10 @@ return new class extends Migration {
             $table->id();
             $table->foreignId('hospital_id')->constrained('hospitals')->onDelete('cascade');
             $table->string('blood_type');
+            $table->string('city')->nullable();
+            $table->string('quantity')->nullable();
+            $table->text('description')->nullable();
+            $table->string('direct_phone')->nullable();
             $table->string('urgency_level');
             $table->string('status')->default('Active');
             $table->timestamps();

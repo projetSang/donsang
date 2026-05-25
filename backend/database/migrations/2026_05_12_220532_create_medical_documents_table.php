@@ -13,15 +13,13 @@ return new class extends Migration
     {
         Schema::create('medical_documents', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('patient_id');
+            $table->foreignId('patient_id')->constrained('patients')->onDelete('cascade');
             $table->string('name');
             $table->string('type')->nullable(); // PDF, Image, etc.
             $table->string('category')->nullable(); // Ordonnance, Analyse, Imagerie
             $table->string('file_path');
             $table->date('date')->nullable();
             $table->timestamps();
-
-            $table->foreign('patient_id')->references('id')->on('patients')->onDelete('cascade');
         });
     }
 
