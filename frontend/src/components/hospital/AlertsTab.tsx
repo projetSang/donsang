@@ -20,8 +20,7 @@ export function AlertsTab({ showNewAlert, setShowNewAlert, onViewDonors }: any) 
     quantity: "",
     description: "",
     direct_phone: "",
-    status: "Active",
-    radius: "20"
+    status: "Active"
   });
 
   const fetchAlerts = () => {
@@ -55,8 +54,7 @@ export function AlertsTab({ showNewAlert, setShowNewAlert, onViewDonors }: any) 
           quantity: "",
           description: "",
           direct_phone: "",
-          status: "Active",
-          radius: "20"
+          status: "Active"
         });
       }
     } catch (err) {
@@ -110,23 +108,23 @@ export function AlertsTab({ showNewAlert, setShowNewAlert, onViewDonors }: any) 
 
   return (
     <div className="space-y-6 animate-reveal">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="animate-reveal">
-          <h1 className="text-3xl font-extrabold text-slate-900 flex items-center gap-3">
-            <AlertTriangle className="h-8 w-8 text-primary" />
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 flex items-start sm:items-center gap-2 sm:gap-3 leading-tight">
+            <AlertTriangle className="h-6 w-6 sm:h-8 sm:w-8 text-primary shrink-0 mt-1 sm:mt-0" />
             Urgences & Besoins en Sang
           </h1>
           <p className="text-slate-500 mt-1">Gérez vos alertes et trouvez des donneurs rapidement.</p>
         </div>
         
-        <Button variant="hero" size="sm" onClick={() => setShowNewAlert(!showNewAlert)}>
+        <Button variant="hero" size="sm" className="w-full sm:w-auto" onClick={() => setShowNewAlert(!showNewAlert)}>
           <AlertTriangle className="h-4 w-4 mr-2" />
           Lancer une alerte
         </Button>
       </div>
 
       {showNewAlert && (
-        <div className="bg-destructive/5 rounded-xl border border-destructive/20 p-6 shadow-sm">
+        <div className="bg-destructive/5 rounded-xl border border-destructive/20 p-4 sm:p-6 shadow-sm">
           <h4 className="font-semibold text-destructive mb-4 flex items-center gap-2">
             <span className="relative flex h-3 w-3 mr-1">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-destructive opacity-75"></span>
@@ -134,7 +132,7 @@ export function AlertsTab({ showNewAlert, setShowNewAlert, onViewDonors }: any) 
             </span>
             Formulaire de demande urgente
           </h4>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-5 mb-5">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-5">
             <div>
               <label className="text-sm font-medium text-slate-800">Groupes Sanguins Requis</label>
               <select 
@@ -169,20 +167,6 @@ export function AlertsTab({ showNewAlert, setShowNewAlert, onViewDonors }: any) 
                 <option value="moyenne">Moyenne (Cette semaine)</option>
               </select>
             </div>
-            <div>
-              <label className="text-sm font-medium text-slate-800">Rayon (km)</label>
-              <select 
-                className="mt-1 h-11 w-full rounded-lg border border-input bg-white px-3 py-2 text-sm focus:ring-2 focus:ring-destructive/20 outline-none"
-                value={formData.radius}
-                onChange={(e) => setFormData({...formData, radius: e.target.value})}
-              >
-                <option value="5">5 km</option>
-                <option value="10">10 km</option>
-                <option value="20">20 km</option>
-                <option value="50">50 km</option>
-                <option value="100">100 km</option>
-              </select>
-            </div>
             <div className="md:col-span-4">
               <label className="text-sm font-medium text-slate-800">Numéro de téléphone direct (Optionnel)</label>
               <Input 
@@ -203,17 +187,17 @@ export function AlertsTab({ showNewAlert, setShowNewAlert, onViewDonors }: any) 
               />
             </div>
           </div>
-          <div className="flex justify-end gap-3 pt-2 border-t border-destructive/10">
-            <Button variant="outline" size="sm" onClick={() => setShowNewAlert(false)}>Annuler</Button>
+          <div className="flex flex-col-reverse sm:flex-row justify-end gap-3 pt-2 border-t border-destructive/10">
+            <Button variant="outline" size="sm" className="w-full sm:w-auto" onClick={() => setShowNewAlert(false)}>Annuler</Button>
             <Button 
               variant="destructive" 
               size="sm" 
               onClick={handleCreateAlert} 
               disabled={loading}
-              className="shadow-lg shadow-destructive/20"
+              className="w-full sm:w-auto shadow-lg shadow-destructive/20"
             >
               <Bell className="h-4 w-4 mr-2" />
-              {loading ? "Diffusion..." : "Diffuser l'alerte locale"}
+              {loading ? "Diffusion..." : "Diffuser l'alerte"}
             </Button>
           </div>
         </div>
@@ -222,7 +206,7 @@ export function AlertsTab({ showNewAlert, setShowNewAlert, onViewDonors }: any) 
       <div className="space-y-4">
         {alerts.length === 0 && <p className="text-muted-foreground text-center py-8">Aucune alerte en cours.</p>}
         {alerts.map((alert) => (
-          <div key={alert.id} className={`bg-white rounded-xl border-l-4 p-6 shadow-sm relative overflow-hidden group transition-all hover:shadow-md ${
+          <div key={alert.id} className={`bg-white rounded-xl border-l-4 p-4 sm:p-6 shadow-sm relative overflow-hidden group transition-all hover:shadow-md ${
             alert.status === 'Clôturée' 
               ? 'border-slate-200 border-y border-r opacity-80' 
               : alert.urgency_level === 'critique'
@@ -231,14 +215,14 @@ export function AlertsTab({ showNewAlert, setShowNewAlert, onViewDonors }: any) 
                   ? 'border-orange-500 border-y border-r'
                   : 'border-blue-500 border-y border-r'
           }`}>
-            <div className="absolute top-0 right-0 p-5">
+            <div className="absolute top-0 right-0 p-4 sm:p-5">
               <span className="relative flex h-3 w-3">
                 <span className={`animate-ping absolute inline-flex h-full w-full rounded-full ${alert.status === 'Clôturée' ? 'bg-slate-400' : alert.urgency_level === 'critique' ? 'bg-red-500' : alert.urgency_level === 'haute' ? 'bg-orange-500' : 'bg-blue-500'} opacity-60`}></span>
                 <span className={`relative inline-flex rounded-full h-3 w-3 ${alert.status === 'Clôturée' ? 'bg-slate-400' : alert.urgency_level === 'critique' ? 'bg-red-500' : alert.urgency_level === 'haute' ? 'bg-orange-500' : 'bg-blue-500'}`}></span>
               </span>
             </div>
-            <div className="flex items-start gap-5">
-              <div className={`h-14 w-14 rounded-full flex items-center justify-center shrink-0 shadow-xl transition-all group-hover:scale-110 ${
+            <div className="flex flex-col sm:flex-row items-start gap-4 sm:gap-5">
+              <div className={`h-12 w-12 sm:h-14 sm:w-14 rounded-full flex items-center justify-center shrink-0 shadow-xl transition-all group-hover:scale-110 ${
                 alert.status === 'Clôturée' 
                   ? 'bg-slate-200 text-slate-400 shadow-slate-200/50' 
                   : alert.urgency_level === 'critique'
@@ -247,12 +231,12 @@ export function AlertsTab({ showNewAlert, setShowNewAlert, onViewDonors }: any) 
                       ? 'bg-gradient-to-br from-orange-400 to-orange-600 text-white shadow-orange-500/30'
                       : 'bg-gradient-to-br from-blue-500 to-blue-700 text-white shadow-blue-500/30'
               }`}>
-                <Activity className="h-7 w-7" />
+                <Activity className="h-6 w-6 sm:h-7 sm:w-7" />
               </div>
-              <div className="flex-1">
-                <div className="flex items-center gap-3 mb-1">
-                  <div className="font-extrabold text-xl text-slate-900">Besoin : Donneurs {alert.blood_type}</div>
-                  <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${
+              <div className="flex-1 w-full min-w-0">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-1 pr-5 sm:pr-0">
+                  <div className="font-extrabold text-lg sm:text-xl text-slate-900 leading-tight break-words">Besoin : Donneurs {alert.blood_type}</div>
+                  <span className={`w-fit px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${
                     alert.status === 'Clôturée'
                       ? 'bg-slate-100 text-slate-500'
                       : alert.urgency_level === 'critique'
@@ -265,17 +249,17 @@ export function AlertsTab({ showNewAlert, setShowNewAlert, onViewDonors }: any) 
                   </span>
                 </div>
                 
-                <div className="text-sm font-medium text-slate-600 mb-4 flex items-center gap-2">
+                <div className="text-sm font-medium text-slate-600 mb-3 sm:mb-4 flex items-center gap-2">
                    <b>{alert.quantity ? `${alert.quantity} poches requises` : "Quantité non spécifiée"}</b>
                 </div>
                 
                 {alert.description && (
-                  <p className="text-sm text-slate-500 mb-4 bg-slate-50/50 p-3 rounded-lg italic border-l-2 border-slate-200">
+                  <p className="text-sm text-slate-500 mb-3 sm:mb-4 bg-slate-50/50 p-3 rounded-lg italic border-l-2 border-slate-200 break-words">
                     "{alert.description}"
                   </p>
                 )}
 
-                <div className="flex flex-wrap items-center gap-x-6 gap-y-3 text-sm text-slate-700 font-medium mb-5">
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-xs sm:text-sm text-slate-700 font-medium mb-4 sm:mb-5">
                   <span className="flex items-center gap-2 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-100">
                     <MapPin className="h-4 w-4 text-primary" /> {alert.hospital?.name || "CHU Casablanca"}
                   </span>
@@ -289,11 +273,11 @@ export function AlertsTab({ showNewAlert, setShowNewAlert, onViewDonors }: any) 
                   )}
                 </div>
 
-                <div className="flex gap-3">
+                <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
                   <Button 
                     variant="hero" 
                     size="sm" 
-                    className="shadow-md"
+                    className="w-full sm:w-auto shadow-md"
                     onClick={() => onViewDonors(alert.blood_type)}
                   >
                     Voir les donneurs
@@ -301,7 +285,7 @@ export function AlertsTab({ showNewAlert, setShowNewAlert, onViewDonors }: any) 
                   <Button 
                     variant="outline" 
                     size="sm" 
-                    className="shadow-sm border-primary/20 text-primary hover:bg-primary/5"
+                    className="w-full sm:w-auto shadow-sm border-primary/20 text-primary hover:bg-primary/5"
                     onClick={() => fetchResponses(alert.id)}
                   >
                     <Users className="h-4 w-4 mr-2" />
@@ -309,19 +293,19 @@ export function AlertsTab({ showNewAlert, setShowNewAlert, onViewDonors }: any) 
                   </Button>
                   {alert.status !== 'Clôturée' ? (
                     <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      onClick={() => handleCloseAlert(alert.id)}
-                      className="text-destructive font-semibold hover:bg-destructive/10"
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={() => handleCloseAlert(alert.id)}
+                    className="w-full sm:w-auto text-destructive font-semibold hover:bg-destructive/10"
                     >
                       Clôturer l'alerte
                     </Button>
                   ) : (
                     <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      onClick={() => handleDeleteAlert(alert.id)}
-                      className="text-slate-500 font-semibold hover:bg-slate-100"
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={() => handleDeleteAlert(alert.id)}
+                    className="w-full sm:w-auto text-slate-500 font-semibold hover:bg-slate-100"
                     >
                       Supprimer l'historique
                     </Button>
@@ -336,9 +320,9 @@ export function AlertsTab({ showNewAlert, setShowNewAlert, onViewDonors }: any) 
       {showResponsesModal && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in duration-200">
           <div className="bg-white rounded-2xl w-full max-w-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
-            <div className="bg-slate-900 p-6 text-white flex items-center justify-between">
+            <div className="bg-slate-900 p-4 sm:p-6 text-white flex items-center justify-between gap-4">
               <div>
-                <h3 className="text-xl font-bold flex items-center gap-2">
+                <h3 className="text-lg sm:text-xl font-bold flex items-center gap-2">
                   <Users className="h-5 w-5" /> Réponses des donneurs
                 </h3>
                 <p className="text-slate-400 text-sm mt-1">Liste des donneurs ayant répondu à cette alerte.</p>
@@ -353,7 +337,7 @@ export function AlertsTab({ showNewAlert, setShowNewAlert, onViewDonors }: any) 
               </Button>
             </div>
             
-            <div className="p-6 max-h-[60vh] overflow-y-auto">
+            <div className="p-4 sm:p-6 max-h-[60vh] overflow-y-auto">
               {!selectedAlertResponses || selectedAlertResponses.length === 0 ? (
                 <div className="text-center py-12">
                   <div className="bg-slate-50 h-16 w-16 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -364,16 +348,16 @@ export function AlertsTab({ showNewAlert, setShowNewAlert, onViewDonors }: any) 
               ) : (
                 <div className="space-y-3">
                   {selectedAlertResponses.map((r) => (
-                    <div key={r.id} className="flex items-center justify-between p-4 rounded-xl border border-slate-100 bg-slate-50/50">
-                      <div className="flex items-center gap-4">
+                    <div key={r.id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 rounded-xl border border-slate-100 bg-slate-50/50">
+                      <div className="flex items-center gap-3 sm:gap-4 min-w-0">
                         <div className={`h-10 w-10 rounded-full flex items-center justify-center font-bold text-white shadow-sm ${
                           r.status === 'available' ? 'bg-green-500' : 'bg-slate-400'
                         }`}>
                           {r.patient_name.charAt(0)}
                         </div>
-                        <div>
-                          <div className="font-bold text-slate-900">{r.patient_name}</div>
-                          <div className="text-xs text-slate-500 flex items-center gap-3 mt-0.5">
+                        <div className="min-w-0">
+                          <div className="font-bold text-slate-900 break-words">{r.patient_name}</div>
+                          <div className="text-xs text-slate-500 flex flex-wrap items-center gap-2 sm:gap-3 mt-0.5">
                             <span className="flex items-center gap-1"><Droplets className="h-3 w-3" /> {r.blood_type}</span>
                             <span className="flex items-center gap-1"><Phone className="h-3 w-3" /> {r.phone || "N/A"}</span>
                             <span>{r.time}</span>

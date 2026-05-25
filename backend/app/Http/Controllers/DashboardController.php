@@ -15,20 +15,21 @@ class DashboardController extends Controller
     public function getStats(Request $request)
     {
         $hospitalId = $request->query('hospital_id');
+        // nombre de donneurs dans la region
         $donorsCount = BloodDonor::count();
-
+        // nombre de demandes d'alertes en cours
         $alertsQuery = Alert::where('status', '!=', 'Clôturée');
         if ($hospitalId) {
             $alertsQuery->where('hospital_id', $hospitalId);
         }
         $alertsCount = $alertsQuery->count();
-
-        $establishedContacts = \App\Models\AlertResponse::where('status', 'available')->count();
+        // nombre de réponses disponibles pour les alertes
+        $establishedContacts = \App\Models\AlertResponse::where('status', 'available')->count();//les reponse disponible pour les alertes
         $patientsCount = 0;
 
         $currentYear = date('Y');
 
-        // Optimisation : récupérer toutes les données en deux requêtes au lieu de 24
+        // Optimisation : récupérer toutes les données en deux requêtes 
         $donationsByMonth = BloodDonor::selectRaw('MONTH(created_at) as month, COUNT(*) as count')
             ->whereYear('created_at', $currentYear)
             ->groupBy('month')
@@ -163,26 +164,45 @@ class DashboardController extends Controller
     {
         $bloodType = $request->blood_type;
         $city = $request->city;
-        $radius = $request->radius;
-        $hospitalId = $request->query('hospital_id') ?: 1;
+        $cin = trim((string) $request->cin);
 
         if ($bloodType) {
             $bloodType = str_replace(['−', '–'], '-', $bloodType);
         }
 
-        // Initialize blood donors query
-        $donorsQuery = BloodDonor::select('*')->selectRaw('0 as is_patient, NULL as distance');
+        // If CIN is provided, search directly by CIN (priority search)
+        if ($cin !== '') {
+            $normalizedCin = strtoupper($cin);
+            $compactCin = str_replace(' ', '', $normalizedCin);
 
-        // Apply filters
-        if ($radius && $radius != '') {
-            $hospital = Hospital::find($hospitalId);
-            if ($hospital && $hospital->latitude && $hospital->longitude) {
-                $radiusVal = (float) $radius;
-                $donorsQuery = BloodDonor::select('*')
-                    ->selectRaw('(6371 * acos(cos(radians(?)) * cos(radians(latitude)) * cos(radians(longitude) - radians(?)) + sin(radians(?)) * sin(radians(latitude)))) AS distance', [$hospital->latitude, $hospital->longitude, $hospital->latitude])
-                    ->having('distance', '<', $radiusVal);
+            $donor = BloodDonor::whereRaw('UPPER(TRIM(cin)) = ?', [$normalizedCin])->first();
+
+            if (!$donor) {
+                $donor = BloodDonor::whereRaw('REPLACE(UPPER(TRIM(cin)), " ", "") = ?', [
+                    $compactCin
+                ])->first();
             }
+
+            if (!$donor) {
+                $donor = BloodDonor::whereRaw('UPPER(TRIM(cin)) LIKE ?', ['%' . $normalizedCin . '%'])->first();
+            }
+
+            if (!$donor) {
+                $donor = BloodDonor::whereRaw('REPLACE(UPPER(TRIM(cin)), " ", "") LIKE ?', [
+                    '%' . $compactCin . '%'
+                ])->first();
+            }
+
+            if ($donor) {
+                $donor->is_patient = 0;
+                return response()->json([$donor]);
+            }
+
+            return response()->json([]);
         }
+
+        // Initialize blood donors query
+        $donorsQuery = BloodDonor::select('*')->selectRaw('0 as is_patient');
 
         if ($bloodType) {
             $donorsQuery->where(function ($q) use ($bloodType) {
@@ -201,19 +221,13 @@ class DashboardController extends Controller
             $d->is_patient = 0;
         }
 
-        if ($radius && $radius != '') {
-            $donors = $donors->sortBy(function ($item) {
-                return $item->distance ?? 999999;
-            })->values();
-        }
-
         return response()->json($donors);
     }
 
     public function updateDonor(Request $request, $id)
     {
         $donor = BloodDonor::findOrFail($id);
-        $donor->update($request->only(['full_name', 'email', 'phone', 'city', 'blood_type', 'last_donation_date', 'donations_count']));
+        $donor->update($request->only(['full_name', 'cin', 'email', 'phone', 'city', 'blood_type', 'last_donation_date', 'donations_count']));
         $donor->is_patient = 0;
         return response()->json($donor);
     }
@@ -280,31 +294,27 @@ class DashboardController extends Controller
         $validated = $request->validate($this->alertRules());
         $alert = Alert::create($validated);
 
-        // Notify nearby patients
-        $this->notifyNearbyPatients($alert, $request->radius);
+        // Notify matching donors
+        $this->notifyNearbyPatients($alert);
 
         return response()->json($alert->load('hospital'), 201);
     }
 
-    private function notifyNearbyPatients($alert, $requestedRadius = null)
+    private function notifyNearbyPatients($alert)
     {
         $hospital = Hospital::find($alert->hospital_id);
         if (!$hospital)
             return;
-
-        // Radius in kilometers
-        $radius = $requestedRadius ? (float) $requestedRadius : 20;
 
         $nearbyDonorsQuery = BloodDonor::query();
 
         if ($hospital->latitude && $hospital->longitude) {
             $nearbyDonorsQuery->select('*')
                 ->selectRaw('(6371 * acos(cos(radians(?)) * cos(radians(latitude)) * cos(radians(longitude) - radians(?)) + sin(radians(?)) * sin(radians(latitude)))) AS distance', [$hospital->latitude, $hospital->longitude, $hospital->latitude])
-                ->where(function($query) use ($radius, $hospital) {
-                    $query->whereRaw('(6371 * acos(cos(radians(?)) * cos(radians(latitude)) * cos(radians(longitude) - radians(?)) + sin(radians(?)) * sin(radians(latitude)))) < ?', [$hospital->latitude, $hospital->longitude, $hospital->latitude, $radius])
-                          ->orWhere('city', 'LIKE', '%' . $hospital->city . '%');
-                });
-        } else {
+                ->orderBy('distance');
+        }
+
+        if ($hospital->city) {
             $nearbyDonorsQuery->where('city', 'LIKE', '%' . $hospital->city . '%');
         }
 
@@ -638,8 +648,7 @@ class DashboardController extends Controller
             'quantity' => 'nullable|string',
             'description' => 'nullable|string',
             'direct_phone' => 'nullable|string',
-            'status' => 'nullable|string',
-            'radius' => 'nullable|numeric'
+            'status' => 'nullable|string'
         ];
     }
 
@@ -647,6 +656,7 @@ class DashboardController extends Controller
     {
         return [
             'full_name' => ($id ? 'sometimes|' : '') . 'required|string|max:255',
+            'cin' => 'nullable|string|max:20|unique:blood_donors,cin' . ($id ? ',' . $id : ''),
             'email' => ($id ? 'sometimes|' : '') . 'nullable|email|unique:blood_donors,email' . ($id ? ',' . $id : ''),
             'blood_type' => ($id ? 'sometimes|' : '') . 'required|string|max:10',
             'phone' => ($id ? 'sometimes|' : '') . 'required|string|max:50',

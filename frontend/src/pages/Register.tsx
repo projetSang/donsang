@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Mail, Lock, Eye, EyeOff, User, Phone, Droplets, MapPin } from "lucide-react";
+import { Mail, Lock, Eye, EyeOff, User, Phone, Droplets, MapPin, CreditCard } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { apiFetch } from "@/lib/api";
 import { Link, useNavigate } from "react-router-dom";
@@ -12,6 +12,7 @@ export default function Register() {
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     full_name: "",
+    cin: "",
     email: "",
     phone: "",
     city: "",
@@ -98,7 +99,22 @@ export default function Register() {
                   required
                   value={formData.full_name}
                   onChange={handleChange}
-                  placeholder="Ex: Ahmed Alaoui" 
+                  placeholder="Entre votre nom complet" 
+                  className="h-12 rounded-xl border-slate-200 focus:border-primary transition-all pl-12 text-base" 
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="cin" className="text-slate-900 font-bold">CIN <span className="text-slate-400 font-normal text-xs">(optionnel)</span></Label>
+              <div className="relative">
+                <CreditCard className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 h-5 w-5" />
+                <Input 
+                  id="cin" 
+                  type="text" 
+                  value={formData.cin}
+                  onChange={handleChange}
+                  placeholder="Entre votre CIN" 
                   className="h-12 rounded-xl border-slate-200 focus:border-primary transition-all pl-12 text-base" 
                 />
               </div>
@@ -114,7 +130,7 @@ export default function Register() {
                   required
                   value={formData.email}
                   onChange={handleChange}
-                  placeholder="votre@email.com" 
+                  placeholder="Entre Votre adresse email" 
                   className="h-12 rounded-xl border-slate-200 focus:border-primary transition-all pl-12 text-base" 
                 />
               </div>
@@ -130,7 +146,7 @@ export default function Register() {
                   required
                   value={formData.phone}
                   onChange={handleChange}
-                  placeholder="06 00 00 00 00" 
+                  placeholder="Entre votre numéro de téléphone" 
                   className="h-12 rounded-xl border-slate-200 focus:border-primary transition-all pl-12 text-base" 
                 />
               </div>
@@ -146,7 +162,7 @@ export default function Register() {
                   required
                   value={formData.city}
                   onChange={handleChange}
-                  placeholder="Ex: Casablanca" 
+                  placeholder="Entre votre ville" 
                   className="h-12 rounded-xl border-slate-200 focus:border-primary transition-all pl-12 text-base" 
                 />
               </div>

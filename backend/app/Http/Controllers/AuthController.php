@@ -76,10 +76,12 @@ class AuthController extends Controller
             'phone' => 'required|string',
             'city' => 'required|string|max:255',
             'blood_type' => 'required|string|max:10',
+            'cin' => 'nullable|string|max:20|unique:blood_donors,cin',
         ]);
 
         $donor = BloodDonor::create([
             'full_name' => $request->full_name,
+            'cin' => $request->cin,
             'email' => $request->email,
             'password' => Hash::make($request->password),
             'phone' => $request->phone,
