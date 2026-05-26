@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import {
   Heart, Search, Users, Droplets, Building2,
   LogOut, Bell, BarChart3, ChevronRight, LayoutDashboard,
-  Settings, HelpCircle, Mail
+  Settings, HelpCircle, Mail, MessageSquare
 } from "lucide-react";
 
 import { SearchTab } from "@/components/hospital/SearchTab";
@@ -12,6 +12,7 @@ import { StatsTab } from "@/components/hospital/StatsTab";
 import { AlertsTab } from "@/components/hospital/AlertsTab";
 import { SettingsTab } from "@/components/hospital/SettingsTab";
 import TableBord from "@/components/hospital/TableBord";
+import { MessagesTab } from "@/components/hospital/MessagesTab";
 import { useAuth } from "@/contexts/AuthContext";
 import { apiFetch } from "@/lib/api";
 import { slugify } from "@/lib/utils";
@@ -21,6 +22,7 @@ const tabs = [
   { id: "search", label: "Recherche Donneurs", icon: Search },
   { id: "stats", label: "Statistiques", icon: BarChart3 },
   { id: "alerts", label: "Alertes Urgence", icon: Bell },
+  { id: "messages", label: "Messages", icon: MessageSquare },
   { id: "settings", label: "Paramètres", icon: Settings },
 ];
 
@@ -146,6 +148,7 @@ export default function HospitalDashboard() {
                   }}
                 />
               )}
+              {activeTab === "messages" && <MessagesTab />}
               {activeTab === "settings" && <SettingsTab />}
             </div>
           </main>

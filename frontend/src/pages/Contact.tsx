@@ -1,151 +1,376 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Mail, Phone, MapPin, Send } from "lucide-react";
+import {
+  Mail, Phone, MapPin, Send, Building2, User, ArrowLeft,
+  CheckCircle2, Shield, Heart
+} from "lucide-react";
 
 export default function Contact() {
+  const [contactType, setContactType] = useState<"choice" | "hospital" | "user">("choice");
   const [submitted, setSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [formData, setFormData] = useState({
+  const [hospitals, setHospitals] = useState<any[]>([]);
+
+  // Hospital form
+  const [hospitalForm, setHospitalForm] = useState({
     name: "",
     email: "",
-    subject: "",
-    message: ""
+    phone: "",
+    hospital_name: "",
+    city: "",
+    address: "",
+    message: "",
   });
 
-  const handleChange = (e: any) => {
-    setFormData({ ...formData, [e.target.id]: e.target.value });
+  // User form
+  const [userForm, setUserForm] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    subject: "",
+    hospital_id: "",
+    message: "",
+  });
+
+  useEffect(() => {
+    fetch("http://localhost:8000/api/admin/hospitals")
+      .then(res => res.json())
+      .then(data => setHospitals(data))
+      .catch(console.error);
+  }, []);
+
+  const handleHospitalChange = (e: any) => {
+    setHospitalForm({ ...hospitalForm, [e.target.id]: e.target.value });
+  };
+
+  const handleUserChange = (e: any) => {
+    setUserForm({ ...userForm, [e.target.id]: e.target.value });
+  };
+
+  const handleHospitalSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    try {
+      const res = await fetch("http://localhost:8000/api/contact-messages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...hospitalForm, type: "hospital" }),
+      });
+      if (res.ok) setSubmitted(true);
+      else alert("Erreur lors de l'envoi.");
+    } catch { alert("Erreur de connexion."); }
+    finally { setIsSubmitting(false); }
+  };
+
+  const handleUserSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    const selectedHospital = hospitals.find(h => String(h.id) === userForm.hospital_id);
+    try {
+      const res = await fetch("http://localhost:8000/api/contact-messages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...userForm,
+          type: "user",
+          subject: selectedHospital
+            ? `Contact concernant: ${selectedHospital.name}`
+            : userForm.subject || "Message général",
+        }),
+      });
+      if (res.ok) setSubmitted(true);
+      else alert("Erreur lors de l'envoi.");
+    } catch { alert("Erreur de connexion."); }
+    finally { setIsSubmitting(false); }
+  };
+
+  const goBack = () => {
+    setContactType("choice");
+    setSubmitted(false);
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-[#faf8f8] flex flex-col">
       <Navbar />
 
-      <section className="pt-20 pb-10 md:pt-30 md:pb-20 overflow-hidden relative">
+      <section className="pt-24 pb-16 flex-grow">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-6 mt-6">
-            <h1 className="text-2xl md:text-4xl font-black text-slate-900 mb-4">
+
+          {/* Page Header */}
+          <div className="text-center mb-10">
+            <h1 className="text-3xl md:text-5xl font-black text-slate-900 mb-3">
               Contactez-nous
             </h1>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Une question ? Un partenariat ? N'hésitez pas à nous écrire.
+            <p className="text-lg text-slate-500 max-w-2xl mx-auto">
+              Choisissez votre profil pour nous envoyer le bon message.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 max-w-5xl mx-auto">
-            <div className="space-y-8">
-              <div>
-                <h2 className="text-xl font-bold mb-6">Nos coordonnées</h2>
-                <div className="space-y-4">
-                  <div className="flex items-start gap-4">
-                    <div className="h-10 w-10 rounded-lg bg-accent flex items-center justify-center shrink-0">
-                      <Mail className="h-5 w-5 text-primary" />
-                    </div>
-                    <div>
-                      <div className="font-medium">Email</div>
-                      <div className="text-sm text-muted-foreground"><a href="mailto:admin@chu.com">admin@chu.com</a></div>
-                    </div>
-                  </div> 
-                  <div className="flex items-start gap-4">
-                    <div className="h-10 w-10 rounded-lg bg-accent flex items-center justify-center shrink-0">
-                      <Phone className="h-5 w-5 text-primary" />
-                    </div>
-                    <div>
-                      <div className="font-medium">Téléphone</div>
-                      <div className="text-sm text-muted-foreground">+212 684575896</div>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-4">
-                    <div className="h-10 w-10 rounded-lg bg-accent flex items-center justify-center shrink-0">
-                      <MapPin className="h-5 w-5 text-primary" />
-                    </div>
-                    <div>
-                      <div className="font-medium">Adresse</div>
-                      <div className="text-sm text-muted-foreground">Casablanca, Maroc</div>
-                    </div>
-                  </div>
+          {/* Success Screen */}
+          {submitted ? (
+            <div className="max-w-lg mx-auto">
+              <div className="bg-white rounded-3xl border border-slate-100 shadow-xl p-10 text-center animate-in zoom-in-95 duration-300">
+                <div className="h-20 w-20 rounded-full bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center mx-auto mb-6 shadow-lg shadow-emerald-200">
+                  <CheckCircle2 className="h-10 w-10 text-white" />
                 </div>
+                <h2 className="text-2xl font-black text-slate-900 mb-2">
+                  {contactType === "hospital" ? "Demande envoyée !" : "Message envoyé !"}
+                </h2>
+                <p className="text-slate-500 mb-8 leading-relaxed">
+                  {contactType === "hospital"
+                    ? "Votre demande de création de compte hôpital a été transmise à l'administrateur. Vous recevrez une réponse par email sous 24-48h."
+                    : "Nous avons bien reçu votre message. Nous vous répondrons dans les plus brefs délais."
+                  }
+                </p>
+                <Button variant="outline" onClick={goBack} className="rounded-xl h-11 px-6 gap-2">
+                  <ArrowLeft className="h-4 w-4" /> Retour
+                </Button>
+              </div>
+            </div>
+          ) : contactType === "choice" ? (
+            /* ─── CHOICE SCREEN ─── */
+            <div className="max-w-3xl mx-auto">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+                {/* Hospital Card */}
+                <button
+                  onClick={() => setContactType("hospital")}
+                  className="group bg-white rounded-3xl border-2 border-slate-100 hover:border-primary/40 p-8 text-left transition-all duration-300 hover:shadow-2xl hover:shadow-primary/5 hover:-translate-y-1 relative overflow-hidden"
+                >
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-primary/5 to-transparent rounded-bl-full" />
+                  <div className="relative">
+                    <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-primary/10 to-primary/5 border-2 border-primary/10 flex items-center justify-center mb-5 group-hover:scale-110 group-hover:bg-primary/20 transition-all duration-300">
+                      <Building2 className="h-8 w-8 text-primary" />
+                    </div>
+                    <h3 className="text-xl font-black text-slate-900 mb-2">
+                      Je suis un Hôpital
+                    </h3>
+                    <p className="text-sm text-slate-500 leading-relaxed mb-4">
+                      Demandez la création de votre compte hôpital pour accéder au tableau de bord et gérer vos donneurs.
+                    </p>
+                    <div className="flex items-center gap-2 text-primary font-bold text-sm">
+                      <Shield className="h-4 w-4" />
+                      Demander un compte
+                      <span className="ml-auto group-hover:translate-x-1 transition-transform">→</span>
+                    </div>
+                  </div>
+                </button>
+
+                {/* User / Donor Card */}
+                <button
+                  onClick={() => setContactType("user")}
+                  className="group bg-white rounded-3xl border-2 border-slate-100 hover:border-rose-300 p-8 text-left transition-all duration-300 hover:shadow-2xl hover:shadow-rose-100/50 hover:-translate-y-1 relative overflow-hidden"
+                >
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-rose-50 to-transparent rounded-bl-full" />
+                  <div className="relative">
+                    <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-rose-100 to-rose-50 border-2 border-rose-100 flex items-center justify-center mb-5 group-hover:scale-110 group-hover:bg-rose-200/60 transition-all duration-300">
+                      <Heart className="h-8 w-8 text-rose-500" />
+                    </div>
+                    <h3 className="text-xl font-black text-slate-900 mb-2">
+                      Je suis un Utilisateur
+                    </h3>
+                    <p className="text-sm text-slate-500 leading-relaxed mb-4">
+                      Contactez un hôpital partenaire pour toute question ou signalement concernant vos dons de sang.
+                    </p>
+                    <div className="flex items-center gap-2 text-rose-500 font-bold text-sm">
+                      <User className="h-4 w-4" />
+                      Envoyer un message
+                      <span className="ml-auto group-hover:translate-x-1 transition-transform">→</span>
+                    </div>
+                  </div>
+                </button>
+
               </div>
 
-              <div className="bg-accent/50 rounded-xl p-6">
-                <h3 className="font-semibold mb-2">Vous êtes un hôpital ?</h3>
-                <p className="text-sm text-muted-foreground">
-                  Nous proposons des partenariats pour les établissements de santé. Contactez-nous pour en savoir plus sur nos solutions de recherche de donneurs.
-                </p>
+              {/* Contact Info Bar */}
+              <div className="mt-10 bg-white rounded-2xl border border-slate-100 p-6 flex flex-col sm:flex-row items-center justify-center gap-8 shadow-sm">
+                <div className="flex items-center gap-3 text-sm text-slate-600">
+                  <div className="h-9 w-9 rounded-xl bg-primary/5 flex items-center justify-center">
+                    <Mail className="h-4 w-4 text-primary" />
+                  </div>
+                  <a href="mailto:admin@chu.com" className="hover:text-primary transition-colors">admin@chu.com</a>
+                </div>
+                <div className="flex items-center gap-3 text-sm text-slate-600">
+                  <div className="h-9 w-9 rounded-xl bg-primary/5 flex items-center justify-center">
+                    <Phone className="h-4 w-4 text-primary" />
+                  </div>
+                  <span>+212 684575896</span>
+                </div>
+                <div className="flex items-center gap-3 text-sm text-slate-600">
+                  <div className="h-9 w-9 rounded-xl bg-primary/5 flex items-center justify-center">
+                    <MapPin className="h-4 w-4 text-primary" />
+                  </div>
+                  <span>Casablanca, Maroc</span>
+                </div>
               </div>
             </div>
 
-            {/* Contact form */}
-            <div className="bg-card rounded-xl border border-border p-6">
-              {submitted ? (
-                <div className="text-center py-12">
-                  <div className="h-16 w-16 rounded-full bg-accent flex items-center justify-center mx-auto mb-4">
-                    <Send className="h-8 w-8 text-primary" />
+          ) : contactType === "hospital" ? (
+            /* ─── HOSPITAL FORM ─── */
+            <div className="max-w-2xl mx-auto">
+              <button onClick={goBack} className="flex items-center gap-2 text-sm text-slate-500 hover:text-primary transition-colors mb-6 font-medium">
+                <ArrowLeft className="h-4 w-4" /> Retour au choix
+              </button>
+
+              <div className="bg-white rounded-3xl border border-slate-100 shadow-xl overflow-hidden">
+                {/* Header */}
+                <div className="bg-gradient-to-r from-primary to-red-700 p-6 text-white">
+                  <div className="flex items-center gap-4">
+                    <div className="h-14 w-14 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                      <Building2 className="h-7 w-7 text-white" />
+                    </div>
+                    <div>
+                      <h2 className="text-xl font-black">Demande de compte Hôpital</h2>
+                      <p className="text-red-100 text-sm mt-0.5">Remplissez les informations de votre établissement</p>
+                    </div>
                   </div>
-                  <h3 className="text-xl font-bold mb-2">Message envoyé !</h3>
-                  <p className="text-muted-foreground">Nous vous répondrons dans les plus brefs délais.</p>
                 </div>
-              ) : (
-                <form
-                  className="space-y-4"
-                  onSubmit={async (e) => {
-                    e.preventDefault();
-                    setIsSubmitting(true);
-                    try {
-                      const res = await fetch('http://localhost:8000/api/contact-messages', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(formData)
-                      });
-                      if (res.ok) {
-                        setSubmitted(true);
-                      } else {
-                        alert("Erreur lors de l'envoi du message.");
-                      }
-                    } catch (error) {
-                      console.error(error);
-                      alert("Erreur de connexion au serveur.");
-                    } finally {
-                      setIsSubmitting(false);
-                    }
-                  }}
-                >
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+                <form onSubmit={handleHospitalSubmit} className="p-8 space-y-5">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                     <div className="space-y-2">
-                      <Label htmlFor="name">Nom</Label>
-                      <Input id="name" value={formData.name} onChange={handleChange} placeholder="Votre nom" required />
+                      <Label htmlFor="name" className="font-bold text-slate-700">Nom du responsable *</Label>
+                      <Input id="name" required value={hospitalForm.name} onChange={handleHospitalChange} placeholder="Nom du responsable" className="h-11 rounded-xl border-slate-200" />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="email">Email</Label>
-                      <Input id="email" type="email" value={formData.email} onChange={handleChange} placeholder="votre@email.com" required />
+                      <Label htmlFor="email" className="font-bold text-slate-700">Email professionnel *</Label>
+                      <Input id="email" type="email" required value={hospitalForm.email} onChange={handleHospitalChange} placeholder="contact@hopital.ma" className="h-11 rounded-xl border-slate-200" />
                     </div>
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="subject">Sujet</Label>
-                    <Input id="subject" value={formData.subject} onChange={handleChange} placeholder="Sujet de votre message" required />
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                    <div className="space-y-2">
+                      <Label htmlFor="phone" className="font-bold text-slate-700">Téléphone *</Label>
+                      <Input id="phone" type="tel" required value={hospitalForm.phone} onChange={handleHospitalChange} placeholder="+212 6XX XXX XXX" className="h-11 rounded-xl border-slate-200" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="hospital_name" className="font-bold text-slate-700">Nom de l'hôpital *</Label>
+                      <Input id="hospital_name" required value={hospitalForm.hospital_name} onChange={handleHospitalChange} placeholder="Nom de l'hôpital" className="h-11 rounded-xl border-slate-200" />
+                    </div>
                   </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                    <div className="space-y-2">
+                      <Label htmlFor="city" className="font-bold text-slate-700">Ville *</Label>
+                      <Input id="city" required value={hospitalForm.city} onChange={handleHospitalChange} placeholder="Ville" className="h-11 rounded-xl border-slate-200" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="address" className="font-bold text-slate-700">Adresse <span className="text-slate-400 font-normal text-xs">(optionnel)</span></Label>
+                      <Input id="address" value={hospitalForm.address} onChange={handleHospitalChange} placeholder="Rue, quartier..." className="h-11 rounded-xl border-slate-200" />
+                    </div>
+                  </div>
+
                   <div className="space-y-2">
-                    <Label htmlFor="message">Message</Label>
+                    <Label htmlFor="message" className="font-bold text-slate-700">Message complémentaire <span className="text-slate-400 font-normal text-xs">(optionnel)</span></Label>
                     <textarea
                       id="message"
-                      value={formData.message}
-                      onChange={handleChange}
-                      className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm min-h-[120px] ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                      placeholder="Votre message..."
-                      required
+                      value={hospitalForm.message}
+                      onChange={handleHospitalChange}
+                      className="flex w-full rounded-xl border border-slate-200 bg-background px-4 py-3 text-sm min-h-[100px] ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      placeholder="Informations supplémentaires sur votre établissement..."
                     />
                   </div>
-                  <Button variant="hero" className="w-full" size="lg" disabled={isSubmitting}>
-                    <Send className="h-4 w-4 mr-2" />
+
+                  <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex items-start gap-3">
+                    <Shield className="h-5 w-5 text-amber-600 mt-0.5 shrink-0" />
+                    <p className="text-sm text-amber-800">
+                      Après examen de votre demande, l'administrateur créera votre compte et vous enverra vos identifiants de connexion par email.
+                    </p>
+                  </div>
+
+                  <Button variant="hero" type="submit" className="w-full h-12 rounded-xl text-base font-bold gap-2" disabled={isSubmitting}>
+                    <Send className="h-5 w-5" />
+                    {isSubmitting ? "Envoi en cours..." : "Envoyer la demande"}
+                  </Button>
+                </form>
+              </div>
+            </div>
+
+          ) : (
+            /* ─── USER / DONOR FORM ─── */
+            <div className="max-w-2xl mx-auto">
+              <button onClick={goBack} className="flex items-center gap-2 text-sm text-slate-500 hover:text-primary transition-colors mb-6 font-medium">
+                <ArrowLeft className="h-4 w-4" /> Retour au choix
+              </button>
+
+              <div className="bg-white rounded-3xl border border-slate-100 shadow-xl overflow-hidden">
+                {/* Header */}
+                <div className="bg-gradient-to-r from-rose-500 to-rose-700 p-6 text-white">
+                  <div className="flex items-center gap-4">
+                    <div className="h-14 w-14 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                      <Heart className="h-7 w-7 text-white" />
+                    </div>
+                    <div>
+                      <h2 className="text-xl font-black">Contacter un Hôpital</h2>
+                      <p className="text-rose-100 text-sm mt-0.5">Choisissez l'hôpital et envoyez votre message</p>
+                    </div>
+                  </div>
+                </div>
+
+                <form onSubmit={handleUserSubmit} className="p-8 space-y-5">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                    <div className="space-y-2">
+                      <Label htmlFor="name" className="font-bold text-slate-700">Votre nom *</Label>
+                      <Input id="name" required value={userForm.name} onChange={handleUserChange} placeholder="Votre nom complet" className="h-11 rounded-xl border-slate-200" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="email" className="font-bold text-slate-700">Votre email *</Label>
+                      <Input id="email" type="email" required value={userForm.email} onChange={handleUserChange} placeholder="votre@email.com" className="h-11 rounded-xl border-slate-200" />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                    <div className="space-y-2">
+                      <Label htmlFor="phone" className="font-bold text-slate-700">Téléphone <span className="text-slate-400 font-normal text-xs">(optionnel)</span></Label>
+                      <Input id="phone" type="tel" value={userForm.phone} onChange={handleUserChange} placeholder="+212 6XX XXX XXX" className="h-11 rounded-xl border-slate-200" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="hospital_id" className="font-bold text-slate-700">Hôpital concerné *</Label>
+                      <select
+                        id="hospital_id"
+                        required
+                        value={userForm.hospital_id}
+                        onChange={(e) => setUserForm({ ...userForm, hospital_id: e.target.value })}
+                        className="flex h-11 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm focus:ring-2 focus:ring-rose-200 transition-all cursor-pointer"
+                      >
+                        <option value="">Sélectionnez un hôpital</option>
+                        {hospitals.map((h) => (
+                          <option key={h.id} value={h.id}>{h.name} — {h.city}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="subject" className="font-bold text-slate-700">Sujet <span className="text-slate-400 font-normal text-xs">(optionnel)</span></Label>
+                    <Input id="subject" value={userForm.subject} onChange={handleUserChange} placeholder="Ex: Question sur les dons" className="h-11 rounded-xl border-slate-200" />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="message" className="font-bold text-slate-700">Votre message *</Label>
+                    <textarea
+                      id="message"
+                      required
+                      value={userForm.message}
+                      onChange={handleUserChange}
+                      className="flex w-full rounded-xl border border-slate-200 bg-background px-4 py-3 text-sm min-h-[120px] ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      placeholder="Décrivez votre demande ou question..."
+                    />
+                  </div>
+
+                  <Button type="submit" className="w-full h-12 rounded-xl text-base font-bold gap-2 bg-rose-600 hover:bg-rose-700 text-white shadow-lg" disabled={isSubmitting}>
+                    <Send className="h-5 w-5" />
                     {isSubmitting ? "Envoi en cours..." : "Envoyer le message"}
                   </Button>
                 </form>
-              )}
+              </div>
             </div>
-          </div>
+          )}
+
         </div>
       </section>
 

@@ -4,7 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-  Building2, LogOut, Search, Plus, Trash2, Edit, X, Save, Check, MapPin, Phone, Mail, Lock
+  Building2, LogOut, Search, Plus, Trash2, Edit, X, Save, Check, MapPin, Phone, Mail, Lock,
+  MessageSquare, Clock, CheckCircle2, XCircle, Eye, ChevronDown, ChevronUp
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { apiFetch } from "@/lib/api";
@@ -31,9 +32,13 @@ export default function AdminDashboard() {
   
   const [errors, setErrors] = useState<any>({});
   const { toast } = useToast();
+  const [hospitalRequests, setHospitalRequests] = useState<any[]>([]);
+  const [requestsLoading, setRequestsLoading] = useState(false);
+  const [expandedRequest, setExpandedRequest] = useState<number | null>(null);
 
   useEffect(() => {
     fetchHospitals();
+    fetchHospitalRequests();
   }, []);
 
   const fetchHospitals = async () => {
@@ -45,6 +50,36 @@ export default function AdminDashboard() {
       console.error("Failed to fetch hospitals", err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchHospitalRequests = async () => {
+    try {
+      setRequestsLoading(true);
+      const res = await fetch('http://localhost:8000/api/hospital/contact-messages?type=hospital');
+      const data = await res.json();
+      setHospitalRequests(data);
+    } catch (err) {
+      console.error('Failed to fetch hospital requests', err);
+    } finally {
+      setRequestsLoading(false);
+    }
+  };
+
+  const handleRequestStatus = async (id: number, status: string) => {
+    try {
+      await fetch(`http://localhost:8000/api/contact-messages/${id}/status`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status })
+      });
+      setHospitalRequests(prev => prev.map(r => r.id === id ? { ...r, status } : r));
+      toast({
+        title: status === 'approved' ? 'Demande approuvée' : 'Demande rejetée',
+        description: status === 'approved' ? "N'oubliez pas de créer le compte hôpital." : 'La demande a été rejetée.'
+      });
+    } catch (err) {
+      toast({ variant: 'destructive', title: 'Erreur', description: 'Erreur lors de la mise à jour.' });
     }
   };
 
@@ -481,6 +516,115 @@ export default function AdminDashboard() {
                 </tbody>
               </table>
             </div>
+          </div>
+
+          {/* Hospital Requests Section */}
+          <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 bg-amber-50 text-amber-600 rounded-xl">
+                  <MessageSquare className="h-5 w-5" />
+                </div>
+                <div>
+                  <h2 className="text-lg font-bold text-slate-900">Demandes de Compte Hôpital</h2>
+                  <p className="text-xs text-slate-500">Demandes reçues via le formulaire de contact</p>
+                </div>
+              </div>
+              <span className="bg-amber-100 text-amber-700 text-xs font-bold px-3 py-1 rounded-full">
+                {hospitalRequests.filter(r => r.status === 'pending').length} en attente
+              </span>
+            </div>
+
+            {requestsLoading ? (
+              <div className="text-center py-8 text-slate-400">Chargement...</div>
+            ) : hospitalRequests.length === 0 ? (
+              <div className="text-center py-12">
+                <MessageSquare className="h-10 w-10 text-slate-200 mx-auto mb-3" />
+                <p className="text-slate-400 text-sm">Aucune demande pour le moment.</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {hospitalRequests.map((req) => (
+                  <div key={req.id} className={`rounded-xl border transition-all ${
+                    req.status === 'pending' ? 'border-amber-200 bg-amber-50/30' :
+                    req.status === 'approved' ? 'border-emerald-200 bg-emerald-50/30' :
+                    'border-slate-200 bg-slate-50/30'
+                  }`}>
+                    <div
+                      className="flex items-center justify-between p-4 cursor-pointer"
+                      onClick={() => setExpandedRequest(expandedRequest === req.id ? null : req.id)}
+                    >
+                      <div className="flex items-center gap-4">
+                        <div className={`h-10 w-10 rounded-xl flex items-center justify-center font-bold text-sm ${
+                          req.status === 'pending' ? 'bg-amber-100 text-amber-600' :
+                          req.status === 'approved' ? 'bg-emerald-100 text-emerald-600' :
+                          'bg-slate-100 text-slate-500'
+                        }`}>
+                          <Building2 className="h-5 w-5" />
+                        </div>
+                        <div>
+                          <div className="font-bold text-slate-900 text-sm">{req.hospital_name || 'Hôpital inconnu'}</div>
+                          <div className="text-xs text-slate-500 flex items-center gap-3 mt-0.5">
+                            <span className="flex items-center gap-1"><Mail className="h-3 w-3" />{req.email}</span>
+                            {req.city && <span className="flex items-center gap-1"><MapPin className="h-3 w-3" />{req.city}</span>}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <span className={`text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full ${
+                          req.status === 'pending' ? 'bg-amber-100 text-amber-700' :
+                          req.status === 'approved' ? 'bg-emerald-100 text-emerald-700' :
+                          'bg-red-100 text-red-700'
+                        }`}>
+                          {req.status === 'pending' ? 'En attente' : req.status === 'approved' ? 'Approuvée' : 'Rejetée'}
+                        </span>
+                        {expandedRequest === req.id ? <ChevronUp className="h-4 w-4 text-slate-400" /> : <ChevronDown className="h-4 w-4 text-slate-400" />}
+                      </div>
+                    </div>
+
+                    {expandedRequest === req.id && (
+                      <div className="px-4 pb-4 border-t border-slate-100 pt-4 space-y-3 animate-in slide-in-from-top-2 duration-200">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+                          <div><span className="text-slate-400 text-xs">Responsable:</span><br/><span className="font-semibold text-slate-700">{req.name}</span></div>
+                          <div><span className="text-slate-400 text-xs">Téléphone:</span><br/><span className="font-semibold text-slate-700">{req.phone || '—'}</span></div>
+                          <div><span className="text-slate-400 text-xs">Ville:</span><br/><span className="font-semibold text-slate-700">{req.city || '—'}</span></div>
+                          <div><span className="text-slate-400 text-xs">Adresse:</span><br/><span className="font-semibold text-slate-700">{req.address || '—'}</span></div>
+                        </div>
+                        {req.message && (
+                          <div className="bg-white rounded-lg p-3 border border-slate-100">
+                            <p className="text-xs text-slate-400 mb-1">Message:</p>
+                            <p className="text-sm text-slate-700">{req.message}</p>
+                          </div>
+                        )}
+                        <div className="text-xs text-slate-400 flex items-center gap-1">
+                          <Clock className="h-3 w-3" />
+                          {new Date(req.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                        </div>
+                        {req.status === 'pending' && (
+                          <div className="flex gap-2 pt-2">
+                            <Button
+                              size="sm"
+                              className="rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white gap-1.5 h-9"
+                              onClick={(e) => { e.stopPropagation(); handleRequestStatus(req.id, 'approved'); }}
+                            >
+                              <CheckCircle2 className="h-3.5 w-3.5" /> Approuver
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="rounded-lg border-red-200 text-red-600 hover:bg-red-50 gap-1.5 h-9"
+                              onClick={(e) => { e.stopPropagation(); handleRequestStatus(req.id, 'rejected'); }}
+                            >
+                              <XCircle className="h-3.5 w-3.5" /> Rejeter
+                            </Button>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
         </div>

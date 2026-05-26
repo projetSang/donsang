@@ -222,8 +222,6 @@ export default function PatientDashboard() {
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Montserrat:wght@400;600;800&family=Playfair+Display:ital,wght@1,600&display=swap');
-        
         @media screen {
           .print-only {
             display: none !important;

@@ -32,6 +32,7 @@ Route::get('/hospital/settings', [DashboardController::class, 'getHospitalSettin
 Route::put('/hospital/settings', [DashboardController::class, 'updateHospitalSettings']);
 Route::post('/contact-messages', [ContactMessageController::class, 'store']);
 Route::get('/hospital/contact-messages', [ContactMessageController::class, 'index']);
+Route::put('/contact-messages/{id}/status', [ContactMessageController::class, 'updateStatus']);
 
 Route::post('/alerts/respond', [DashboardController::class, 'respondToAlert']);
 Route::get('/hospital/alerts/{id}/responses', [DashboardController::class, 'getAlertResponses']);
