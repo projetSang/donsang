@@ -504,10 +504,19 @@ class DashboardController extends Controller
             ]);
 
         // Fetch public urgent alerts that this donor can donate to (filtered by compatibility and city)
-        $alerts = Alert::where('status', 'active')
-            ->whereIn('blood_type', $allCompatibleGroups)
-            ->where('city', 'LIKE', '%' . $donor->city . '%')
-            ->orderBy('created_at', 'desc')
+        $alertsQuery = Alert::whereIn('status', ['active', 'Active'])
+            ->whereIn('blood_type', $allCompatibleGroups);
+
+        $donorCity = trim((string) $donor->city);
+        if (!empty($donorCity) && !str_contains($donorCity, '@') && strtolower($donorCity) !== 'city') {
+            $alertsQuery->where(function($q) use ($donorCity) {
+                $q->where('city', 'LIKE', '%' . $donorCity . '%')
+                  ->orWhere('city', '')
+                  ->orWhereNull('city');
+            });
+        }
+
+        $alerts = $alertsQuery->orderBy('created_at', 'desc')
             ->take(5)
             ->get()
             ->map(fn($a) => [

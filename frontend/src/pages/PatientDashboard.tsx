@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import {
-  User, Droplets, FileText, Share2, Bell, RefreshCw, Crown, Award, Printer, Download
+  User, Droplets, FileText, Share2, Bell, RefreshCw, Crown, Award, Printer, Download, Calendar
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { usePatientData } from "@/hooks/usePatientData";
@@ -16,9 +16,11 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 // Import sub-components
 import { ProfileTab } from "@/components/patient/ProfileTab";
 import { NotificationsTab } from "@/components/patient/NotificationsTab";
+import { AppointmentsTab } from "@/components/patient/AppointmentsTab";
 
 const tabs = [
   { id: "profile", label: "Mon profil", icon: User },
+  { id: "appointments", label: "Mes Rendez-vous", icon: Calendar },
   { id: "certificate", label: "Mon certificat", icon: Award },
   { id: "notifications", label: "Notifications", icon: Bell },
 ];
@@ -927,6 +929,10 @@ export default function PatientDashboard() {
                 })()}
               </div>
             </div>
+          )}
+
+          {activeTab === "appointments" && (
+            <AppointmentsTab patientId={userData.id} />
           )}
 
           {activeTab === "notifications" && (

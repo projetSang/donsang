@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import {
   Heart, Search, Users, Droplets, Building2,
   LogOut, Bell, BarChart3, ChevronRight, LayoutDashboard,
-  Settings, HelpCircle, Mail, MessageSquare
+  Settings, HelpCircle, Mail, MessageSquare, Calendar
 } from "lucide-react";
 
 import { SearchTab } from "@/components/hospital/SearchTab";
@@ -13,6 +13,7 @@ import { AlertsTab } from "@/components/hospital/AlertsTab";
 import { SettingsTab } from "@/components/hospital/SettingsTab";
 import TableBord from "@/components/hospital/TableBord";
 import { MessagesTab } from "@/components/hospital/MessagesTab";
+import { AppointmentsTab } from "@/components/hospital/AppointmentsTab";
 import { useAuth } from "@/contexts/AuthContext";
 import { apiFetch } from "@/lib/api";
 import { slugify } from "@/lib/utils";
@@ -20,6 +21,7 @@ import { slugify } from "@/lib/utils";
 const tabs = [
   { id: "table", label: "Tableau de bord", icon: LayoutDashboard },
   { id: "search", label: "Recherche Donneurs", icon: Search },
+  { id: "appointments", label: "Rendez-vous", icon: Calendar },
   { id: "stats", label: "Statistiques", icon: BarChart3 },
   { id: "alerts", label: "Alertes Urgence", icon: Bell },
   { id: "messages", label: "Messages", icon: MessageSquare },
@@ -137,6 +139,7 @@ export default function HospitalDashboard() {
             <div className="min-h-[500px]">
               {activeTab === "table" && <TableBord />}
               {activeTab === "search" && <SearchTab selectedBlood={selectedBlood} setSelectedBlood={setSelectedBlood} city={city} setCity={setCity} />}
+              {activeTab === "appointments" && <AppointmentsTab hospitalId={hospitalInfo.id} />}
               {activeTab === "stats" && <StatsTab />}
               {activeTab === "alerts" && (
                 <AlertsTab

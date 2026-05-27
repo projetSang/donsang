@@ -154,36 +154,36 @@ class AuthController extends Controller
 
         $user = null;
         if ($request->user_type === 'patient') {
-            $user = Patient::where('email', $request->email)->first();
-            if (!$user) {
-                $user = BloodDonor::where('email', $request->email)->first();
+            $patient = Patient::where('email', $request->email)->first();
+            $donor = BloodDonor::where('email', $request->email)->first();
+
+            if ($patient) {
+                $patient->update($request->only([
+                    'full_name', 'phone', 'address', 'birth_date', 'blood_type',
+                    'emergency_contact_name', 'emergency_contact_relation', 'emergency_contact_phone',
+                    'latitude', 'longitude'
+                ]));
             }
+
+            if ($donor) {
+                $donorData = $request->only(['full_name', 'phone', 'blood_type']);
+                if ($request->filled('address')) {
+                    $donorData['city'] = $request->address;
+                }
+                $donor->update($donorData);
+            }
+
+            $user = $donor ?: $patient;
         } else {
             $user = Hospital::where('email', $request->email)->first();
-        }
-
-        if (!$user) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Utilisateur introuvable'
-            ], 404);
-        }
-
-        if ($user instanceof BloodDonor) {
-            $dataToUpdate = $request->only(['full_name', 'phone', 'blood_type']);
-            if ($request->has('address')) {
-                $dataToUpdate['city'] = $request->address;
+            if ($user) {
+                $user->update($request->only([
+                    'name', 'city', 'email', 'address', 'phone', 'latitude', 'longitude'
+                ]));
             }
-            $user->update($dataToUpdate);
-        } else {
-            $user->update($request->only([
-                'full_name', 'phone', 'address', 'birth_date', 'blood_type',
-                'emergency_contact_name', 'emergency_contact_relation', 'emergency_contact_phone',
-                'latitude', 'longitude'
-            ]));
         }
 
-        if ($user && $request->user_type === 'patient') {
+        if ($user) {
             $user->is_patient = ($user instanceof Patient) ? 1 : 0;
         }
 

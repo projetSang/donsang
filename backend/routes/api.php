@@ -6,6 +6,9 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ContactMessageController;
 use App\Http\Controllers\AssistantController;
+use App\Http\Controllers\AdminController;
+use App\Http\Controllers\AppointmentController;
+
 
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/register', [AuthController::class, 'register']);
@@ -37,10 +40,12 @@ Route::put('/contact-messages/{id}/status', [ContactMessageController::class, 'u
 Route::post('/alerts/respond', [DashboardController::class, 'respondToAlert']);
 Route::get('/hospital/alerts/{id}/responses', [DashboardController::class, 'getAlertResponses']);
 
+Route::get('/patients/{id}/documents', [DashboardController::class, 'getDocuments']);
+Route::post('/patients/{id}/documents', [DashboardController::class, 'uploadDocument']);
+
 Route::post('/assistant/chat', [AssistantController::class, 'chat']);
 
 // Admin Routes for managing hospitals
-use App\Http\Controllers\AdminController;
 Route::get('/admin/hospitals', [AdminController::class, 'getHospitals']);
 Route::post('/admin/hospitals', [AdminController::class, 'storeHospital']);
 Route::put('/admin/hospitals/{id}', [AdminController::class, 'updateHospital']);
@@ -48,3 +53,11 @@ Route::delete('/admin/hospitals/{id}', [AdminController::class, 'deleteHospital'
 
 // Patient/Donor Notification Route
 Route::get('/patients/{id}/notifications', [DashboardController::class, 'getNotifications']);
+
+// Appointment system routes
+Route::post('/appointments', [AppointmentController::class, 'store']);
+Route::get('/patients/{id}/appointments', [AppointmentController::class, 'getPatientAppointments']);
+Route::get('/hospitals/{id}/appointments', [AppointmentController::class, 'getHospitalAppointments']);
+Route::put('/appointments/{id}/status', [AppointmentController::class, 'updateStatus']);
+Route::get('/public-hospitals', [AppointmentController::class, 'hospitalsList']);
+
