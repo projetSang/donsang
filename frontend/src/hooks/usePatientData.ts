@@ -105,7 +105,7 @@ export function usePatientData(userData: any, authLoading: boolean, logout: () =
         method: "POST",
         body: JSON.stringify({
           alert_id: alertId,
-          patient_id: userData.id,
+          blood_donor_id: userData.id,
           status: type === "disponible" ? "available" : "unavailable"
         })
       });
