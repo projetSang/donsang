@@ -174,6 +174,8 @@ export default function Register() {
                 <Droplets className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 h-5 w-5" />
                 <select
                   id="blood_type"
+                  aria-label="Groupe sanguin"
+                  title="Groupe sanguin"
                   required
                   value={formData.blood_type}
                   onChange={handleChange}

@@ -11,6 +11,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogFooter,
+  DialogDescription,
 } from "@/components/ui/dialog";
 
 const bloodGroups = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
@@ -116,11 +117,12 @@ export function SearchTab({ selectedBlood, setSelectedBlood, city, setCity }: an
       <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
         <div className="flex flex-col gap-6">
 
-          {/* Row 1: Blood type, City, Search button */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {/* Row 1: Blood type, City, CIN, Search button */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div className="space-y-1.5">
-              <label className="text-sm font-bold text-slate-700 ml-1">Groupe sanguin</label>
+              <label htmlFor="filter-blood" className="text-sm font-bold text-slate-700 ml-1">Groupe sanguin</label>
               <select
+                id="filter-blood"
                 className="flex h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 transition-all cursor-pointer"
                 value={selectedBlood}
                 onChange={(e) => setSelectedBlood(e.target.value)}
@@ -144,7 +146,22 @@ export function SearchTab({ selectedBlood, setSelectedBlood, city, setCity }: an
                 />
               </div>
             </div>
-            
+
+            <div className="space-y-1.5">
+              <label className="text-sm font-bold text-slate-700 ml-1 flex items-center gap-1.5">
+                <CreditCard className="h-4 w-4 text-primary" />
+                CIN
+              </label>
+              <div className="relative">
+                <CreditCard className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                <Input
+                  className="h-11 pl-10 rounded-xl border-slate-200 bg-slate-50 focus:bg-white transition-all"
+                  value={cinSearch}
+                  onChange={(e) => setCinSearch(e.target.value.toUpperCase())}
+                  placeholder="CIN du donneur..."
+                />
+              </div>
+            </div>
             
             <div className="flex items-end">
               <Button
@@ -155,32 +172,6 @@ export function SearchTab({ selectedBlood, setSelectedBlood, city, setCity }: an
               >
                 <Search className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
                 {loading ? "Recherche..." : "Rechercher"}
-              </Button>
-            </div>
-          </div>
-          {/* Row 2: CIN Search */}
-          <div className="space-y-1.5">
-            <label className="text-sm font-bold text-slate-700 ml-1 flex items-center gap-1.5">
-              <CreditCard className="h-4 w-4 text-primary" />
-              Recherche par CIN
-            </label>
-            <div className="flex flex-col sm:flex-row gap-3">
-              <div className="relative flex-1">
-                <CreditCard className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                <Input
-                  className="h-11 pl-10 rounded-xl border-slate-200 bg-slate-50 focus:bg-white transition-all"
-                  value={cinSearch}
-                  onChange={(e) => setCinSearch(e.target.value.toUpperCase())}
-                  placeholder="Entrez le CIN du donneur..."
-                />
-              </div>
-              <Button
-                variant="outline"
-                className="h-11 px-5 rounded-xl border-slate-200 hover:bg-primary/5 hover:text-primary hover:border-primary transition-all flex gap-2 sm:self-end"
-                onClick={() => setCinSearch("")}
-                disabled={!cinSearch}
-              >
-                <X className="h-4 w-4" /> Effacer CIN
               </Button>
             </div>
           </div>
@@ -332,6 +323,7 @@ export function SearchTab({ selectedBlood, setSelectedBlood, city, setCity }: an
               <Edit2 className="h-6 w-6 text-primary" />
               Modifier le Donneur
             </DialogTitle>
+            <DialogDescription className="text-sm text-slate-500 mt-1">Modifiez les informations du donneur ci-dessous.</DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="space-y-2">

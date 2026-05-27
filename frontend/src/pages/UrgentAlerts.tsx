@@ -229,7 +229,7 @@ export default function UrgentAlerts() {
             <Button 
               onClick={() => setShowForm(!showForm)} 
               variant="hero" 
-              className="rounded-xl px-8 mt-4"
+              className="rounded-xl px-8 mt-4 hidden"
             >
               <Plus className="h-5 w-5 mr-2" />
               Publier une alerte

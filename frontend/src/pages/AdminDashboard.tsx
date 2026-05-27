@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
   Building2, LogOut, Search, Plus, Trash2, Edit, X, Save, Check, MapPin, Phone, Mail, Lock,
-  MessageSquare, Clock, CheckCircle2, XCircle, Eye, ChevronDown, ChevronUp
+  MessageSquare, Clock, CheckCircle2, XCircle, Eye, EyeOff, Copy, RefreshCw, ChevronDown, ChevronUp
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { apiFetch } from "@/lib/api";
@@ -35,6 +35,61 @@ export default function AdminDashboard() {
   const [hospitalRequests, setHospitalRequests] = useState<any[]>([]);
   const [requestsLoading, setRequestsLoading] = useState(false);
   const [expandedRequest, setExpandedRequest] = useState<number | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
+
+  const generateSecurePassword = () => {
+    const lowercase = "abcdefghijkmnopqrstuvwxyz";
+    const uppercase = "ABCDEFGHJKLMNPQRSTUVWXYZ";
+    const numbers = "23456789";
+    const symbols = "!@#$%&*?+=-";
+    
+    let password = "";
+    password += lowercase.charAt(Math.floor(Math.random() * lowercase.length));
+    password += uppercase.charAt(Math.floor(Math.random() * uppercase.length));
+    password += numbers.charAt(Math.floor(Math.random() * numbers.length));
+    password += symbols.charAt(Math.floor(Math.random() * symbols.length));
+    
+    const allChars = lowercase + uppercase + numbers + symbols;
+    for (let i = 0; i < 8; i++) {
+      password += allChars.charAt(Math.floor(Math.random() * allChars.length));
+    }
+    
+    return password.split('').sort(() => 0.5 - Math.random()).join('');
+  };
+
+  const handleAddNew = () => {
+    resetForm();
+    const newPass = generateSecurePassword();
+    setFormData(prev => ({
+      ...prev,
+      password: newPass
+    }));
+    setShowPassword(true);
+    setShowAddForm(true);
+  };
+
+  const handleCreateAccountFromRequest = (req: any) => {
+    const generatedPass = generateSecurePassword();
+    setFormData({
+      name: req.hospital_name || req.name || "",
+      city: req.city || "",
+      email: req.email || "",
+      password: generatedPass,
+      address: req.address || "",
+      phone: req.phone || "",
+      latitude: "",
+      longitude: ""
+    });
+    setEditingHospitalId(null);
+    setErrors({});
+    setShowPassword(true);
+    setShowAddForm(true);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    toast({
+      title: "Formulaire pré-rempli",
+      description: "Les informations de la demande et un mot de passe sécurisé ont été chargés."
+    });
+  };
 
   useEffect(() => {
     fetchHospitals();
@@ -257,7 +312,7 @@ export default function AdminDashboard() {
             {!showAddForm && (
               <Button 
                 variant="hero" 
-                onClick={() => { resetForm(); setShowAddForm(true); }}
+                onClick={handleAddNew}
                 className="shadow-lg hover:shadow-primary/20 rounded-xl"
               >
                 <Plus className="h-4 w-4 mr-2" />
@@ -349,12 +404,60 @@ export default function AdminDashboard() {
                       <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
                       <Input 
                         id="password"
-                        type="password"
+                        type={showPassword ? "text" : "password"}
                         value={formData.password}
                         onChange={(e) => setFormData({...formData, password: e.target.value})}
                         placeholder={editingHospitalId ? "••••••••" : "Mot de passe sécurisé"}
-                        className={`pl-10 h-12 rounded-xl bg-slate-50 ${errors.password ? 'border-red-500' : 'border-slate-200'}`}
+                        className={`pl-10 pr-24 h-12 rounded-xl bg-slate-50 ${errors.password ? 'border-red-500' : 'border-slate-200'}`}
                       />
+                      <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
+                        {formData.password && (
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-200/50"
+                            onClick={() => {
+                              navigator.clipboard.writeText(formData.password);
+                              toast({
+                                title: "Copié !",
+                                description: "Le mot de passe a été copié dans le presse-papiers."
+                              });
+                            }}
+                            title="Copier le mot de passe"
+                          >
+                            <Copy className="h-4 w-4" />
+                          </Button>
+                        )}
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-200/50"
+                          onClick={() => {
+                            const newPass = generateSecurePassword();
+                            setFormData({...formData, password: newPass});
+                            setShowPassword(true);
+                            toast({
+                              title: "Mot de passe généré",
+                              description: "Un mot de passe sécurisé a été généré et affiché."
+                            });
+                          }}
+                          title="Générer un mot de passe sécurisé"
+                        >
+                          <RefreshCw className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-200/50"
+                          onClick={() => setShowPassword(!showPassword)}
+                          title={showPassword ? "Masquer" : "Afficher"}
+                        >
+                          {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        </Button>
+                      </div>
                     </div>
                     {errors.password && <p className="text-xs text-red-500 mt-1">{errors.password[0]}</p>}
                   </div>
@@ -389,33 +492,7 @@ export default function AdminDashboard() {
                     </div>
                   </div>
 
-                  {/* Latitude */}
-                  <div className="space-y-2">
-                    <Label htmlFor="latitude" className="text-slate-700 font-semibold">Latitude GPS</Label>
-                    <Input 
-                      id="latitude"
-                      type="number"
-                      step="any"
-                      value={formData.latitude}
-                      onChange={(e) => setFormData({...formData, latitude: e.target.value})}
-                      placeholder="Ex: 33.5898"
-                      className="h-12 rounded-xl bg-slate-50 border-slate-200"
-                    />
-                  </div>
 
-                  {/* Longitude */}
-                  <div className="space-y-2">
-                    <Label htmlFor="longitude" className="text-slate-700 font-semibold">Longitude GPS</Label>
-                    <Input 
-                      id="longitude"
-                      type="number"
-                      step="any"
-                      value={formData.longitude}
-                      onChange={(e) => setFormData({...formData, longitude: e.target.value})}
-                      placeholder="Ex: -7.6038"
-                      className="h-12 rounded-xl bg-slate-50 border-slate-200"
-                    />
-                  </div>
                 </div>
 
                 <div className="flex justify-end gap-3 pt-4 border-t border-slate-100">
@@ -616,6 +693,17 @@ export default function AdminDashboard() {
                               onClick={(e) => { e.stopPropagation(); handleRequestStatus(req.id, 'rejected'); }}
                             >
                               <XCircle className="h-3.5 w-3.5" /> Rejeter
+                            </Button>
+                          </div>
+                        )}
+                        {req.status === 'approved' && (
+                          <div className="flex gap-2 pt-2">
+                            <Button
+                              size="sm"
+                              className="rounded-lg bg-primary hover:bg-primary/95 text-white gap-1.5 h-9"
+                              onClick={(e) => { e.stopPropagation(); handleCreateAccountFromRequest(req); }}
+                            >
+                              <Plus className="h-3.5 w-3.5" /> Créer le compte hôpital
                             </Button>
                           </div>
                         )}

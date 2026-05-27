@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Hospital;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 
 class AdminController extends Controller
 {
@@ -26,9 +27,24 @@ class AdminController extends Controller
             'longitude' => 'nullable|numeric',
         ]);
 
-        $validated['password'] = Hash::make($validated['password']);
+        $rawPassword = $validated['password'];
+        $validated['password'] = Hash::make($rawPassword);
 
         $hospital = Hospital::create($validated);
+
+        try {
+            $emailData = [
+                'hospital' => $hospital,
+                'password' => $rawPassword,
+                'appUrl' => 'http://localhost:8080'
+            ];
+            Mail::send('emails.welcome_hospital', $emailData, function ($message) use ($hospital) {
+                $message->to($hospital->email)
+                        ->subject('Bienvenue sur DonSang - Votre compte Hospitalier');
+            });
+        } catch (\Exception $e) {
+            \Log::error("Erreur d'envoi d'email de bienvenue à l'hôpital : " . $e->getMessage());
+        }
 
         return response()->json($hospital, 201);
     }
