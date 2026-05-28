@@ -111,10 +111,12 @@ export function usePatientData(userData: any, authLoading: boolean, logout: () =
       });
 
       if (type === "disponible") {
+        setNotifications(prev => prev.map(n => n.alert_id === alertId ? { ...n, responded: "available" } : n));
         toast.success("Merci ! Votre disponibilité a été enregistrée.", {
           description: `Réponse pour: ${title}`,
         });
       } else {
+        setNotifications(prev => prev.map(n => n.alert_id === alertId ? { ...n, responded: "unavailable" } : n));
         toast.info("C'est noté. Merci.", {
           description: `Réponse pour: ${title}`,
         });

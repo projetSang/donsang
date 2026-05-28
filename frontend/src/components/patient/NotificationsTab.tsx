@@ -23,7 +23,7 @@ export function NotificationsTab({
               <div className="text-sm font-medium">{n.title}</div>
               <div className="text-xs text-muted-foreground mt-1">{n.time}</div>
             </div>
-            {n.urgent && (
+            {n.urgent && !n.responded && (
               <div className="flex gap-2">
                 <Button 
                   variant="hero" 
@@ -39,6 +39,11 @@ export function NotificationsTab({
                 >
                   Indisponible
                 </Button>
+              </div>
+            )}
+            {n.urgent && n.responded && (
+              <div className="mt-2 text-sm font-semibold text-primary">
+                {n.responded === "available" ? "✓ Vous êtes disponible" : "✓ Indisponible"}
               </div>
             )}
           </div>
