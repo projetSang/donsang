@@ -318,7 +318,7 @@ export function ProfileTab({
                   ? [profileData.latitude, profileData.longitude] 
                   : [33.9716, -6.8498]}
                 zoom={profileData?.latitude && profileData?.longitude ? 14 : 6} 
-                style={{ height: '100%', width: '100%', zIndex: 0 }}
+                className="h-full w-full z-0"
               >
                 <TileLayer
                   url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"

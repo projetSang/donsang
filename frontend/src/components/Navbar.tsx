@@ -82,8 +82,7 @@ export function Navbar({}: NavbarProps) {
       <div className="hidden lg:block relative w-[200px] xl:w-[300px] overflow-hidden">
         {/* The Slant Background */}
         <div
-          className="absolute inset-0 bg-gradient-to-r from-[#780101] via-[#9f0101] to-[#c60505]"
-          style={{ clipPath: 'polygon(15% 0, 100% 0, 100% 100%, 0% 100%)' }}
+          className="absolute inset-0 bg-gradient-to-r from-[#780101] via-[#9f0101] to-[#c60505] [clip-path:polygon(15%_0,100%_0,100%_100%,0%_100%)]"
         />
 
         {/* Sign In Button */}

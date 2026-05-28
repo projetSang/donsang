@@ -188,8 +188,8 @@ const VoiceAssistant: React.FC = () => {
             <>
               <div className="flex gap-1 h-3 items-center">
                 <div className="w-1 h-2 bg-blue-500 rounded animate-bounce"></div>
-                <div className="w-1 h-3 bg-blue-500 rounded animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                <div className="w-1 h-2 bg-blue-500 rounded animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                <div className="w-1 h-3 bg-blue-500 rounded animate-bounce [animation-delay:0.1s]"></div>
+                <div className="w-1 h-2 bg-blue-500 rounded animate-bounce [animation-delay:0.2s]"></div>
               </div>
               <span className="text-gray-800 font-semibold">Robo-DonSang parle...</span>
             </>

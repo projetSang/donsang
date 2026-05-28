@@ -40,8 +40,12 @@ export function StatsTab() {
                 <div className="text-2xl sm:text-3xl font-black text-primary group-hover:scale-110 transition-transform">{item.group}</div>
                 <div className="text-xl sm:text-2xl font-bold mt-1.5 sm:mt-2 text-slate-900">{item.count}</div>
                 <div className="text-xs sm:text-sm font-medium text-slate-500 mt-1">{item.pct}% du total</div>
-                <div className="mt-3 sm:mt-4 h-2.5 bg-slate-200 rounded-full overflow-hidden">
-                  <div className="h-full hero-gradient rounded-full" style={{ width: `${item.pct}%` }} />
+                <div className="mt-3 sm:mt-4 h-2.5 rounded-full overflow-hidden flex items-center">
+                  <progress 
+                    value={item.pct} 
+                    max="100" 
+                    className="w-full h-full appearance-none [&::-webkit-progress-bar]:bg-slate-200 [&::-webkit-progress-value]:bg-primary [&::-moz-progress-bar]:bg-primary rounded-full overflow-hidden" 
+                  />
                 </div>
               </div>
             ))}

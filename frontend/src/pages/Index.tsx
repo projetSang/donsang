@@ -29,8 +29,7 @@ export default function Index() {
           <img
             src="/Don du sang _ les réserves sont au plus bas.jpeg"
             alt="Hero background"
-            className="w-full h-full object-cover"
-            style={{ transform: 'scale(1.1)', objectPosition: 'center 30%' }}
+            className="w-full h-full object-cover scale-[1.1] object-[center_30%]"
           />
           {/* Overlay dégradé allégé pour mieux voir l'image */}
           <div className="absolute inset-0 bg-gradient-to-r from-slate-900/70 via-slate-900/30 to-transparent"></div>

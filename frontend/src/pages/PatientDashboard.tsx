@@ -223,239 +223,7 @@ export default function PatientDashboard() {
 
   return (
     <>
-      <style>{`
-        @media screen {
-          .print-only {
-            display: none !important;
-          }
-        }
-        @media print {
-          .no-print, [data-radix-portal], .fixed, .inset-0, [role="dialog"], button[aria-haspopup="dialog"] {
-            display: none !important;
-          }
-          .print-only {
-            display: block !important;
-          }
-          
-          html, body {
-            background-color: #ffffff !important;
-            margin: 0 !important;
-            padding: 0 !important;
-            overflow: visible !important;
-            -webkit-print-color-adjust: exact !important;
-            print-color-adjust: exact !important;
-          }
-          
-          @page {
-            size: A4 landscape;
-            margin: 0;
-          }
 
-          .print-certificate-page {
-            width: 297mm !important;
-            height: 210mm !important;
-            box-sizing: border-box !important;
-            background-color: #ffffff !important;
-            background-image: radial-gradient(var(--cert-bg-dot-color) 1px, transparent 1px) !important;
-            background-size: 20px 20px !important;
-            padding: 24mm 30mm !important;
-            position: relative !important;
-            display: flex !important;
-            flex-direction: column !important;
-            align-items: center !important;
-            justify-content: space-between !important;
-            font-family: 'Montserrat', sans-serif !important;
-          }
-
-          .print-outer-border {
-            position: absolute !important;
-            top: 10mm !important;
-            left: 10mm !important;
-            right: 10mm !important;
-            bottom: 10mm !important;
-            border: 8px double var(--cert-border-color) !important;
-            pointer-events: none !important;
-            box-sizing: border-box !important;
-          }
-
-          .print-inner-border {
-            position: absolute !important;
-            top: 13mm !important;
-            left: 13mm !important;
-            right: 13mm !important;
-            bottom: 13mm !important;
-            border: 2px dashed var(--cert-border-color-alpha) !important;
-            pointer-events: none !important;
-            box-sizing: border-box !important;
-          }
-
-          .print-corner {
-            position: absolute !important;
-            width: 30px !important;
-            height: 30px !important;
-            border-color: var(--cert-border-color) !important;
-            border-style: solid !important;
-            pointer-events: none !important;
-          }
-          .print-top-left { top: 16mm !important; left: 16mm !important; border-width: 3px 0 0 3px !important; }
-          .print-top-right { top: 16mm !important; right: 16mm !important; border-width: 3px 3px 0 0 !important; }
-          .print-bottom-left { bottom: 16mm !important; left: 16mm !important; border-width: 0 0 3px 3px !important; }
-          .print-bottom-right { bottom: 16mm !important; right: 16mm !important; border-width: 0 3px 3px 0 !important; }
-
-          .print-header {
-            text-align: center !important;
-          }
-
-          .print-header h1 {
-            font-family: 'Cinzel', serif !important;
-            font-size: 14px !important;
-            letter-spacing: 5px !important;
-            color: #64748b !important;
-            margin: 0 0 5px 0 !important;
-            font-weight: 750 !important;
-          }
-
-          .print-divider {
-            height: 2px !important;
-            width: 80px !important;
-            background-color: var(--cert-border-color-alpha2) !important;
-            margin: 5px auto !important;
-          }
-
-          .print-header h2 {
-            font-size: 10px !important;
-            letter-spacing: 3px !important;
-            color: #475569 !important;
-            margin: 5px 0 0 0 !important;
-            font-weight: 600 !important;
-          }
-
-          .print-title-section {
-            text-align: center !important;
-            margin: 3mm 0 !important;
-          }
-
-          .print-title-section h3 {
-            font-family: 'Cinzel', serif !important;
-            font-size: 32px !important;
-            font-weight: 900 !important;
-            letter-spacing: 2px !important;
-            color: #0f172a !important;
-            margin: 0 !important;
-          }
-
-          .print-title-section p {
-            font-family: 'Playfair Display', serif !important;
-            font-size: 15px !important;
-            color: #e11d48 !important;
-            margin: 4px 0 0 0 !important;
-            font-style: italic !important;
-            font-weight: 600 !important;
-          }
-
-          .print-recipient-section {
-            text-align: center !important;
-            width: 85% !important;
-            margin: 0 auto !important;
-          }
-
-          .print-recipient-label {
-            font-size: 10px !important;
-            text-transform: uppercase !important;
-            letter-spacing: 4px !important;
-            color: #64748b !important;
-            font-weight: 800 !important;
-            margin: 0 !important;
-          }
-
-          .print-recipient-name {
-            font-family: 'Cinzel', serif !important;
-            font-size: 28px !important;
-            color: #1e293b !important;
-            margin: 8px auto !important;
-            font-weight: 900 !important;
-            border-bottom: 2px solid #e2e8f0 !important;
-            padding-bottom: 4px !important;
-            display: inline-block !important;
-            min-width: 320px !important;
-          }
-
-          .print-certificate-text {
-            font-size: 11.5px !important;
-            line-height: 1.8 !important;
-            color: #475569 !important;
-            margin: 0 !important;
-            font-weight: 400 !important;
-          }
-
-          .print-footer-section {
-            display: flex !important;
-            justify-content: space-between !important;
-            align-items: flex-end !important;
-            width: 95% !important;
-            margin: 4mm auto 0 auto !important;
-          }
-
-          .print-sig-block {
-            width: 60mm !important;
-            border-bottom: 1.5px solid #cbd5e1 !important;
-            padding-bottom: 8px !important;
-            display: flex !important;
-            flex-direction: column !important;
-            justify-content: flex-end !important;
-            height: 20mm !important;
-          }
-
-          .print-sig-label {
-            font-size: 9px !important;
-            text-transform: uppercase !important;
-            letter-spacing: 2px !important;
-            color: #94a3b8 !important;
-            font-weight: 600 !important;
-            margin-bottom: 4px !important;
-          }
-
-          .print-sig-val {
-            font-size: 12px !important;
-            font-weight: 800 !important;
-            color: #334155 !important;
-          }
-
-          .print-sig-val.italic {
-            font-family: 'Playfair Display', serif !important;
-            font-style: italic !important;
-            color: #e11d48 !important;
-          }
-
-          .print-seal-container {
-            display: flex !important;
-            flex-direction: column !important;
-            align-items: center !important;
-            justify-content: center !important;
-            margin-bottom: -15px !important;
-          }
-
-          .print-seal-label {
-            font-size: 8px !important;
-            font-weight: 800 !important;
-            letter-spacing: 3px !important;
-            color: #64748b !important;
-            margin-top: 8px !important;
-          }
-
-          .print-watermark {
-            position: absolute !important;
-            top: 50% !important;
-            left: 50% !important;
-            transform: translate(-50%, -50%) !important;
-            width: 300px !important;
-            height: 300px !important;
-            opacity: 0.03 !important;
-            pointer-events: none !important;
-            z-index: 0 !important;
-          }
-        }
-      `}</style>
       <div className="no-print min-h-screen bg-muted/30 pt-18 md:pt-16">
       <Navbar />
 
@@ -949,14 +717,7 @@ export default function PatientDashboard() {
 
     {/* Print-only Certificate Container */}
     <div className="print-only">
-      <div 
-        className="print-certificate-page"
-        style={{
-          '--cert-border-color': borderColor,
-          '--cert-border-color-alpha': `${borderColor}40`,
-          '--cert-border-color-alpha2': `${borderColor}a0`,
-        } as React.CSSProperties}
-      >
+      <div className={`print-certificate-page cert-${sealTitle.toLowerCase()}`}>
         <div className="print-outer-border"></div>
         <div className="print-inner-border"></div>
         <div className="print-corner print-top-left"></div>
@@ -993,7 +754,7 @@ export default function PatientDashboard() {
 
         {/* Footer Seals and Signatures */}
         <div className="print-footer-section">
-          <div className="print-sig-block" style={{ textAlign: 'left' }}>
+          <div className="print-sig-block text-left">
             <span className="print-sig-label">Fait le</span>
             <span className="print-sig-val">
               {new Date().toLocaleDateString("fr-FR", { year: "numeric", month: "long", day: "numeric" })}
@@ -1001,7 +762,7 @@ export default function PatientDashboard() {
           </div>
 
           <div className="print-seal-container">
-            <svg viewBox="0 0 100 120" style={{ width: '70px', height: '85px' }}>
+            <svg viewBox="0 0 100 120" className="w-[70px] h-[85px]">
               <defs>
                 <linearGradient id="certRibbonGradPrint" x1="0%" y1="0%" x2="100%" y2="0%">
                   <stop offset="0%" stopColor="#991b1b" />
@@ -1080,7 +841,7 @@ export default function PatientDashboard() {
             <div className="print-seal-label">NIVEAU {sealTitle}</div>
           </div>
 
-          <div className="print-sig-block" style={{ textAlign: 'right' }}>
+          <div className="print-sig-block text-right">
             <span className="print-sig-label">Le Directeur</span>
             <span className="print-sig-val italic">CNTS Maroc</span>
           </div>

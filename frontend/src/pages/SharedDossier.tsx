@@ -239,18 +239,7 @@ export default function SharedDossier() {
   };
 
   return (
-    <div className="min-h-screen bg-muted/30 pt-18 md:pt-16">
-      <style>{`
-        @media screen { .print-only { display: none !important; } }
-        @media print {
-          .no-print { display: none !important; }
-          .print-only { display: block !important; margin-bottom: 20px; }
-          .min-h-screen { background-color: white !important; padding-top: 0 !important; }
-          main { padding: 0 !important; max-width: 100% !important; }
-          .container { max-width: 100% !important; width: 100% !important; margin: 0 !important; }
-          .bg-card { border: none !important; shadow: none !important; }
-        }
-      `}</style>
+    <div className="min-h-screen bg-muted/30 pt-18 md:pt-16 shared-dossier-print">
       <div className="no-print"><Navbar /></div>
       <main className="container mx-auto px-4 py-8 max-w-5xl">
         <DossierHeader onPrint={handlePrint} logoUrl="/logo_sang.png" />
