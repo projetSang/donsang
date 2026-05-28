@@ -591,30 +591,8 @@ class DashboardController extends Controller
             ['status' => $request->status]
         );
 
-        // Envoyer l'email si le donneur est disponible
-        if ($request->status === 'available') {
-            $alert = Alert::with('hospital')->find($request->alert_id);
+        // L'email a été retiré à la demande de l'utilisateur
 
-            if ($donor && $alert) {
-                $hospitalName = $alert->hospital ? $alert->hospital->name : 'CHU Casablanca';
-                $hospitalCity = $alert->hospital ? $alert->hospital->city : ($alert->city ?? 'Casablanca');
-
-                try {
-                    $data = [
-                        'patient' => $donor, // Keep 'patient' alias to avoid breaking welcome/appointment email template
-                        'hospitalName' => $hospitalName,
-                        'hospitalCity' => $hospitalCity
-                    ];
-
-                    Mail::send('emails.appointment', $data, function ($message) use ($donor) {
-                        $message->to($donor->email)
-                            ->subject('Confirmation de rendez-vous - Don de Sang urgent');
-                    });
-                } catch (\Exception $e) {
-                    \Log::error("Erreur d'envoi d'email de confirmation: " . $e->getMessage());
-                }
-            }
-        }
 
         return response()->json(['status' => 'success', 'response' => $response]);
     }
