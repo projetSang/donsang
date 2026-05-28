@@ -5,11 +5,16 @@
 @layer base {
   :root {
     --background: 0 0% 100%;
-    --foreground: 220 20% 15%;
+    --foreground: 222.2 84% 4.9%;
+
+    /* Sidebar Variables */
+    --sidebar-width: 16rem;
+    --sidebar-width-icon: 3rem;
+
     --primary: #780101;
 
     --card: 0 0% 100%;
-    --card-foreground: 220 20% 15%;
+    --card-foreground: 222.2 84% 4.9%;
 
     --popover: 0 0% 100%;
     --popover-foreground: 220 20% 15%;

@@ -109,13 +109,6 @@ const SidebarProvider = React.forwardRef<
     <SidebarContext.Provider value={contextValue}>
       <TooltipProvider delayDuration={0}>
         <div
-          style={
-            {
-              "--sidebar-width": SIDEBAR_WIDTH,
-              "--sidebar-width-icon": SIDEBAR_WIDTH_ICON,
-              ...style,
-            } as React.CSSProperties
-          }
           className={cn("group/sidebar-wrapper flex min-h-svh w-full has-[[data-variant=inset]]:bg-sidebar", className)}
           ref={ref}
           {...props}
@@ -156,12 +149,7 @@ const Sidebar = React.forwardRef<
         <SheetContent
           data-sidebar="sidebar"
           data-mobile="true"
-          className="w-[--sidebar-width] bg-sidebar p-0 text-sidebar-foreground [&>button]:hidden"
-          style={
-            {
-              "--sidebar-width": SIDEBAR_WIDTH_MOBILE,
-            } as React.CSSProperties
-          }
+          className="w-[--sidebar-width] bg-sidebar p-0 text-sidebar-foreground [&>button]:hidden sidebar-mobile"
           side={side}
         >
           <div className="flex h-full w-full flex-col">{children}</div>
@@ -545,13 +533,8 @@ const SidebarMenuSkeleton = React.forwardRef<
     >
       {showIcon && <Skeleton className="size-4 rounded-md" data-sidebar="menu-skeleton-icon" />}
       <Skeleton
-        className="h-4 max-w-[--skeleton-width] flex-1"
+        className={`h-4 flex-1 ${width ? `w-[${width}]` : 'w-1/2'}`}
         data-sidebar="menu-skeleton-text"
-        style={
-          {
-            "--skeleton-width": width,
-          } as React.CSSProperties
-        }
       />
     </div>
   );
