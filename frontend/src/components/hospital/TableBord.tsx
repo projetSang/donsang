@@ -11,7 +11,7 @@ export default function TableBord() {
   const [statsData, setStatsData] = useState<any>(null);
   useEffect(() => {
     if (user?.id) {
-      fetch(`http://localhost:8000/api/hospital/stats?hospital_id=${user.id}`)
+      fetch(`https://backend-production-4a57.up.railway.app/api/hospital/stats?hospital_id=${user.id}`)
         .then(res => res.json())
         .then(data => setStatsData(data))
         .catch(err => console.error("Erreur de récupération des statistiques backend", err));

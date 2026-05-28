@@ -12,7 +12,7 @@ export function MessagesTab() {
   const [expandedId, setExpandedId] = useState<number | null>(null);
 
   useEffect(() => {
-    fetch("http://localhost:8000/api/hospital/contact-messages?type=user")
+    fetch("https://backend-production-4a57.up.railway.app/api/hospital/contact-messages?type=user")
       .then(res => res.json())
       .then(data => {
         setMessages(data);

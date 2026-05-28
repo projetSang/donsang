@@ -22,7 +22,7 @@ export function SettingsTab() {
 
   useEffect(() => {
     if (user?.id) {
-      fetch(`http://localhost:8000/api/hospital/settings?hospital_id=${user.id}`)
+      fetch(`https://backend-production-4a57.up.railway.app/api/hospital/settings?hospital_id=${user.id}`)
         .then(res => res.json())
         .then(data => {
           setFormData({
@@ -45,7 +45,7 @@ export function SettingsTab() {
     setSuccess(false);
     setErrors({});
     try {
-      const res = await fetch("http://localhost:8000/api/hospital/settings", {
+      const res = await fetch("https://backend-production-4a57.up.railway.app/api/hospital/settings", {
         method: "PUT",
         headers: { 
           "Content-Type": "application/json",

@@ -111,7 +111,7 @@ export default function AdminDashboard() {
   const fetchHospitalRequests = async () => {
     try {
       setRequestsLoading(true);
-      const res = await fetch('http://localhost:8000/api/hospital/contact-messages?type=hospital');
+      const res = await fetch('https://backend-production-4a57.up.railway.app/api/hospital/contact-messages?type=hospital');
       const data = await res.json();
       setHospitalRequests(data);
     } catch (err) {
@@ -123,7 +123,7 @@ export default function AdminDashboard() {
 
   const handleRequestStatus = async (id: number, status: string) => {
     try {
-      await fetch(`http://localhost:8000/api/contact-messages/${id}/status`, {
+      await fetch(`https://backend-production-4a57.up.railway.app/api/contact-messages/${id}/status`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status })

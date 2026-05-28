@@ -10,7 +10,7 @@ export default function Index() {
   const [alerts, setAlerts] = useState<any[]>([]);
 
   useEffect(() => {
-    fetch("http://localhost:8000/api/hospital/alerts")
+    fetch("https://backend-production-4a57.up.railway.app/api/hospital/alerts")
       .then(res => res.json())
       .then(data => {
         // Only show active alerts

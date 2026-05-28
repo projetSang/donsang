@@ -25,7 +25,7 @@ export function AlertsTab({ showNewAlert, setShowNewAlert, onViewDonors }: any) 
 
   const fetchAlerts = () => {
     if (user?.id) {
-      fetch(`http://localhost:8000/api/hospital/alerts?hospital_id=${user.id}`)
+      fetch(`https://backend-production-4a57.up.railway.app/api/hospital/alerts?hospital_id=${user.id}`)
         .then(res => res.json())
         .then(data => setAlerts(data))
         .catch(console.error);
@@ -39,7 +39,7 @@ export function AlertsTab({ showNewAlert, setShowNewAlert, onViewDonors }: any) 
   const handleCreateAlert = async () => {
     setLoading(true);
     try {
-      const res = await fetch("http://localhost:8000/api/hospital/alerts", {
+      const res = await fetch("https://backend-production-4a57.up.railway.app/api/hospital/alerts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData)
@@ -67,7 +67,7 @@ export function AlertsTab({ showNewAlert, setShowNewAlert, onViewDonors }: any) 
   const handleDeleteAlert = async (id: number) => {
     if (!confirm("Voulez-vous vraiment supprimer cette alerte ?")) return;
     try {
-      const res = await fetch(`http://localhost:8000/api/hospital/alerts/${id}`, {
+      const res = await fetch(`https://backend-production-4a57.up.railway.app/api/hospital/alerts/${id}`, {
         method: "DELETE"
       });
       if (res.ok) {
@@ -80,7 +80,7 @@ export function AlertsTab({ showNewAlert, setShowNewAlert, onViewDonors }: any) 
 
   const fetchResponses = async (alertId: number) => {
     try {
-      const res = await fetch(`http://localhost:8000/api/hospital/alerts/${alertId}/responses`);
+      const res = await fetch(`https://backend-production-4a57.up.railway.app/api/hospital/alerts/${alertId}/responses`);
       if (res.ok) {
         const data = await res.json();
         setSelectedAlertResponses(data);
@@ -93,7 +93,7 @@ export function AlertsTab({ showNewAlert, setShowNewAlert, onViewDonors }: any) 
 
   const handleCloseAlert = async (id: number) => {
     try {
-      const res = await fetch(`http://localhost:8000/api/hospital/alerts/${id}`, {
+      const res = await fetch(`https://backend-production-4a57.up.railway.app/api/hospital/alerts/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status: "Clôturée" })

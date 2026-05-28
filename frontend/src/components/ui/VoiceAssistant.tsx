@@ -95,7 +95,7 @@ const VoiceAssistant: React.FC = () => {
   const handleSendVoiceMessage = async (message: string) => {
     setIsProcessing(true);
     try {
-      const response = await fetch('http://localhost:8000/api/assistant/chat', {
+      const response = await fetch('https://backend-production-4a57.up.railway.app/api/assistant/chat', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

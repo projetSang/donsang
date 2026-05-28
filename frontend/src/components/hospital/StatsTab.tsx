@@ -6,7 +6,7 @@ export function StatsTab() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("http://localhost:8000/api/hospital/statistiques")
+    fetch("https://backend-production-4a57.up.railway.app/api/hospital/statistiques")
       .then(res => res.json())
       .then(data => {
         setStatistiques(data);

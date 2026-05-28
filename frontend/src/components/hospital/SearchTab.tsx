@@ -88,7 +88,7 @@ export function SearchTab({ selectedBlood, setSelectedBlood, city, setCity }: an
   const handleUpdateDate = () => {
     if (!editingDonor) return;
 
-    fetch(`http://localhost:8000/api/hospital/donors/${editingDonor.id}`, {
+    fetch(`https://backend-production-4a57.up.railway.app/api/hospital/donors/${editingDonor.id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ ...editingDonor, last_donation_date: newDonationDate })

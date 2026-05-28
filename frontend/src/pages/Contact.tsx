@@ -37,7 +37,7 @@ export default function Contact() {
   });
 
   useEffect(() => {
-    fetch("http://localhost:8000/api/admin/hospitals")
+    fetch("https://backend-production-4a57.up.railway.app/api/admin/hospitals")
       .then(res => res.json())
       .then(data => setHospitals(data))
       .catch(console.error);
@@ -55,7 +55,7 @@ export default function Contact() {
     e.preventDefault();
     setIsSubmitting(true);
     try {
-      const res = await fetch("http://localhost:8000/api/contact-messages", {
+      const res = await fetch("https://backend-production-4a57.up.railway.app/api/contact-messages", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ...hospitalForm, type: "hospital" }),
@@ -71,7 +71,7 @@ export default function Contact() {
     setIsSubmitting(true);
     const selectedHospital = hospitals.find(h => String(h.id) === userForm.hospital_id);
     try {
-      const res = await fetch("http://localhost:8000/api/contact-messages", {
+      const res = await fetch("https://backend-production-4a57.up.railway.app/api/contact-messages", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
