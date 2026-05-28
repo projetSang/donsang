@@ -1,11 +1,17 @@
 {
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ],
   "headers": [
     {
       "source": "/(.*)",
       "headers": [
         {
           "key": "Content-Security-Policy",
-          "value": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://vercel.live; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https:; connect-src 'self' https://backend-production-4a57.up.railway.app wss://ws-us3.pusher.com https://*.vercel.app; frame-src 'self' https://vercel.live;"
+          "value": "default-src 'self'; script-src 'self' https://vercel.live; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' https://backend-production-4a57.up.railway.app wss://ws-us3.pusher.com https://*.vercel.app; frame-src 'self' https://vercel.live; object-src 'none'; base-uri 'self';"
         },
         {
           "key": "X-Frame-Options",
