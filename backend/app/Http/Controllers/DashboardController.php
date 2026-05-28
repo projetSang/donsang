@@ -462,9 +462,11 @@ class DashboardController extends Controller
 
     public function getNotifications($id)
     {
+        $isPatient = false;
         $donor = BloodDonor::find($id);
         if (!$donor) {
             $donor = Patient::find($id);
+            $isPatient = true;
         }
 
         if (!$donor) {
@@ -516,6 +518,14 @@ class DashboardController extends Controller
             });
         }
 
+        $responses = \App\Models\AlertResponse::where(function($q) use ($id, $isPatient) {
+            if ($isPatient) {
+                $q->where('patient_id', $id);
+            } else {
+                $q->where('blood_donor_id', $id);
+            }
+        })->pluck('status', 'alert_id')->toArray();
+
         $alerts = $alertsQuery->orderBy('created_at', 'desc')
             ->take(5)
             ->get()
@@ -525,7 +535,8 @@ class DashboardController extends Controller
                 'title' => "Urgence : Besoin de donneur {$a->blood_type} à {$a->city}",
                 'time' => $a->created_at->diffForHumans(),
                 'urgent' => true,
-                'is_read' => false
+                'is_read' => false,
+                'responded' => $responses[$a->id] ?? null
             ]);
 
         $allNotifications = collect($alerts)->merge($personal)->sortByDesc('time')->values()->all();
