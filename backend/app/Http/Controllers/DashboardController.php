@@ -568,13 +568,26 @@ class DashboardController extends Controller
         }
 
         $donor = BloodDonor::find($donorId);
+        $isPatient = false;
+
+        if (!$donor) {
+            $donor = Patient::find($donorId);
+            $isPatient = true;
+        }
 
         if (!$donor) {
             return response()->json(['status' => 'error', 'message' => 'Donneur introuvable'], 404);
         }
 
+        $matchCondition = ['alert_id' => $request->alert_id];
+        if ($isPatient) {
+            $matchCondition['patient_id'] = $donor->id;
+        } else {
+            $matchCondition['blood_donor_id'] = $donor->id;
+        }
+
         $response = \App\Models\AlertResponse::updateOrCreate(
-            ['alert_id' => $request->alert_id, 'blood_donor_id' => $donor->id],
+            $matchCondition,
             ['status' => $request->status]
         );
 
