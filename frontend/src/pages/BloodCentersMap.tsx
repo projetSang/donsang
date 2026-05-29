@@ -99,13 +99,30 @@ async function fetchBloodCenters(lat: number, lon: number, radius: number): Prom
     out center tags;
   `;
 
-  const response = await fetch("https://overpass-api.de/api/interpreter", {
-    method: "POST",
-    body: `data=${encodeURIComponent(query)}`,
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-  });
+  const endpoints = [
+    "https://lz4.overpass-api.de/api/interpreter",
+    "https://overpass-api.de/api/interpreter",
+    "https://overpass.kumi.systems/api/interpreter"
+  ];
 
-  if (!response.ok) throw new Error("Overpass API error");
+  let response = null;
+  for (const endpoint of endpoints) {
+    try {
+      const res = await fetch(endpoint, {
+        method: "POST",
+        body: `data=${encodeURIComponent(query)}`,
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      });
+      if (res.ok) {
+        response = res;
+        break;
+      }
+    } catch (e) {
+      console.warn(`Failed to fetch from ${endpoint}`, e);
+    }
+  }
+
+  if (!response) throw new Error("Overpass API error on all endpoints");
 
   const data = await response.json();
 
