@@ -336,7 +336,7 @@ class AuthController extends Controller
                 $message->to($request->email)
                     ->subject('Réinitialisation de votre mot de passe - DonSang');
             });
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             \Log::error("Erreur d'envoi d'email de réinitialisation : " . $e->getMessage());
             // Pour le développement local, si le serveur de mail échoue, on peut aussi retourner le token pour faciliter le test
             return response()->json([
