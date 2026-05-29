@@ -10,6 +10,7 @@ import {
 import { useAuth } from "@/contexts/AuthContext";
 import { apiFetch } from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export default function AdminDashboard() {
   const { user: adminInfo, logout, loading: authLoading } = useAuth();
@@ -36,6 +37,7 @@ export default function AdminDashboard() {
   const [requestsLoading, setRequestsLoading] = useState(false);
   const [expandedRequest, setExpandedRequest] = useState<number | null>(null);
   const [showPassword, setShowPassword] = useState(false);
+  const { t } = useLanguage();
 
   const generateSecurePassword = () => {
     const lowercase = "abcdefghijkmnopqrstuvwxyz";
@@ -86,8 +88,8 @@ export default function AdminDashboard() {
     setShowAddForm(true);
     window.scrollTo({ top: 0, behavior: 'smooth' });
     toast({
-      title: "Formulaire pré-rempli",
-      description: "Les informations de la demande et un mot de passe sécurisé ont été chargés."
+      title: t.adminDashboard.formPrefilled,
+      description: t.adminDashboard.formPrefilledDesc
     });
   };
 
@@ -130,11 +132,11 @@ export default function AdminDashboard() {
       });
       setHospitalRequests(prev => prev.map(r => r.id === id ? { ...r, status } : r));
       toast({
-        title: status === 'approved' ? 'Demande approuvée' : 'Demande rejetée',
-        description: status === 'approved' ? "N'oubliez pas de créer le compte hôpital." : 'La demande a été rejetée.'
+        title: status === 'approved' ? t.adminDashboard.requestApproved : t.adminDashboard.requestRejected,
+        description: status === 'approved' ? t.adminDashboard.requestApprovedDesc : t.adminDashboard.requestRejectedDesc
       });
     } catch (err) {
-      toast({ variant: 'destructive', title: 'Erreur', description: 'Erreur lors de la mise à jour.' });
+      toast({ variant: 'destructive', title: t.adminDashboard.error, description: t.adminDashboard.updateStatusError });
     }
   };
 
@@ -170,21 +172,21 @@ export default function AdminDashboard() {
   };
 
   const handleDelete = async (id: number) => {
-    if (!confirm("Voulez-vous vraiment supprimer cet hôpital ? Toutes ses alertes associées seront supprimées.")) return;
+    if (!confirm(t.adminDashboard.deleteConfirm)) return;
     try {
       await apiFetch(`/admin/hospitals/${id}`, {
         method: "DELETE"
       });
       setHospitals(prev => prev.filter(h => h.id !== id));
       toast({
-        title: "Succès",
-        description: "L'hôpital a été supprimé avec succès."
+        title: t.adminDashboard.success,
+        description: t.adminDashboard.deleteSuccess
       });
     } catch (err: any) {
       toast({
         variant: "destructive",
-        title: "Erreur",
-        description: err.message || "Erreur lors de la suppression de l'hôpital."
+        title: t.adminDashboard.error,
+        description: err.message || t.adminDashboard.deleteError
       });
     }
   };
@@ -195,10 +197,10 @@ export default function AdminDashboard() {
     
     // Simple validation
     const localErrors: any = {};
-    if (!formData.name) localErrors.name = ["Le nom est requis."];
-    if (!formData.city) localErrors.city = ["La ville est requise."];
-    if (!formData.email) localErrors.email = ["L'email est requis."];
-    if (!editingHospitalId && !formData.password) localErrors.password = ["Le mot de passe est requis."];
+    if (!formData.name) localErrors.name = [t.adminDashboard.nameRequired];
+    if (!formData.city) localErrors.city = [t.adminDashboard.cityRequired];
+    if (!formData.email) localErrors.email = [t.adminDashboard.emailRequired];
+    if (!editingHospitalId && !formData.password) localErrors.password = [t.adminDashboard.passwordRequired];
     
     if (Object.keys(localErrors).length > 0) {
       setErrors(localErrors);
@@ -229,8 +231,8 @@ export default function AdminDashboard() {
       });
 
       toast({
-        title: "Succès",
-        description: editingHospitalId ? "L'hôpital a été mis à jour avec succès." : "L'hôpital a été enregistré avec succès."
+        title: t.adminDashboard.success,
+        description: editingHospitalId ? t.adminDashboard.updateSuccess : t.adminDashboard.createSuccess
       });
 
       resetForm();
@@ -242,8 +244,8 @@ export default function AdminDashboard() {
       } else {
         toast({
           variant: "destructive",
-          title: "Erreur",
-          description: err.message || "Une erreur s'est produite."
+          title: t.adminDashboard.error,
+          description: err.message || t.adminDashboard.errorOccurred
         });
       }
     }
@@ -276,9 +278,9 @@ export default function AdminDashboard() {
           
           <div className="flex items-center gap-4">
             <div className="hidden md:flex flex-col items-end">
-              <span className="text-sm font-bold text-slate-900">ESPACE SUPER ADMIN</span>
+              <span className="text-sm font-bold text-slate-900">{t.adminDashboard.superAdmin}</span>
               <span className="text-[10px] text-primary uppercase tracking-widest font-semibold text-right">
-                Gestion des Hôpitaux
+                {t.adminDashboard.hospitalManagement}
               </span>
             </div>
             <div className="h-10 w-10 rounded-3xl bg-slate-900 text-white flex items-center justify-center shadow-lg font-bold border-2 border-white">
@@ -304,9 +306,9 @@ export default function AdminDashboard() {
             <div>
               <h1 className="text-3xl font-extrabold text-slate-900 flex items-center gap-3">
                 <Building2 className="h-8 w-8 text-primary" />
-                Gestion des Hôpitaux
+                {t.adminDashboard.hospitalManagement}
               </h1>
-              <p className="text-slate-500 mt-1">Créez, modifiez et gérez les centres hospitaliers affiliés à la plateforme.</p>
+              <p className="text-slate-500 mt-1">{t.adminDashboard.hospitalManagementDesc}</p>
             </div>
             
             {!showAddForm && (
@@ -316,7 +318,7 @@ export default function AdminDashboard() {
                 className="shadow-lg hover:shadow-primary/20 rounded-xl"
               >
                 <Plus className="h-4 w-4 mr-2" />
-                Ajouter un Hôpital
+                {t.adminDashboard.addHospital}
               </Button>
             )}
           </div>
@@ -330,7 +332,7 @@ export default function AdminDashboard() {
                     <Building2 className="h-5 w-5" />
                   </div>
                   <h4 className="font-bold text-lg">
-                    {editingHospitalId ? "Modifier l'Hôpital" : "Nouveau Centre Hospitalier"}
+                    {editingHospitalId ? t.adminDashboard.editHospital : t.adminDashboard.newHospitalCenter}
                   </h4>
                 </div>
                 <Button 
@@ -348,7 +350,7 @@ export default function AdminDashboard() {
                   
                   {/* Name */}
                   <div className="space-y-2">
-                    <Label htmlFor="name" className="text-slate-700 font-semibold">Nom de l'Hôpital *</Label>
+                    <Label htmlFor="name" className="text-slate-700 font-semibold">{t.adminDashboard.hospitalName}</Label>
                     <div className="relative">
                       <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
                       <Input 
@@ -364,7 +366,7 @@ export default function AdminDashboard() {
 
                   {/* City */}
                   <div className="space-y-2">
-                    <Label htmlFor="city" className="text-slate-700 font-semibold">Ville *</Label>
+                    <Label htmlFor="city" className="text-slate-700 font-semibold">{t.adminDashboard.city}</Label>
                     <div className="relative">
                       <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
                       <Input 
@@ -380,7 +382,7 @@ export default function AdminDashboard() {
 
                   {/* Email */}
                   <div className="space-y-2">
-                    <Label htmlFor="email" className="text-slate-700 font-semibold">Adresse Email *</Label>
+                    <Label htmlFor="email" className="text-slate-700 font-semibold">{t.adminDashboard.emailAddress}</Label>
                     <div className="relative">
                       <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
                       <Input 
@@ -398,7 +400,7 @@ export default function AdminDashboard() {
                   {/* Password */}
                   <div className="space-y-2">
                     <Label htmlFor="password" className="text-slate-700 font-semibold">
-                      Mot de passe {editingHospitalId ? "(laissez vide pour ne pas modifier)" : "*"}
+                      {t.adminDashboard.password} {editingHospitalId ? t.adminDashboard.passwordLeaveEmpty : "*"}
                     </Label>
                     <div className="relative">
                       <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
@@ -407,7 +409,7 @@ export default function AdminDashboard() {
                         type={showPassword ? "text" : "password"}
                         value={formData.password}
                         onChange={(e) => setFormData({...formData, password: e.target.value})}
-                        placeholder={editingHospitalId ? "••••••••" : "Mot de passe sécurisé"}
+                        placeholder={editingHospitalId ? "••••••••" : t.adminDashboard.securePassword}
                         className={`pl-10 pr-24 h-12 rounded-xl bg-slate-50 ${errors.password ? 'border-red-500' : 'border-slate-200'}`}
                       />
                       <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
@@ -420,11 +422,11 @@ export default function AdminDashboard() {
                             onClick={() => {
                               navigator.clipboard.writeText(formData.password);
                               toast({
-                                title: "Copié !",
-                                description: "Le mot de passe a été copié dans le presse-papiers."
+                                title: t.adminDashboard.copied,
+                                description: t.adminDashboard.copiedDesc
                               });
                             }}
-                            title="Copier le mot de passe"
+                            title={t.adminDashboard.copied}
                           >
                             <Copy className="h-4 w-4" />
                           </Button>
@@ -439,11 +441,11 @@ export default function AdminDashboard() {
                             setFormData({...formData, password: newPass});
                             setShowPassword(true);
                             toast({
-                              title: "Mot de passe généré",
-                              description: "Un mot de passe sécurisé a été généré et affiché."
+                              title: t.adminDashboard.passwordGenerated,
+                              description: t.adminDashboard.passwordGeneratedDesc
                             });
                           }}
-                          title="Générer un mot de passe sécurisé"
+                          title={t.adminDashboard.passwordGenerated}
                         >
                           <RefreshCw className="h-4 w-4" />
                         </Button>
@@ -453,7 +455,7 @@ export default function AdminDashboard() {
                           size="icon"
                           className="h-8 w-8 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-200/50"
                           onClick={() => setShowPassword(!showPassword)}
-                          title={showPassword ? "Masquer" : "Afficher"}
+                          title={showPassword ? t.adminDashboard.hide : t.adminDashboard.show}
                         >
                           {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                         </Button>
@@ -464,7 +466,7 @@ export default function AdminDashboard() {
 
                   {/* Phone */}
                   <div className="space-y-2">
-                    <Label htmlFor="phone" className="text-slate-700 font-semibold">Téléphone</Label>
+                    <Label htmlFor="phone" className="text-slate-700 font-semibold">{t.adminDashboard.phone}</Label>
                     <div className="relative">
                       <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
                       <Input 
@@ -479,7 +481,7 @@ export default function AdminDashboard() {
 
                   {/* Address */}
                   <div className="space-y-2">
-                    <Label htmlFor="address" className="text-slate-700 font-semibold">Adresse Complète</Label>
+                    <Label htmlFor="address" className="text-slate-700 font-semibold">{t.adminDashboard.fullAddress}</Label>
                     <div className="relative">
                       <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
                       <Input 
@@ -502,7 +504,7 @@ export default function AdminDashboard() {
                     className="rounded-xl px-6" 
                     onClick={() => { setShowAddForm(false); resetForm(); }}
                   >
-                    Annuler
+                    {t.adminDashboard.cancel}
                   </Button>
                   <Button 
                     type="submit" 
@@ -510,7 +512,7 @@ export default function AdminDashboard() {
                     className="rounded-xl px-8 shadow-lg shadow-primary/20"
                   >
                     <Save className="h-4 w-4 mr-2" />
-                    {editingHospitalId ? "Enregistrer les modifications" : "Créer le compte"}
+                    {editingHospitalId ? t.adminDashboard.saveChanges : t.adminDashboard.createAccount}
                   </Button>
                 </div>
               </form>
@@ -526,7 +528,7 @@ export default function AdminDashboard() {
               <Input 
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Rechercher un hôpital (Nom, Ville, Email)..."
+                placeholder={t.adminDashboard.searchPlaceholder}
                 className="pl-12 h-12 bg-slate-50 border-slate-200 focus:bg-white rounded-xl text-base transition-all"
               />
             </div>
@@ -536,24 +538,24 @@ export default function AdminDashboard() {
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="bg-slate-50 border-b border-slate-100 text-xs font-bold text-slate-500 uppercase tracking-widest">
-                    <th className="px-6 py-4">Nom de l'Hôpital</th>
-                    <th className="px-6 py-4">Ville</th>
-                    <th className="px-6 py-4">Email de contact</th>
-                    <th className="px-6 py-4">Téléphone</th>
-                    <th className="px-6 py-4 text-center">Actions</th>
+                    <th className="px-6 py-4">{t.adminDashboard.hospitalNameCol}</th>
+                    <th className="px-6 py-4">{t.adminDashboard.cityCol}</th>
+                    <th className="px-6 py-4">{t.adminDashboard.contactEmail}</th>
+                    <th className="px-6 py-4">{t.adminDashboard.phoneCol}</th>
+                    <th className="px-6 py-4 text-center">{t.adminDashboard.actions}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 text-sm">
                   {loading ? (
                     <tr>
                       <td colSpan={5} className="text-center py-8 text-slate-400">
-                        Chargement des hôpitaux...
+                        {t.adminDashboard.loadingHospitals}
                       </td>
                     </tr>
                   ) : filteredHospitals.length === 0 ? (
                     <tr>
                       <td colSpan={5} className="text-center py-8 text-slate-400">
-                        Aucun hôpital trouvé.
+                        {t.adminDashboard.noHospitalFound}
                       </td>
                     </tr>
                   ) : (
@@ -603,21 +605,21 @@ export default function AdminDashboard() {
                   <MessageSquare className="h-5 w-5" />
                 </div>
                 <div>
-                  <h2 className="text-lg font-bold text-slate-900">Demandes de Compte Hôpital</h2>
-                  <p className="text-xs text-slate-500">Demandes reçues via le formulaire de contact</p>
+                  <h2 className="text-lg font-bold text-slate-900">{t.adminDashboard.hospitalRequests}</h2>
+                  <p className="text-xs text-slate-500">{t.adminDashboard.requestsDesc}</p>
                 </div>
               </div>
               <span className="bg-amber-100 text-amber-700 text-xs font-bold px-3 py-1 rounded-full">
-                {hospitalRequests.filter(r => r.status === 'pending').length} en attente
+                {hospitalRequests.filter(r => r.status === 'pending').length} {t.adminDashboard.pending}
               </span>
             </div>
 
             {requestsLoading ? (
-              <div className="text-center py-8 text-slate-400">Chargement...</div>
+              <div className="text-center py-8 text-slate-400">{t.adminDashboard.loadingRequests}</div>
             ) : hospitalRequests.length === 0 ? (
               <div className="text-center py-12">
                 <MessageSquare className="h-10 w-10 text-slate-200 mx-auto mb-3" />
-                <p className="text-slate-400 text-sm">Aucune demande pour le moment.</p>
+                <p className="text-slate-400 text-sm">{t.adminDashboard.noRequests}</p>
               </div>
             ) : (
               <div className="space-y-3">
@@ -640,7 +642,7 @@ export default function AdminDashboard() {
                           <Building2 className="h-5 w-5" />
                         </div>
                         <div>
-                          <div className="font-bold text-slate-900 text-sm">{req.hospital_name || 'Hôpital inconnu'}</div>
+                          <div className="font-bold text-slate-900 text-sm">{req.hospital_name || t.adminDashboard.unknownHospital}</div>
                           <div className="text-xs text-slate-500 flex items-center gap-3 mt-0.5">
                             <span className="flex items-center gap-1"><Mail className="h-3 w-3" />{req.email}</span>
                             {req.city && <span className="flex items-center gap-1"><MapPin className="h-3 w-3" />{req.city}</span>}
@@ -653,7 +655,7 @@ export default function AdminDashboard() {
                           req.status === 'approved' ? 'bg-emerald-100 text-emerald-700' :
                           'bg-red-100 text-red-700'
                         }`}>
-                          {req.status === 'pending' ? 'En attente' : req.status === 'approved' ? 'Approuvée' : 'Rejetée'}
+                          {req.status === 'pending' ? t.adminDashboard.statusPending : req.status === 'approved' ? t.adminDashboard.statusApproved : t.adminDashboard.statusRejected}
                         </span>
                         {expandedRequest === req.id ? <ChevronUp className="h-4 w-4 text-slate-400" /> : <ChevronDown className="h-4 w-4 text-slate-400" />}
                       </div>
@@ -662,14 +664,14 @@ export default function AdminDashboard() {
                     {expandedRequest === req.id && (
                       <div className="px-4 pb-4 border-t border-slate-100 pt-4 space-y-3 animate-in slide-in-from-top-2 duration-200">
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
-                          <div><span className="text-slate-400 text-xs">Responsable:</span><br/><span className="font-semibold text-slate-700">{req.name}</span></div>
-                          <div><span className="text-slate-400 text-xs">Téléphone:</span><br/><span className="font-semibold text-slate-700">{req.phone || '—'}</span></div>
-                          <div><span className="text-slate-400 text-xs">Ville:</span><br/><span className="font-semibold text-slate-700">{req.city || '—'}</span></div>
-                          <div><span className="text-slate-400 text-xs">Adresse:</span><br/><span className="font-semibold text-slate-700">{req.address || '—'}</span></div>
+                          <div><span className="text-slate-400 text-xs">{t.adminDashboard.responsible}</span><br/><span className="font-semibold text-slate-700">{req.name}</span></div>
+                          <div><span className="text-slate-400 text-xs">{t.adminDashboard.phoneLabel}</span><br/><span className="font-semibold text-slate-700">{req.phone || '—'}</span></div>
+                          <div><span className="text-slate-400 text-xs">{t.adminDashboard.cityLabel}</span><br/><span className="font-semibold text-slate-700">{req.city || '—'}</span></div>
+                          <div><span className="text-slate-400 text-xs">{t.adminDashboard.addressLabel}</span><br/><span className="font-semibold text-slate-700">{req.address || '—'}</span></div>
                         </div>
                         {req.message && (
                           <div className="bg-white rounded-lg p-3 border border-slate-100">
-                            <p className="text-xs text-slate-400 mb-1">Message:</p>
+                            <p className="text-xs text-slate-400 mb-1">{t.adminDashboard.messageLabel}</p>
                             <p className="text-sm text-slate-700">{req.message}</p>
                           </div>
                         )}
@@ -684,7 +686,7 @@ export default function AdminDashboard() {
                               className="rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white gap-1.5 h-9"
                               onClick={(e) => { e.stopPropagation(); handleRequestStatus(req.id, 'approved'); }}
                             >
-                              <CheckCircle2 className="h-3.5 w-3.5" /> Approuver
+                              <CheckCircle2 className="h-3.5 w-3.5" /> {t.adminDashboard.approve}
                             </Button>
                             <Button
                               size="sm"
@@ -692,7 +694,7 @@ export default function AdminDashboard() {
                               className="rounded-lg border-red-200 text-red-600 hover:bg-red-50 gap-1.5 h-9"
                               onClick={(e) => { e.stopPropagation(); handleRequestStatus(req.id, 'rejected'); }}
                             >
-                              <XCircle className="h-3.5 w-3.5" /> Rejeter
+                              <XCircle className="h-3.5 w-3.5" /> {t.adminDashboard.reject}
                             </Button>
                           </div>
                         )}
@@ -703,7 +705,7 @@ export default function AdminDashboard() {
                               className="rounded-lg bg-primary hover:bg-primary/95 text-white gap-1.5 h-9"
                               onClick={(e) => { e.stopPropagation(); handleCreateAccountFromRequest(req); }}
                             >
-                              <Plus className="h-3.5 w-3.5" /> Créer le compte hôpital
+                              <Plus className="h-3.5 w-3.5" /> {t.adminDashboard.createHospitalAccount}
                             </Button>
                           </div>
                         )}

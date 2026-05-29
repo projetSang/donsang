@@ -5,8 +5,12 @@ import { Label } from "@/components/ui/label";
 import { Eye, EyeOff, Lock, ArrowLeft } from "lucide-react";
 import { apiFetch } from "@/lib/api";
 import { Link, useSearchParams } from "react-router-dom";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export default function ResetPassword() {
+  const { t } = useLanguage();
+  const f = t.passwordReset;
+
   const [searchParams] = useSearchParams();
   const token = searchParams.get("token") || "";
   const email = searchParams.get("email") || "";
@@ -25,25 +29,25 @@ export default function ResetPassword() {
     
     if (!password || !passwordConfirmation) {
       setStatus("error");
-      setMessage("Veuillez remplir tous les champs.");
+      setMessage(f.fillAll);
       return;
     }
 
     if (password.length < 6) {
       setStatus("error");
-      setMessage("Le mot de passe doit contenir au moins 6 caractères.");
+      setMessage(f.passwordMin);
       return;
     }
 
     if (password !== passwordConfirmation) {
       setStatus("error");
-      setMessage("Les mots de passe ne correspondent pas.");
+      setMessage(f.passwordMismatch);
       return;
     }
 
     if (!token || !email) {
       setStatus("error");
-      setMessage("Jeton de réinitialisation ou email manquant dans le lien.");
+      setMessage(f.missingToken);
       return;
     }
 
@@ -63,19 +67,19 @@ export default function ResetPassword() {
 
       if (data.status === "success") {
         setStatus("success");
-        setMessage(data.message || "Votre mot de passe a été réinitialisé.");
+        setMessage(data.message || f.resetSuccess);
       } else {
         setStatus("error");
-        setMessage(data.message || "Une erreur est survenue.");
+        setMessage(data.message || f.errorOccurred);
       }
     } catch (err: any) {
       setStatus("error");
-      setMessage(err.message || "Erreur de connexion au serveur.");
+      setMessage(err.message || f.connError);
     }
   };
 
   return (
-    <div className="min-h-screen bg-[#faf8f8] flex flex-col items-center justify-center p-6 py-1">
+    <div className="min-h-screen bg-[#faf8f8] flex flex-col items-center justify-center p-6 py-1 animate-reveal">
       <div className="w-full max-w-lg space-y-8 flex flex-col items-center">
         {/* Logo Section */}
         <div className="text-center group">
@@ -83,9 +87,9 @@ export default function ResetPassword() {
             <div className="mb-4">
               <img src="logo_sang.png" alt="SangVital Logo" width={180} height={180} />
             </div>
-            <h2 className="text-2xl font-bold text-slate-900 mb-2">Réinitialiser le mot de passe</h2>
+            <h2 className="text-2xl font-bold text-slate-900 mb-2">{f.resetTitle}</h2>
           </div>
-          <p className="text-slate-500 text-sm">Veuillez saisir votre nouveau mot de passe sécurisé</p>
+          <p className="text-slate-500 text-sm">{f.resetSubtitle}</p>
         </div>
 
         <div className="w-full bg-white rounded-[2.5rem] shadow-[0_20px_60px_-15px_rgba(0,0,0,0.05)] border border-slate-100 p-8 md:p-12 space-y-8">
@@ -99,7 +103,7 @@ export default function ResetPassword() {
                 to="/login"
                 className="inline-flex items-center gap-2 text-primary font-bold hover:underline justify-center w-full pt-4"
               >
-                Se connecter avec le nouveau mot de passe &rarr;
+                {f.connectNewPassword} &rarr;
               </Link>
             </div>
           ) : (
@@ -111,21 +115,21 @@ export default function ResetPassword() {
               )}
 
               {(!token || !email) && (
-                <div className="bg-amber-50 border border-amber-200 text-amber-800 text-xs p-4 rounded-xl font-medium">
-                  ⚠️ <strong>Attention :</strong> Ce lien semble incomplet ou invalide. Assurez-vous d'avoir cliqué sur le lien complet reçu par email.
+                <div className="bg-amber-50 border border-amber-200 text-amber-800 text-xs p-4 rounded-xl font-medium leading-relaxed">
+                  ⚠️ {f.incompleteLink}
                 </div>
               )}
 
               <div className="space-y-2">
-                <Label htmlFor="password" className="text-slate-900 font-bold">Nouveau mot de passe</Label>
+                <Label htmlFor="password" className="text-slate-900 font-bold">{f.newPassword}</Label>
                 <div className="relative">
                   <Input
                     id="password"
                     type={showPassword ? "text" : "password"}
-                    placeholder="Nouveau Mot De Passe"
+                    placeholder={f.newPasswordPlaceholder}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="h-12 rounded-xl border-slate-200 focus:border-primary transition-all px-6 text-base pr-14"
+                    className="h-12 rounded-xl border-slate-200 focus:border-primary transition-all px-6 text-base pr-14 bg-slate-50"
                     disabled={status === "loading"}
                   />
                   <button
@@ -139,15 +143,15 @@ export default function ResetPassword() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="password_confirmation" className="text-slate-900 font-bold">Confirmer le nouveau mot de passe</Label>
+                <Label htmlFor="password_confirmation" className="text-slate-900 font-bold">{f.confirmNewPassword}</Label>
                 <div className="relative">
                   <Input
                     id="password_confirmation"
                     type={showConfirmPassword ? "text" : "password"}
-                    placeholder="Confirmer Le Mot De Passe"
+                    placeholder={f.confirmPasswordPlaceholder}
                     value={passwordConfirmation}
                     onChange={(e) => setPasswordConfirmation(e.target.value)}
-                    className="h-12 rounded-xl border-slate-200 focus:border-primary transition-all px-6 text-base pr-14"
+                    className="h-12 rounded-xl border-slate-200 focus:border-primary transition-all px-6 text-base pr-14 bg-slate-50"
                     disabled={status === "loading"}
                   />
                   <button
@@ -166,7 +170,7 @@ export default function ResetPassword() {
                 disabled={status === "loading" || !token || !email}
                 className="w-full h-12 rounded-lg bg-primary text-white text-md font-black uppercase tracking-widest shadow-xl shadow-primary/30 hover:shadow-primary/50 transition-all disabled:opacity-50"
               >
-                {status === "loading" ? "Réinitialisation..." : "Réinitialiser"}
+                {status === "loading" ? f.resetting : f.resetBtn}
               </Button>
 
               <div className="text-center pt-2">
@@ -175,7 +179,7 @@ export default function ResetPassword() {
                   className="inline-flex items-center gap-2 text-slate-500 font-bold hover:text-primary transition-colors text-sm"
                 >
                   <ArrowLeft className="h-4 w-4" />
-                  Retour à la connexion
+                  {f.backToLogin}
                 </Link>
               </div>
             </form>

@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from "react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { MapPin, Locate, Search, Loader2, Navigation, Heart, Phone, Clock, X } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
@@ -169,6 +170,9 @@ async function fetchBloodCenters(lat: number, lon: number, radius: number): Prom
 }
 
 export default function BloodCentersMap() {
+  const { t, isRtl } = useLanguage();
+  const pageT = t.bloodCentersPage;
+
   const mapRef = useRef<L.Map | null>(null);
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const markersRef = useRef<L.Marker[]>([]);
@@ -232,9 +236,9 @@ export default function BloodCentersMap() {
     if (userMarkerRef.current) userMarkerRef.current.remove();
     userMarkerRef.current = L.marker([userLocation.lat, userLocation.lon], { icon: userIcon })
       .addTo(mapRef.current)
-      .bindPopup("<b>📍 Votre position</b>")
+      .bindPopup(`<b>📍 ${pageT.yourPosition}</b>`)
       .openPopup();
-  }, [userLocation, mapReady]);
+  }, [userLocation, mapReady, pageT.yourPosition]);
 
   const loadCenters = async (lat: number, lon: number) => {
     setLoading(true);
@@ -243,10 +247,10 @@ export default function BloodCentersMap() {
       const results = await fetchBloodCenters(lat, lon, radius);
       setCenters(results);
       if (results.length === 0) {
-        setError("Aucun centre trouvé dans ce rayon. Essayez d'augmenter le rayon.");
+        setError(pageT.errorNoCenter);
       }
     } catch (e) {
-      setError("Erreur lors du chargement des centres. Réessayez.");
+      setError(pageT.errorLoadCenter);
     } finally {
       setLoading(false);
     }
@@ -254,7 +258,7 @@ export default function BloodCentersMap() {
 
   const handleGeolocate = () => {
     if (!navigator.geolocation) {
-      setError("La géolocalisation n'est pas supportée par votre navigateur.");
+      setError(pageT.errorGeoSupport);
       return;
     }
     setGeoLoading(true);
@@ -267,7 +271,7 @@ export default function BloodCentersMap() {
         setGeoLoading(false);
       },
       (err) => {
-        setError("Impossible d'obtenir votre position. Vérifiez les permissions.");
+        setError(pageT.errorGeoPermission);
         setGeoLoading(false);
       },
       { enableHighAccuracy: true, timeout: 10000 }
@@ -284,7 +288,7 @@ export default function BloodCentersMap() {
       );
       const data = await res.json();
       if (data.length === 0) {
-        setError("Ville introuvable. Essayez avec un autre nom.");
+        setError(pageT.errorCityNotFound);
         setLoading(false);
         return;
       }
@@ -295,17 +299,17 @@ export default function BloodCentersMap() {
       mapRef.current?.setView([latNum, lonNum], 13);
       await loadCenters(latNum, lonNum);
     } catch {
-      setError("Erreur de recherche. Vérifiez votre connexion.");
+      setError(pageT.errorSearch);
       setLoading(false);
     }
   };
 
   const typeLabel = (type: BloodCenter["type"]) => {
     const labels: Record<BloodCenter["type"], string> = {
-      hospital: "Hôpital",
-      clinic: "Clinique",
-      blood_bank: "Banque de sang",
-      donation_center: "Centre de don",
+      hospital: pageT.typeHospital,
+      clinic: pageT.typeClinic,
+      blood_bank: pageT.typeBloodBank,
+      donation_center: pageT.typeDonationCenter,
     };
     return labels[type];
   };
@@ -323,7 +327,7 @@ export default function BloodCentersMap() {
   return (
     <>
       <Navbar />
-      <div className="min-h-screen bg-gradient-to-br from-red-50 via-white to-rose-50 pt-16">
+      <div className="min-h-screen bg-gradient-to-br from-red-50 via-white to-rose-50 pt-16 animate-reveal">
         {/* Header */}
         <div className="bg-white border-b border-red-100 shadow-sm">
           <div className="container mx-auto px-4 py-5">
@@ -333,9 +337,9 @@ export default function BloodCentersMap() {
                   <MapPin className="h-6 w-6 text-white" />
                 </div>
                 <div>
-                  <h1 className="text-xl font-black text-slate-800">Centres de Don de Sang</h1>
+                  <h1 className="text-xl font-black text-slate-800">{pageT.title}</h1>
                   <p className="text-xs text-slate-500 font-medium">
-                    Trouvez le centre de don le plus proche de vous
+                    {pageT.subtitle}
                   </p>
                 </div>
               </div>
@@ -348,13 +352,13 @@ export default function BloodCentersMap() {
                     value={citySearch}
                     onChange={(e) => setCitySearch(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && handleCitySearch()}
-                    placeholder="Rechercher une ville..."
-                    className="flex-1 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-400 focus:border-transparent"
+                    placeholder={pageT.searchPlaceholder}
+                    className="flex-1 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-400 focus:border-transparent bg-slate-50"
                   />
                   <button
                     onClick={handleCitySearch}
                     disabled={loading}
-                    className="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-2 rounded-lg transition-colors"
+                    className="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-2 rounded-lg transition-colors border border-slate-200"
                   >
                     <Search className="h-4 w-4" />
                   </button>
@@ -366,10 +370,10 @@ export default function BloodCentersMap() {
                   onChange={(e) => setRadius(Number(e.target.value))}
                   className="border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-400 bg-white"
                 >
-                  <option value={5000}>Rayon: 5 km</option>
-                  <option value={10000}>Rayon: 10 km</option>
-                  <option value={20000}>Rayon: 20 km</option>
-                  <option value={50000}>Rayon: 50 km</option>
+                  <option value={5000}>{pageT.radius5}</option>
+                  <option value={10000}>{pageT.radius10}</option>
+                  <option value={20000}>{pageT.radius20}</option>
+                  <option value={50000}>{pageT.radius50}</option>
                 </select>
 
                 {/* Geolocate button */}
@@ -383,7 +387,7 @@ export default function BloodCentersMap() {
                   ) : (
                     <Locate className="h-4 w-4" />
                   )}
-                  Ma position
+                  {pageT.myLocation}
                 </button>
               </div>
             </div>
@@ -407,14 +411,16 @@ export default function BloodCentersMap() {
               <div className="flex flex-col items-center justify-center h-48 gap-3">
                 <Loader2 className="h-8 w-8 animate-spin text-red-400" />
                 <p className="text-sm text-slate-500 font-medium">
-                  Recherche des centres en cours...
+                  {pageT.searchingCenters}
                 </p>
               </div>
             ) : centers.length > 0 ? (
               <div>
                 <div className="sticky top-0 bg-white border-b border-slate-100 px-4 py-3">
                   <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">
-                    {centers.length} centre{centers.length > 1 ? "s" : ""} trouvé{centers.length > 1 ? "s" : ""}
+                    {pageT.centersFound
+                      .replace("{count}", centers.length.toString())
+                      .replace(/{plural}/g, centers.length > 1 ? (isRtl ? "" : "s") : "")}
                   </p>
                 </div>
                 <div className="divide-y divide-slate-50">
@@ -443,8 +449,8 @@ export default function BloodCentersMap() {
                               <span className="text-[11px] text-slate-400 font-medium flex items-center gap-1">
                                 <Navigation className="h-3 w-3" />
                                 {center.distance < 1
-                                  ? `${Math.round(center.distance * 1000)}m`
-                                  : `${center.distance.toFixed(1)}km`}
+                                  ? `${Math.round(center.distance * 1000)}${isRtl ? " متر" : "m"}`
+                                  : `${center.distance.toFixed(1)}${isRtl ? " كم" : "km"}`}
                               </span>
                             )}
                           </div>
@@ -460,14 +466,14 @@ export default function BloodCentersMap() {
             ) : (
               <div className="flex flex-col items-center justify-center h-full py-12 px-6 text-center gap-4">
                 <div className="w-16 h-16 bg-red-50 rounded-2xl flex items-center justify-center">
-                  <Heart className="h-8 w-8 text-red-300" />
+                  <Heart className="h-8 w-8 text-red-300 animate-pulse" />
                 </div>
                 <div>
                   <p className="text-sm font-bold text-slate-600">
-                    Aucun centre affiché
+                    {pageT.noCentersDisplayed}
                   </p>
                   <p className="text-xs text-slate-400 mt-1">
-                    Utilisez "Ma position" ou recherchez une ville pour trouver des centres de don près de vous.
+                    {pageT.noCentersDesc}
                   </p>
                 </div>
               </div>
@@ -481,7 +487,7 @@ export default function BloodCentersMap() {
             {/* Selected center popup */}
             {selected && (
               <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-[1000] w-[calc(100%-2rem)] max-w-sm">
-                <div className="bg-white rounded-2xl shadow-2xl border border-slate-100 p-4">
+                <div className="bg-white rounded-2xl shadow-2xl border border-slate-100 p-4 animate-scale-in">
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex items-start gap-3">
                       <div className="text-3xl mt-0.5">
@@ -510,8 +516,8 @@ export default function BloodCentersMap() {
                         <Navigation className="h-4 w-4 text-blue-500 shrink-0" />
                         <span className="font-semibold">
                           {selected.distance < 1
-                            ? `${Math.round(selected.distance * 1000)} mètres`
-                            : `${selected.distance.toFixed(1)} km`} de vous
+                            ? `${Math.round(selected.distance * 1000)} ${pageT.meters}`
+                            : `${selected.distance.toFixed(1)} km`} {pageT.fromYou}
                         </span>
                       </div>
                     )}
@@ -541,10 +547,10 @@ export default function BloodCentersMap() {
                     href={`https://www.google.com/maps/dir/?api=1&destination=${selected.lat},${selected.lon}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="mt-3 flex items-center justify-center gap-2 w-full bg-gradient-to-r from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700 text-white text-sm font-bold py-2.5 rounded-xl transition-all hover:scale-[1.02]"
+                    className="mt-3 flex items-center justify-center gap-2 w-full bg-gradient-to-r from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700 text-white text-sm font-bold py-2.5 rounded-xl transition-all hover:scale-[1.02] shadow-md shadow-red-200"
                   >
                     <Navigation className="h-4 w-4" />
-                    Obtenir l'itinéraire
+                    {pageT.getRoute}
                   </a>
                 </div>
               </div>
@@ -552,17 +558,17 @@ export default function BloodCentersMap() {
 
             {/* Legend */}
             <div className="absolute top-4 right-4 z-[1000] bg-white/95 backdrop-blur-sm rounded-xl shadow-lg border border-slate-100 p-3">
-              <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">Légende</p>
+              <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">{pageT.legend}</p>
               <div className="space-y-1.5">
                 <div className="flex items-center gap-2 text-xs text-slate-700">
-                  <span>🏥</span> <span>Hôpital</span>
+                  <span>🏥</span> <span>{pageT.typeHospital}</span>
                 </div>
                 <div className="flex items-center gap-2 text-xs text-slate-700">
-                  <span>🩸</span> <span>Centre / Clinique</span>
+                  <span>🩸</span> <span>{pageT.typeClinic}</span>
                 </div>
                 <div className="flex items-center gap-2 text-xs text-slate-700">
                   <div className="w-3 h-3 bg-blue-500 rounded-full border-2 border-white shadow-sm" />
-                  <span>Votre position</span>
+                  <span>{pageT.yourPosition}</span>
                 </div>
               </div>
             </div>

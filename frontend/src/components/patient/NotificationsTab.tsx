@@ -1,5 +1,6 @@
 import { Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface NotificationsTabProps {
   notifications: any[];
@@ -10,9 +11,12 @@ export function NotificationsTab({
   notifications,
   handleAvailabilityResponse
 }: NotificationsTabProps) {
+  const { t } = useLanguage();
+  const dashboardT = t.patientDashboard;
+
   return (
-    <div className="space-y-6 animate-in fade-in duration-500">
-      <h2 className="text-xl font-bold">Notifications</h2>
+    <div className="space-y-6 animate-in fade-in duration-500 text-left">
+      <h2 className="text-xl font-bold">{dashboardT.notifications}</h2>
       <div className="space-y-3">
         {notifications.length > 0 ? notifications.map((n, i) => (
           <div key={n.id || i} className={`bg-card rounded-xl border p-4 flex items-start gap-3 ${n.urgent ? "border-primary shadow-sm" : "border-border"}`}>
@@ -28,28 +32,30 @@ export function NotificationsTab({
                 <Button 
                   variant="hero" 
                   size="sm"
+                  className="text-white font-bold"
                   onClick={() => handleAvailabilityResponse("disponible", n.title, n.alert_id)}
                 >
-                  Disponible
+                  {dashboardT.available}
                 </Button>
                 <Button 
                   variant="outline" 
                   size="sm"
+                  className="font-bold"
                   onClick={() => handleAvailabilityResponse("indisponible", n.title, n.alert_id)}
                 >
-                  Indisponible
+                  {dashboardT.unavailable}
                 </Button>
               </div>
             )}
             {n.urgent && n.responded && (
               <div className="mt-2 text-sm font-semibold text-primary">
-                {n.responded === "available" ? "✓ Vous êtes disponible" : "✓ Indisponible"}
+                {n.responded === "available" ? `✓ ${dashboardT.youAreAvailable}` : `✓ ${dashboardT.unavailable}`}
               </div>
             )}
           </div>
         )) : (
           <div className="p-8 text-center text-muted-foreground text-sm border border-border rounded-xl">
-            Aucune notification pour le moment.
+            {dashboardT.noNotifications}
           </div>
         )}
       </div>

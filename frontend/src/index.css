@@ -95,6 +95,13 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     font-family:'Times New Roman', Times, serif;
+    transition: font-family 0.1s;
+  }
+
+  /* Arabic font support */
+  html[lang="ar"] body,
+  html[lang="ar"] {
+    font-family: 'Segoe UI', 'Arial', 'Tahoma', sans-serif;
   }
 }
 

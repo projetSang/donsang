@@ -9,6 +9,7 @@ import markerIcon2x from "leaflet/dist/images/marker-icon-2x.png";
 import markerIcon from "leaflet/dist/images/marker-icon.png";
 import markerShadow from "leaflet/dist/images/marker-shadow.png";
 import { useToast } from "@/hooks/use-toast";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 // Fix missing marker icons for leaflet
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -52,6 +53,8 @@ export function ProfileTab({
   onViewCertificate
 }: ProfileTabProps) {
   const { toast } = useToast();
+  const { t } = useLanguage();
+  const dashboardT = t.patientDashboard;
   const [showMap, setShowMap] = useState(false);
 
   const ChangeView = ({ center, zoom }: { center: [number, number], zoom: number }) => {
@@ -64,7 +67,7 @@ export function ProfileTab({
 
   const handleGetCurrentGPSLocation = () => {
     if (!navigator.geolocation) {
-      alert("La géolocalisation n'est pas supportée par votre navigateur.");
+      alert(dashboardT.gpsNotSupported);
       return;
     }
 
@@ -87,8 +90,8 @@ export function ProfileTab({
 
           setShowMap(true);
           toast({
-            title: "Position GPS obtenue",
-            description: "Votre position a été détectée avec succès."
+            title: dashboardT.gpsSuccess,
+            description: dashboardT.gpsSuccessDesc
           });
         } catch (error) {
           console.error("Error reverse geocoding:", error);
@@ -99,21 +102,21 @@ export function ProfileTab({
           });
           setShowMap(true);
           toast({
-            title: "Position GPS obtenue",
-            description: "Position détectée (sans adresse littérale)."
+            title: dashboardT.gpsSuccess,
+            description: dashboardT.gpsSuccessNoAddr
           });
         }
       },
       (error) => {
         console.error("Error getting geolocation:", error);
-        alert("Impossible d'obtenir votre position. Assurez-vous d'avoir autorisé l'accès à la localisation.");
+        alert(dashboardT.gpsError);
       }
     );
   };
 
   const handleGetLocation = async () => {
     if (!profileData?.address) {
-      alert("Veuillez d'abord saisir une adresse ou une ville dans le champ correspondant.");
+      alert(dashboardT.enterAddrFirst);
       return;
     }
     
@@ -130,15 +133,15 @@ export function ProfileTab({
         });
         setShowMap(true);
         toast({
-          title: "Adresse localisée",
-          description: "La carte a été centrée sur l'adresse fournie."
+          title: dashboardT.addrLocalized,
+          description: dashboardT.addrCentered
         });
       } else {
-        alert("Adresse introuvable. Essayez d'ajouter plus de détails (ex: Rabat, Maroc).");
+        alert(dashboardT.addrNotFound);
       }
     } catch (error) {
       console.error("Error geocoding address:", error);
-      alert("Erreur lors de la recherche de l'adresse.");
+      alert(dashboardT.addrSearchError);
     }
   };
 
@@ -173,7 +176,7 @@ export function ProfileTab({
 
     return profileData?.latitude && profileData?.longitude ? (
       <Marker position={[profileData.latitude, profileData.longitude]}>
-        <Popup>Votre position sélectionnée</Popup>
+        <Popup>{dashboardT.selectedPos}</Popup>
       </Marker>
     ) : null;
   };
@@ -181,11 +184,11 @@ export function ProfileTab({
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
       <div className="flex flex-wrap items-center gap-3">
-        <h2 className="text-xl font-bold">Mon profil</h2>
+        <h2 className="text-xl font-bold">{dashboardT.profile}</h2>
         {profileData?.donations_count > 0 && (
           <>
             <span className="flex items-center gap-1 text-sm bg-blue-50 text-blue-600 px-3 py-1 rounded-full border border-blue-100 font-semibold shadow-sm animate-reveal">
-              <Award className="h-4 w-4" /> {profileData.donations_count} {profileData.donations_count > 1 ? 'dons' : 'don'}
+              <Award className="h-4 w-4" /> {profileData.donations_count} {profileData.donations_count > 1 ? dashboardT.donations : dashboardT.donation}
             </span>
             <Button
               type="button"
@@ -194,13 +197,13 @@ export function ProfileTab({
               onClick={onViewCertificate}
               className="text-xs font-bold border-primary/30 text-primary hover:bg-primary hover:text-white rounded-full h-8 px-3 shadow-sm flex items-center gap-1 transition-all"
             >
-              Voir mon certificat
+              {dashboardT.viewMyCert}
             </Button>
           </>
         )}
         {profileData?.is_king && (
           <span className="flex items-center gap-1.5 text-sm bg-gradient-to-r from-amber-400 to-amber-200 text-amber-950 px-3 py-1 rounded-full border border-amber-300 font-extrabold shadow-sm animate-pulse">
-            <Crown className="h-4 w-4 text-amber-800 animate-bounce" /> L'Héro (Roi)
+            <Crown className="h-4 w-4 text-amber-800 animate-bounce" /> {dashboardT.heroKing}
           </span>
         )}
       </div>
@@ -218,7 +221,7 @@ export function ProfileTab({
         <form onSubmit={handleUpdateProfile}>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="text-sm font-medium text-muted-foreground">Nom complet</label>
+              <label className="text-sm font-medium text-muted-foreground">{dashboardT.fullName}</label>
               <Input 
                 value={profileData?.full_name || ""} 
                 onChange={(e) => setProfileData({...profileData, full_name: e.target.value})}
@@ -226,7 +229,7 @@ export function ProfileTab({
               />
             </div>
             <div>
-              <label className="text-sm font-medium text-muted-foreground">Email</label>
+              <label className="text-sm font-medium text-muted-foreground">{dashboardT.email}</label>
               <Input 
                 value={profileData?.email || ""} 
                 readOnly
@@ -234,7 +237,7 @@ export function ProfileTab({
               />
             </div>
             <div>
-              <label className="text-sm font-medium text-muted-foreground">Téléphone</label>
+              <label className="text-sm font-medium text-muted-foreground">{dashboardT.phone}</label>
               <Input 
                 value={profileData?.phone || ""} 
                 onChange={(e) => setProfileData({...profileData, phone: e.target.value})}
@@ -242,7 +245,7 @@ export function ProfileTab({
               />
             </div>
             <div>
-              <label className="text-sm font-medium text-muted-foreground">Ville / Adresse</label>
+              <label className="text-sm font-medium text-muted-foreground">{dashboardT.cityAddress}</label>
               <Input 
                 value={profileData?.address || ""} 
                 onChange={(e) => setProfileData({...profileData, address: e.target.value})}
@@ -250,7 +253,7 @@ export function ProfileTab({
               />
             </div>
             <div>
-              <label className="text-sm font-medium text-muted-foreground">Date de naissance</label>
+              <label className="text-sm font-medium text-muted-foreground">{dashboardT.birthDate}</label>
               <Input 
                 type="date" 
                 value={profileData?.birth_date || ""} 
@@ -259,13 +262,13 @@ export function ProfileTab({
               />
             </div>
             <div>
-              <label className="text-sm font-medium text-muted-foreground">Groupe sanguin</label>
+              <label className="text-sm font-medium text-muted-foreground">{dashboardT.bloodType}</label>
               <select 
                 className="mt-1 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                 value={profileData?.blood_type || ""}
                 onChange={(e) => setProfileData({...profileData, blood_type: e.target.value})}
               >
-                <option value="Non spécifié" disabled>Sélectionnez</option>
+                <option value="Non spécifié" disabled>{dashboardT.select}</option>
                 {bloodGroups.map((g) => (
                   <option key={g} value={g}>
                     {g}
@@ -280,9 +283,9 @@ export function ProfileTab({
               <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
                 <MapPin className="h-5 w-5 text-primary" />
               </div>
-              <div>
-                <p className="text-sm font-bold text-slate-900">Localisation précise</p>
-                <p className="text-xs text-slate-500">Définissez votre position sur la carte ou via GPS</p>
+              <div className="text-left">
+                <p className="text-sm font-bold text-slate-900">{dashboardT.gpsLocation}</p>
+                <p className="text-xs text-slate-500">{dashboardT.gpsDesc}</p>
               </div>
             </div>
             <div className="flex flex-col sm:flex-row w-full md:w-auto gap-2">
@@ -293,7 +296,7 @@ export function ProfileTab({
                 className="w-full md:w-auto rounded-xl border-primary text-primary hover:bg-primary hover:text-white font-bold transition-all flex items-center justify-center gap-1.5"
               >
                 <Navigation className="h-4 w-4" />
-                Détection Automatique (GPS)
+                {dashboardT.gpsAuto}
               </Button>
               <Button 
                 type="button" 
@@ -301,7 +304,7 @@ export function ProfileTab({
                 onClick={handleGetLocation}
                 className="w-full md:w-auto rounded-xl border-slate-300 text-slate-700 hover:bg-slate-100 font-bold transition-all"
               >
-                Rechercher l'adresse
+                {dashboardT.searchAddress}
               </Button>
             </div>
           </div>
@@ -310,8 +313,8 @@ export function ProfileTab({
             <div className="mt-4 rounded-xl overflow-hidden border border-border h-64 z-0 relative">
               <div className="absolute top-2 right-2 z-[400] bg-white/90 text-xs px-2 py-1 rounded shadow pointer-events-none font-medium">
                 {profileData?.latitude && profileData?.longitude 
-                  ? "Cliquez sur la carte pour ajuster votre position" 
-                  : "Cliquez sur la carte pour définir votre position"}
+                  ? dashboardT.adjustPosition 
+                  : dashboardT.definePosition}
               </div>
               <MapContainer 
                 center={profileData?.latitude && profileData?.longitude 
@@ -335,8 +338,8 @@ export function ProfileTab({
             </div>
           )}
 
-          <Button type="submit" variant="hero" className="mt-6" disabled={profileLoading}>
-            {profileLoading ? "Enregistrement..." : "Enregistrer les modifications"}
+          <Button type="submit" variant="hero" className="mt-6 text-white font-bold" disabled={profileLoading}>
+            {profileLoading ? dashboardT.saving : dashboardT.saveBtn}
           </Button>
         </form>
       </div>
@@ -345,7 +348,7 @@ export function ProfileTab({
       <div className="bg-card rounded-xl border border-border p-6 shadow-sm">
         <h3 className="font-bold text-slate-900 mb-6 flex items-center gap-2">
           <Lock className="h-5 w-5 text-primary" />
-          Sécurité du compte
+          {dashboardT.accountSecurity}
         </h3>
         
         {passError && (
@@ -360,8 +363,8 @@ export function ProfileTab({
         )}
 
         <form onSubmit={handleUpdatePassword} className="space-y-4 max-w-md">
-          <div className="space-y-1.5">
-            <label className="text-sm font-bold text-slate-700">Mot de passe actuel</label>
+          <div className="space-y-1.5 text-left">
+            <label className="text-sm font-bold text-slate-700">{dashboardT.currentPassword}</label>
             <Input 
               type="password" 
               placeholder="••••••••" 
@@ -371,8 +374,8 @@ export function ProfileTab({
               required
             />
           </div>
-          <div className="space-y-1.5">
-            <label className="text-sm font-bold text-slate-700">Nouveau mot de passe</label>
+          <div className="space-y-1.5 text-left">
+            <label className="text-sm font-bold text-slate-700">{dashboardT.newPassword}</label>
             <Input 
               type="password" 
               placeholder="••••••••" 
@@ -382,8 +385,8 @@ export function ProfileTab({
               required
             />
           </div>
-          <div className="space-y-1.5">
-            <label className="text-sm font-bold text-slate-700">Confirmer le nouveau mot de passe</label>
+          <div className="space-y-1.5 text-left">
+            <label className="text-sm font-bold text-slate-700">{dashboardT.confirmNewPassword}</label>
             <Input 
               type="password" 
               placeholder="••••••••" 
@@ -396,10 +399,10 @@ export function ProfileTab({
           <Button 
             type="submit" 
             variant="hero" 
-            className="mt-2 w-full sm:w-auto px-8"
+            className="mt-2 w-full sm:w-auto px-8 text-white font-bold"
             disabled={passLoading}
           >
-            {passLoading ? "Mise à jour..." : "Modifier le mot de passe"}
+            {passLoading ? dashboardT.updatingPassword : dashboardT.updatePasswordBtn}
           </Button>
         </form>
       </div>

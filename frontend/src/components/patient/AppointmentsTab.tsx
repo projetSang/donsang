@@ -6,6 +6,7 @@ import {
   AlertTriangle, RefreshCw, ChevronRight, Check, X, ShieldAlert
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface Hospital {
   id: number;
@@ -27,6 +28,9 @@ interface Appointment {
 }
 
 export function AppointmentsTab({ patientId }: { patientId: number }) {
+  const { t } = useLanguage();
+  const dashboardT = t.patientDashboard;
+
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [hospitals, setHospitals] = useState<Hospital[]>([]);
   const [loading, setLoading] = useState(true);
@@ -83,21 +87,21 @@ export function AppointmentsTab({ patientId }: { patientId: number }) {
     e.preventDefault();
 
     if (!selectedHospitalId) {
-      toast.error("Veuillez sélectionner un hôpital.");
+      toast.error(dashboardT.selectHospitalError);
       return;
     }
     if (!appointmentDate) {
-      toast.error("Veuillez choisir une date.");
+      toast.error(dashboardT.chooseDateError);
       return;
     }
     if (!appointmentTime) {
-      toast.error("Veuillez choisir un créneau horaire.");
+      toast.error(dashboardT.chooseTimeError);
       return;
     }
 
     // Verify Quiz answers
     if (!quizAnswers.age || !quizAnswers.weight || !quizAnswers.delay || quizAnswers.tattoo || quizAnswers.illness) {
-      toast.error("Vous ne remplissez pas les conditions d'éligibilité pour le don actuellement.");
+      toast.error(dashboardT.notEligibleError);
       return;
     }
 
@@ -115,7 +119,7 @@ export function AppointmentsTab({ patientId }: { patientId: number }) {
       });
 
       if (response.status === "success") {
-        toast.success(response.message || "Rendez-vous réservé !");
+        toast.success(response.message || dashboardT.bookingSuccess);
         // Reset Form
         setSelectedHospitalId("");
         setAppointmentDate("");
@@ -131,10 +135,10 @@ export function AppointmentsTab({ patientId }: { patientId: number }) {
         });
         fetchAppointments();
       } else {
-        toast.error(response.message || "Une erreur est survenue.");
+        toast.error(response.message || dashboardT.bookingError);
       }
     } catch (err: any) {
-      toast.error(err.message || "Erreur de connexion avec le serveur.");
+      toast.error(err.message || dashboardT.connErrorAppt);
     } finally {
       setBookingLoading(false);
     }
@@ -143,20 +147,23 @@ export function AppointmentsTab({ patientId }: { patientId: number }) {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "Confirmé":
+      case "Confirmed":
         return <span className="px-2.5 py-1 text-xs font-bold rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200 flex items-center gap-1.5 w-fit">
-          <CheckCircle2 className="h-3.5 w-3.5" /> Confirmé
+          <CheckCircle2 className="h-3.5 w-3.5" /> {dashboardT.statusConfirmed}
         </span>;
       case "Annulé":
+      case "Cancelled":
         return <span className="px-2.5 py-1 text-xs font-bold rounded-full bg-rose-100 text-rose-800 border border-rose-200 flex items-center gap-1.5 w-fit">
-          <X className="h-3.5 w-3.5" /> Annulé
+          <X className="h-3.5 w-3.5" /> {dashboardT.statusCancelled}
         </span>;
       case "Terminé":
+      case "Completed":
         return <span className="px-2.5 py-1 text-xs font-bold rounded-full bg-slate-100 text-slate-800 border border-slate-200 flex items-center gap-1.5 w-fit">
-          <Check className="h-3.5 w-3.5" /> Terminé
+          <Check className="h-3.5 w-3.5" /> {dashboardT.statusCompleted}
         </span>;
       default:
         return <span className="px-2.5 py-1 text-xs font-bold rounded-full bg-amber-100 text-amber-800 border border-amber-200 flex items-center gap-1.5 w-fit">
-          <RefreshCw className="h-3.5 w-3.5 animate-spin" /> En attente
+          <RefreshCw className="h-3.5 w-3.5 animate-spin" /> {dashboardT.statusPending}
         </span>;
     }
   };
@@ -172,7 +179,7 @@ export function AppointmentsTab({ patientId }: { patientId: number }) {
     return (
       <div className="bg-white rounded-2xl p-8 border border-slate-100 flex flex-col items-center justify-center min-h-[400px] gap-3">
         <RefreshCw className="h-8 w-8 text-primary animate-spin" />
-        <p className="text-muted-foreground font-semibold">Chargement de vos rendez-vous...</p>
+        <p className="text-muted-foreground font-semibold">{dashboardT.loadingAppts}</p>
       </div>
     );
   }
@@ -185,7 +192,7 @@ export function AppointmentsTab({ patientId }: { patientId: number }) {
         <div className="xl:col-span-2 space-y-6">
           <div className="bg-white rounded-2xl border border-slate-100 p-6 md:p-8 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.03)]">
             <h3 className="text-xl font-extrabold text-slate-800 flex items-center gap-2 border-b border-slate-100 pb-4">
-              <CalendarIcon className="h-5 w-5 text-primary" /> Prendre un Nouveau Rendez-vous
+              <CalendarIcon className="h-5 w-5 text-primary" /> {dashboardT.bookNewAppt}
             </h3>
 
             <form onSubmit={handleBookAppointment} className="space-y-6 mt-6">
@@ -193,7 +200,7 @@ export function AppointmentsTab({ patientId }: { patientId: number }) {
               {/* Select Hospital */}
               <div className="space-y-2">
                 <label className="text-sm font-bold text-slate-700 flex items-center gap-1.5">
-                  <Building2 className="h-4 w-4 text-primary" /> Centre Hospitalier / Banque de Sang
+                  <Building2 className="h-4 w-4 text-primary" /> {dashboardT.hospitalCenter}
                 </label>
                 <select
                   value={selectedHospitalId}
@@ -201,7 +208,7 @@ export function AppointmentsTab({ patientId }: { patientId: number }) {
                   required
                   className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-700 font-semibold focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                 >
-                  <option value="">-- Sélectionner un hôpital --</option>
+                  <option value="">{dashboardT.selectHospitalDefault}</option>
                   {hospitals.map((h) => (
                     <option key={h.id} value={h.id}>
                       {h.name} ({h.city})
@@ -221,7 +228,7 @@ export function AppointmentsTab({ patientId }: { patientId: number }) {
                 {/* Select Date */}
                 <div className="space-y-2">
                   <label className="text-sm font-bold text-slate-700 flex items-center gap-1.5">
-                    <CalendarIcon className="h-4 w-4 text-primary" /> Date Souhaitée
+                    <CalendarIcon className="h-4 w-4 text-primary" /> {dashboardT.desiredDate}
                   </label>
                   <input
                     type="date"
@@ -236,11 +243,11 @@ export function AppointmentsTab({ patientId }: { patientId: number }) {
                 {/* Notes/Optional message */}
                 <div className="space-y-2">
                   <label className="text-sm font-bold text-slate-700 flex items-center gap-1.5">
-                    <FileText className="h-4 w-4 text-primary" /> Remarques (Optionnel)
+                    <FileText className="h-4 w-4 text-primary" /> {dashboardT.notesOptional}
                   </label>
                   <input
                     type="text"
-                    placeholder="Ex: Premier don de sang, etc."
+                    placeholder={dashboardT.notesPlaceholder}
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}
                     className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-700 font-semibold focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
@@ -251,7 +258,7 @@ export function AppointmentsTab({ patientId }: { patientId: number }) {
               {/* Time Slots Selector */}
               <div className="space-y-3">
                 <label className="text-sm font-bold text-slate-700 flex items-center gap-1.5">
-                  <Clock className="h-4 w-4 text-primary" /> Créneau Horaire
+                  <Clock className="h-4 w-4 text-primary" /> {dashboardT.timeSlot}
                 </label>
                 <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3">
                   {timeSlots.map((slot) => (
@@ -274,10 +281,10 @@ export function AppointmentsTab({ patientId }: { patientId: number }) {
               {/* Checklist / Eligibility Quiz */}
               <div className="bg-slate-50 rounded-2xl border border-slate-100 p-5 space-y-4">
                 <h4 className="font-extrabold text-slate-800 text-sm flex items-center gap-2">
-                  <ShieldAlert className="h-4 w-4 text-primary" /> Conditions d'éligibilité pour le don de sang
+                  <ShieldAlert className="h-4 w-4 text-primary" /> {dashboardT.eligibilityQuiz}
                 </h4>
 
-                <div className="space-y-3 text-sm">
+                <div className="space-y-3 text-sm text-left">
                   {/* Q1 */}
                   <label className="flex items-center gap-3 p-2 bg-white rounded-xl border border-slate-100 cursor-pointer">
                     <input
@@ -286,7 +293,7 @@ export function AppointmentsTab({ patientId }: { patientId: number }) {
                       onChange={(e) => setQuizAnswers({ ...quizAnswers, age: e.target.checked })}
                       className="rounded text-primary focus:ring-primary/20 h-4 w-4"
                     />
-                    <span className="text-xs text-slate-700 font-semibold">J'ai entre 18 et 65 ans.</span>
+                    <span className="text-xs text-slate-700 font-semibold">{dashboardT.qAge}</span>
                   </label>
 
                   {/* Q2 */}
@@ -297,7 +304,7 @@ export function AppointmentsTab({ patientId }: { patientId: number }) {
                       onChange={(e) => setQuizAnswers({ ...quizAnswers, weight: e.target.checked })}
                       className="rounded text-primary focus:ring-primary/20 h-4 w-4"
                     />
-                    <span className="text-xs text-slate-700 font-semibold">Je pèse plus de 50 kg.</span>
+                    <span className="text-xs text-slate-700 font-semibold">{dashboardT.qWeight}</span>
                   </label>
 
                   {/* Q3 */}
@@ -308,7 +315,7 @@ export function AppointmentsTab({ patientId }: { patientId: number }) {
                       onChange={(e) => setQuizAnswers({ ...quizAnswers, delay: e.target.checked })}
                       className="rounded text-primary focus:ring-primary/20 h-4 w-4"
                     />
-                    <span className="text-xs text-slate-700 font-semibold">Mon dernier don de sang remonte à plus de 3 mois (ou jamais donné).</span>
+                    <span className="text-xs text-slate-700 font-semibold">{dashboardT.qDelay}</span>
                   </label>
 
                   {/* Q4 */}
@@ -319,7 +326,7 @@ export function AppointmentsTab({ patientId }: { patientId: number }) {
                       onChange={(e) => setQuizAnswers({ ...quizAnswers, tattoo: e.target.checked })}
                       className="rounded text-primary focus:ring-primary/20 h-4 w-4"
                     />
-                    <span className="text-xs text-rose-700 font-semibold">⚠️ J'ai fait un tatouage ou piercing au cours des 4 derniers mois.</span>
+                    <span className="text-xs text-rose-700 font-semibold">⚠️ {dashboardT.qTattoo}</span>
                   </label>
 
                   {/* Q5 */}
@@ -330,7 +337,7 @@ export function AppointmentsTab({ patientId }: { patientId: number }) {
                       onChange={(e) => setQuizAnswers({ ...quizAnswers, illness: e.target.checked })}
                       className="rounded text-primary focus:ring-primary/20 h-4 w-4"
                     />
-                    <span className="text-xs text-rose-700 font-semibold">⚠️ J'ai des maladies chroniques transmissibles ou je suis sous antibiotiques.</span>
+                    <span className="text-xs text-rose-700 font-semibold">⚠️ {dashboardT.qIllness}</span>
                   </label>
                 </div>
               </div>
@@ -343,15 +350,15 @@ export function AppointmentsTab({ patientId }: { patientId: number }) {
               >
                 {bookingLoading ? (
                   <>
-                    <RefreshCw className="h-5 w-5 animate-spin" /> Enregistrement...
+                    <RefreshCw className="h-5 w-5 animate-spin" /> {dashboardT.saving}
                   </>
                 ) : !isEligible ? (
                   <>
-                    <AlertTriangle className="h-5 w-5" /> Remplir les conditions d'éligibilité
+                    <AlertTriangle className="h-5 w-5" /> {dashboardT.fillEligibility}
                   </>
                 ) : (
                   <>
-                    Confirmer la Réservation <ChevronRight className="h-5 w-5" />
+                    {dashboardT.confirmBooking} <ChevronRight className="h-5 w-5" />
                   </>
                 )}
               </Button>
@@ -361,9 +368,9 @@ export function AppointmentsTab({ patientId }: { patientId: number }) {
 
         {/* Right Side: Appointment List / History */}
         <div className="space-y-6">
-          <div className="bg-white rounded-2xl border border-slate-100 p-6 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.03)] h-full">
+          <div className="bg-white rounded-2xl border border-slate-100 p-6 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.03)] h-full text-left">
             <h3 className="text-lg font-black text-slate-800 border-b border-slate-100 pb-4 mb-4">
-              📅 Mes Rendez-vous Planifiés
+              {dashboardT.scheduledAppts}
             </h3>
 
             {appointments.length === 0 ? (
@@ -371,8 +378,8 @@ export function AppointmentsTab({ patientId }: { patientId: number }) {
                 <div className="w-12 h-12 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-center mx-auto">
                   <CalendarIcon className="h-6 w-6 text-slate-400" />
                 </div>
-                <p className="text-sm font-bold text-slate-500">Aucun rendez-vous planifié</p>
-                <p className="text-xs text-slate-400">Remplissez le formulaire à gauche pour planifier votre premier don de sang !</p>
+                <p className="text-sm font-bold text-slate-500">{dashboardT.noScheduledAppts}</p>
+                <p className="text-xs text-slate-400">{dashboardT.fillFormToSchedule}</p>
               </div>
             ) : (
               <div className="space-y-4 max-h-[550px] overflow-y-auto pr-1">

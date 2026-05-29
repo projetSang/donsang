@@ -5,8 +5,12 @@ import { Label } from "@/components/ui/label";
 import { Mail, ArrowLeft } from "lucide-react";
 import { apiFetch } from "@/lib/api";
 import { Link } from "react-router-dom";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export default function ForgotPassword() {
+  const { t } = useLanguage();
+  const f = t.passwordReset;
+
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [message, setMessage] = useState("");
@@ -16,7 +20,7 @@ export default function ForgotPassword() {
     e.preventDefault();
     if (!email) {
       setStatus("error");
-      setMessage("Veuillez saisir votre adresse email.");
+      setMessage(f.emailRequired);
       return;
     }
 
@@ -32,22 +36,22 @@ export default function ForgotPassword() {
 
       if (data.status === "success") {
         setStatus("success");
-        setMessage(data.message || "Un email de réinitialisation a été envoyé.");
+        setMessage(data.message || f.resetSent);
         if (data.dev_reset_url) {
           setDevResetUrl(data.dev_reset_url);
         }
       } else {
         setStatus("error");
-        setMessage(data.message || "Une erreur est survenue.");
+        setMessage(data.message || f.errorOccurred);
       }
     } catch (err: any) {
       setStatus("error");
-      setMessage(err.message || "Erreur de connexion au serveur.");
+      setMessage(err.message || f.connError);
     }
   };
 
   return (
-    <div className="min-h-screen bg-[#faf8f8] flex flex-col items-center justify-center p-6 py-1">
+    <div className="min-h-screen bg-[#faf8f8] flex flex-col items-center justify-center p-6 py-1 animate-reveal">
       <div className="w-full max-w-lg space-y-8 flex flex-col items-center">
         {/* Logo Section */}
         <div className="text-center group">
@@ -55,9 +59,9 @@ export default function ForgotPassword() {
             <div className="mb-4">
               <img src="logo_sang.png" alt="SangVital Logo" width={180} height={180} />
             </div>
-            <h2 className="text-2xl font-bold text-slate-900 mb-2">Mot de passe oublié ?</h2>
+            <h2 className="text-2xl font-bold text-slate-900 mb-2">{f.forgotTitle}</h2>
           </div>
-          <p className="text-slate-500 text-sm">Saisissez votre email pour réinitialiser votre mot de passe</p>
+          <p className="text-slate-500 text-sm">{f.forgotSubtitle}</p>
         </div>
 
         <div className="w-full bg-white rounded-[2.5rem] shadow-[0_20px_60px_-15px_rgba(0,0,0,0.05)] border border-slate-100 p-8 md:p-12 space-y-8">
@@ -70,7 +74,7 @@ export default function ForgotPassword() {
               
               {devResetUrl && (
                 <div className="bg-amber-50 border border-amber-200 text-amber-900 text-xs p-4 rounded-xl text-left space-y-2">
-                  <span className="font-bold block text-amber-800">💡 Mode Développeur (Local Test Link) :</span>
+                  <span className="font-bold block text-amber-800">💡 {f.devMode}</span>
                   <p className="break-all font-mono bg-white p-2 rounded border border-amber-200">
                     {devResetUrl}
                   </p>
@@ -78,7 +82,7 @@ export default function ForgotPassword() {
                     href={devResetUrl}
                     className="inline-block mt-1 font-bold text-amber-700 hover:underline"
                   >
-                    Simuler le clic sur le mail &rarr;
+                    {f.simulateEmail} &rarr;
                   </a>
                 </div>
               )}
@@ -88,7 +92,7 @@ export default function ForgotPassword() {
                 className="inline-flex items-center gap-2 text-primary font-bold hover:underline justify-center w-full pt-4"
               >
                 <ArrowLeft className="h-4 w-4" />
-                Retour à la connexion
+                {f.backToLogin}
               </Link>
             </div>
           ) : (
@@ -100,15 +104,15 @@ export default function ForgotPassword() {
               )}
 
               <div className="space-y-2">
-                <Label htmlFor="email" className="text-slate-900 font-bold">Email</Label>
+                <Label htmlFor="email" className="text-slate-900 font-bold">{t.login.email}</Label>
                 <div className="relative">
                   <Input 
                     id="email" 
                     type="email" 
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="Votre Email" 
-                    className="h-12 rounded-xl border-slate-200 focus:border-primary transition-all px-6 text-base" 
+                    placeholder={t.login.emailPlaceholder} 
+                    className="h-12 rounded-xl border-slate-200 focus:border-primary transition-all px-6 text-base bg-slate-50" 
                     disabled={status === "loading"}
                   />
                 </div>
@@ -120,7 +124,7 @@ export default function ForgotPassword() {
                 disabled={status === "loading"}
                 className="w-full h-12 rounded-lg bg-primary text-white text-md font-black uppercase tracking-widest shadow-xl shadow-primary/30 hover:shadow-primary/50 transition-all disabled:opacity-50"
               >
-                {status === "loading" ? "Envoi en cours..." : "Envoyer le lien"}
+                {status === "loading" ? t.contact.sending : f.sendLink}
               </Button>
 
               <div className="text-center pt-2">
@@ -129,7 +133,7 @@ export default function ForgotPassword() {
                   className="inline-flex items-center gap-2 text-slate-500 font-bold hover:text-primary transition-colors text-sm"
                 >
                   <ArrowLeft className="h-4 w-4" />
-                  Retour à la connexion
+                  {f.backToLogin}
                 </Link>
               </div>
             </form>

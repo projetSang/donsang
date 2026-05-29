@@ -17,16 +17,7 @@ import { AppointmentsTab } from "@/components/hospital/AppointmentsTab";
 import { useAuth } from "@/contexts/AuthContext";
 import { apiFetch } from "@/lib/api";
 import { slugify } from "@/lib/utils";
-
-const tabs = [
-  { id: "table", label: "Tableau de bord", icon: LayoutDashboard },
-  { id: "search", label: "Recherche Donneurs", icon: Search },
-  { id: "appointments", label: "Rendez-vous", icon: Calendar },
-  { id: "stats", label: "Statistiques", icon: BarChart3 },
-  { id: "alerts", label: "Alertes Urgence", icon: Bell },
-  { id: "messages", label: "Messages", icon: MessageSquare },
-  { id: "settings", label: "Paramètres", icon: Settings },
-];
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export default function HospitalDashboard() {
   const { user: hospitalInfo, logout, loading: authLoading } = useAuth();
@@ -35,6 +26,17 @@ export default function HospitalDashboard() {
   const [showNewAlert, setShowNewAlert] = useState(false);
   const [selectedBlood, setSelectedBlood] = useState("");
   const [city, setCity] = useState("");
+  const { t } = useLanguage();
+
+  const tabs = [
+    { id: "table", label: t.hospitalDashboard.dashboard, icon: LayoutDashboard },
+    { id: "search", label: t.hospitalDashboard.searchDonors, icon: Search },
+    { id: "appointments", label: t.hospitalDashboard.appointments, icon: Calendar },
+    { id: "stats", label: t.hospitalDashboard.statistics, icon: BarChart3 },
+    { id: "alerts", label: t.hospitalDashboard.urgentAlerts, icon: Bell },
+    { id: "messages", label: t.hospitalDashboard.messages, icon: MessageSquare },
+    { id: "settings", label: t.hospitalDashboard.settings, icon: Settings },
+  ];
 
   if (authLoading) {
     return (
@@ -66,9 +68,9 @@ export default function HospitalDashboard() {
 
           <div className="flex items-center gap-4">
             <div className="hidden md:flex flex-col items-end">
-              <span className="text-sm font-bold text-slate-900">{hospitalInfo?.name?.toUpperCase() || "Chargement..."}</span>
+              <span className="text-sm font-bold text-slate-900">{hospitalInfo?.name?.toUpperCase() || t.hospitalDashboard.loading}</span>
               <span className="text-[10px] text-muted-foreground uppercase tracking-widest font-semibold text-right">
-                {hospitalInfo?.city || "Centre Hospitalier"}
+                {hospitalInfo?.city || t.hospitalDashboard.hospitalCenter}
               </span>
             </div>
             <div className="h-10 w-10 rounded-3xl bg-primary text-white flex items-center justify-center shadow-lg shadow-primary/20 font-bold border-2 border-white">
@@ -110,7 +112,7 @@ export default function HospitalDashboard() {
           <aside className="hidden lg:block lg:w-72 shrink-0">
             <div className="bg-white rounded-2xl border border-slate-200 p-3 space-y-1 shadow-sm sticky top-24">
               <div className="px-4 py-3 mb-2">
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Menu Principal</p>
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t.hospitalDashboard.mainMenu}</p>
               </div>
               {tabs.map((tab) => (
                 <button
@@ -160,4 +162,3 @@ export default function HospitalDashboard() {
     </div>
   );
 }
-

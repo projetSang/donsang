@@ -2,8 +2,9 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Mail, Lock, Eye, EyeOff, Droplets } from "lucide-react";
+import { Eye, EyeOff } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { apiFetch } from "@/lib/api";
 import { Link } from "react-router-dom";
 
@@ -14,6 +15,7 @@ export default function Login() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
+  const { t } = useLanguage();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,7 +31,7 @@ export default function Login() {
       if (data.status === "success") {
         login(data.user, data.token);
       } else {
-        setError(data.message || "Identifiants invalides");
+        setError(data.message || t.login.submit);
       }
     } catch (err: any) {
       setError(err.message || "Erreur de connexion au serveur");
@@ -41,16 +43,14 @@ export default function Login() {
   return (
     <div className="min-h-screen bg-[#faf8f8] flex flex-col items-center justify-center p-6 py-1">
       <div className="w-full max-w-lg space-y-8 flex flex-col items-center">
-        {/* Logo Section */}
         <div className="text-center group">
           <div className="flex flex-col items-center gap-3">
             <div className="mb-4">
               <img src="logo_sang.png" alt="SangVital Logo" width={180} height={180} />
             </div>
-            <h2 className="text-2xl font-bold text-slate-900 mb-2">Connexion</h2>
-           </div>
-          <p className="text-slate-500 text-sm">Accédez à votre espace médical sécurisé</p>
-          
+            <h2 className="text-2xl font-bold text-slate-900 mb-2">{t.login.title}</h2>
+          </div>
+          <p className="text-slate-500 text-sm">{t.login.subtitle}</p>
         </div>
 
         <div className="w-full bg-white rounded-[2.5rem] shadow-[0_20px_60px_-15px_rgba(0,0,0,0.05)] border border-slate-100 p-8 md:p-12 space-y-8">
@@ -61,26 +61,26 @@ export default function Login() {
           )}
           <form className="space-y-6" onSubmit={handleLogin}>
             <div className="space-y-2">
-             <Label htmlFor="email" title="email" className="text-slate-900 font-bold">Email</Label>
-                <Input 
-                  id="email" 
-                  type="email" 
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Votre Email" 
-                  className="h-12 rounded-xl border-slate-200 focus:border-primary transition-all px-6 text-base" 
-                />
+              <Label htmlFor="email" title="email" className="text-slate-900 font-bold">{t.login.email}</Label>
+              <Input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder={t.login.emailPlaceholder}
+                className="h-12 rounded-xl border-slate-200 focus:border-primary transition-all px-6 text-base"
+              />
             </div>
             <div className="space-y-2">
               <div className="flex justify-between items-center px-1">
-                <Label htmlFor="password" title="password" className="text-slate-900 font-bold">Mot de passe</Label>
-                <Link to="/forgot-password" className="text-xs text-primary font-bold hover:underline">Mot de passe oublié ?</Link>
+                <Label htmlFor="password" title="password" className="text-slate-900 font-bold">{t.login.password}</Label>
+                <Link to="/forgot-password" className="text-xs text-primary font-bold hover:underline">{t.login.forgotPassword}</Link>
               </div>
               <div className="relative">
                 <Input
                   id="password"
                   type={showPassword ? "text" : "password"}
-                  placeholder="Mot De Passe"
+                  placeholder={t.login.passwordPlaceholder}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="h-12 rounded-xl border-slate-200 focus:border-primary transition-all px-6 text-base pr-14"
@@ -95,26 +95,25 @@ export default function Login() {
               </div>
             </div>
 
-            <Button 
-              type="submit" 
-              size="lg" 
+            <Button
+              type="submit"
+              size="lg"
               disabled={loading}
               className="w-full h-12 rounded-lg bg-primary text-white text-md font-black uppercase tracking-widest shadow-xl shadow-primary/30 hover:shadow-primary/50 transition-all disabled:opacity-50"
             >
-              {loading ? "Connexion..." : "Se connecter"}
+              {loading ? t.login.loading : t.login.submit}
             </Button>
           </form>
 
           <div className="text-center pt-2">
             <p className="text-slate-500 text-sm">
-              Vous n'avez pas de compte ?{" "}
+              {t.login.noAccount}{" "}
               <Link to="/register" className="text-primary font-bold hover:underline">
-                S'inscrire
+                {t.login.register}
               </Link>
             </p>
           </div>
         </div>
-       
       </div>
     </div>
   );

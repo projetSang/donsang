@@ -5,6 +5,7 @@ import { Footer } from "@/components/Footer";
 import { useAuth } from "@/contexts/AuthContext";
 import { apiFetch } from "@/lib/api";
 import { slugify } from "@/lib/utils";
+import { useLanguage } from "@/contexts/LanguageContext";
 import {
   User, Activity, FileText, Download, Droplets, Phone, MapPin, Calendar, AlertCircle, RefreshCw, Printer, ShieldCheck
 } from "lucide-react";
@@ -12,30 +13,30 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
 // Internal Sub-components to reduce main file size
-const DossierHeader = ({ onPrint, logoUrl }: { onPrint: () => void, logoUrl: string }) => (
+const DossierHeader = ({ onPrint, logoUrl, t }: { onPrint: () => void, logoUrl: string, t: any }) => (
   <>
     <div className="print-only mb-6 border-b pb-4 flex items-center justify-between">
       <img src={logoUrl} alt="Logo" className="h-12 w-auto" />
-      <div className="text-xs text-muted-foreground font-mono">Document Officiel - Projet Sang</div>
+      <div className="text-xs text-muted-foreground font-mono">{t.sharedDossier.officialDoc}</div>
     </div>
     <div className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
       <div className="space-y-1">
         <div className="flex items-center gap-2">
-          <h1 className="text-3xl font-black tracking-tight text-slate-900">Dossier Médical Partagé</h1>
+          <h1 className="text-3xl font-black tracking-tight text-slate-900">{t.sharedDossier.title}</h1>
           <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 bg-emerald-50 text-emerald-700 rounded-full text-[10px] font-bold uppercase tracking-wider border border-emerald-100">
-            <ShieldCheck className="h-3 w-3" /> Sécurisé
+            <ShieldCheck className="h-3 w-3" /> {t.sharedDossier.secured}
           </div>
         </div>
-        <p className="text-muted-foreground">Accès sécurisé en lecture seule pour les professionnels de santé.</p>
+        <p className="text-muted-foreground">{t.sharedDossier.subtitle}</p>
       </div>
       <Button onClick={onPrint} variant="outline" className="no-print bg-white gap-2 shadow-sm border-slate-200 hover:bg-slate-50 hover:text-primary transition-all duration-300 rounded-xl">
-        <Printer className="h-4 w-4" /> Imprimer le dossier
+        <Printer className="h-4 w-4" /> {t.sharedDossier.printDossier}
       </Button>
     </div>
   </>
 );
 
-const PatientSidebar = ({ patient }: { patient: any }) => (
+const PatientSidebar = ({ patient, t }: { patient: any, t: any }) => (
   <div className="space-y-6">
     <div className="bg-white rounded-3xl border border-slate-100 p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] relative overflow-hidden group">
       <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16 transition-transform group-hover:scale-110 duration-700" />
@@ -46,17 +47,17 @@ const PatientSidebar = ({ patient }: { patient: any }) => (
         </div>
         <h2 className="font-black text-2xl text-slate-900">{patient.full_name}</h2>
         <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-slate-100 text-slate-600 rounded-full text-xs font-bold mt-2 uppercase tracking-wide">
-          CIN: {patient.cin || "Non renseigné"}
+          CIN: {patient.cin || t.sharedDossier.notProvided}
         </div>
       </div>
 
       <div className="space-y-4 pt-6 border-t border-slate-50">
         {[
-          { icon: Phone, text: patient.phone || "Non renseigné", label: "Téléphone" },
-          { icon: MapPin, text: patient.address || "Non renseignée", label: "Adresse" },
-          { icon: Calendar, text: patient.birth_date || "Non renseignée", label: "Date de naissance" },
-          { icon: Activity, text: patient.height ? `${patient.height} cm` : "N/A", label: "Taille" },
-          { icon: Droplets, text: patient.weight ? `${patient.weight} kg` : "N/A", label: "Poids" }
+          { icon: Phone, text: patient.phone || t.sharedDossier.notProvided, label: t.sharedDossier.phone },
+          { icon: MapPin, text: patient.address || t.sharedDossier.notProvidedF, label: t.sharedDossier.address },
+          { icon: Calendar, text: patient.birth_date || t.sharedDossier.notProvidedF, label: t.sharedDossier.birthDate },
+          { icon: Activity, text: patient.height ? `${patient.height} cm` : "N/A", label: t.sharedDossier.height },
+          { icon: Droplets, text: patient.weight ? `${patient.weight} kg` : "N/A", label: t.sharedDossier.weight }
         ].map((item, i) => (
           <div key={i} className="flex flex-col gap-1">
             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{item.label}</span>
@@ -76,24 +77,24 @@ const PatientSidebar = ({ patient }: { patient: any }) => (
         <Droplets className="h-24 w-24 text-white fill-white transition-transform group-hover:scale-110 duration-700" />
       </div>
       <div className="relative z-10">
-        <p className="text-primary-foreground/80 text-xs font-bold uppercase tracking-widest mb-2">Groupe Sanguin</p>
+        <p className="text-primary-foreground/80 text-xs font-bold uppercase tracking-widest mb-2">{t.sharedDossier.bloodType}</p>
         <div className="flex items-baseline gap-2">
           <h4 className="text-6xl font-black text-white drop-shadow-md">{patient.blood_type || "??"}</h4>
           <span className="text-white/60 font-bold">Rh+</span>
         </div>
         <div className="mt-4 inline-flex items-center gap-2 px-3 py-1 bg-white/10 backdrop-blur-md rounded-full text-[10px] font-bold text-white uppercase tracking-wider">
-          <Activity className="h-3 w-3" /> Compatible O- / AB+
+          <Activity className="h-3 w-3" /> {t.sharedDossier.compatible} O- / AB+
         </div>
       </div>
     </div>
   </div>
 );
 
-const MedicalSection = ({ patient, diseases }: { patient: any, diseases: string[] }) => (
+const MedicalSection = ({ patient, diseases, t }: { patient: any, diseases: string[], t: any }) => (
   <div className="lg:col-span-2 space-y-6">
     <div className="bg-red-50/50 rounded-3xl border border-red-100 p-8 shadow-sm">
       <h4 className="font-black text-red-900 mb-6 flex items-center gap-2 uppercase tracking-wider text-sm">
-        <AlertCircle className="h-5 w-5 text-red-500" /> Alertes Médicales & Chroniques
+        <AlertCircle className="h-5 w-5 text-red-500" /> {t.sharedDossier.medicalAlerts}
       </h4>
       <div className="flex flex-wrap gap-3">
         {diseases.length > 0 ? diseases.map((c, i) => (
@@ -103,7 +104,7 @@ const MedicalSection = ({ patient, diseases }: { patient: any, diseases: string[
         )) : (
           <div className="flex items-center gap-3 text-slate-500 bg-white/50 px-6 py-4 rounded-2xl border border-dashed border-slate-200 w-full">
             <ShieldCheck className="h-5 w-5 text-emerald-500" />
-            <span className="font-medium">Aucune pathologie chronique signalée par le patient.</span>
+            <span className="font-medium">{t.sharedDossier.noChronicDisease}</span>
           </div>
         )}
       </div>
@@ -111,13 +112,13 @@ const MedicalSection = ({ patient, diseases }: { patient: any, diseases: string[
 
     <div className="bg-white rounded-3xl border border-slate-100 p-8 shadow-sm">
       <h4 className="font-black text-slate-900 mb-6 flex items-center gap-2 uppercase tracking-wider text-sm">
-        <Activity className="h-5 w-5 text-primary" /> Synthèse Médicale
+        <Activity className="h-5 w-5 text-primary" /> {t.sharedDossier.medicalSummary}
       </h4>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {[
-          { label: "Allergies connues", value: patient.allergies || "Aucune allergie signalée", icon: AlertCircle },
-          { label: "Traitements actuels", value: patient.current_treatments || "Aucun traitement en cours", icon: Activity },
-          { label: "Antécédents familiaux & personnels", value: patient.medical_history || "Aucun antécédent majeur renseigné", full: true, icon: FileText }
+          { label: t.sharedDossier.knownAllergies, value: patient.allergies || t.sharedDossier.noAllergies, icon: AlertCircle },
+          { label: t.sharedDossier.currentTreatments, value: patient.current_treatments || t.sharedDossier.noTreatments, icon: Activity },
+          { label: t.sharedDossier.familyHistory, value: patient.medical_history || t.sharedDossier.noHistory, full: true, icon: FileText }
         ].map((item, i) => (
           <div key={i} className={item.full ? "md:col-span-2" : ""}>
             <div className="flex items-center gap-2 mb-2">
@@ -134,7 +135,7 @@ const MedicalSection = ({ patient, diseases }: { patient: any, diseases: string[
 
     <div className="bg-white rounded-3xl border border-slate-100 p-8 shadow-sm">
       <h4 className="font-black text-slate-900 mb-6 flex items-center gap-2 uppercase tracking-wider text-sm">
-        <FileText className="h-5 w-5 text-primary" /> Documents Externes
+        <FileText className="h-5 w-5 text-primary" /> {t.sharedDossier.externalDocs}
       </h4>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {patient.documents?.length > 0 ? patient.documents.map((doc: any) => (
@@ -153,14 +154,14 @@ const MedicalSection = ({ patient, diseases }: { patient: any, diseases: string[
               target="_blank" 
               rel="noreferrer" 
               className="no-print h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-primary hover:bg-primary/5 transition-all"
-              onClick={() => toast.success("Téléchargement lancé")}
+              onClick={() => toast.success(t.sharedDossier.downloadStarted)}
             >
               <Download className="h-4 w-4" />
             </a>
           </div>
         )) : (
           <div className="col-span-full p-8 text-center text-slate-400 font-medium bg-slate-50 rounded-3xl border border-dashed border-slate-200">
-            Aucun document médical n'a été rattaché à ce dossier.
+            {t.sharedDossier.noDocuments}
           </div>
         )}
       </div>
@@ -175,6 +176,7 @@ export default function SharedDossier() {
   const [patient, setPatient] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const { t } = useLanguage();
 
   useEffect(() => {
     if (!authLoading && isAuthenticated && userType === "patient") {
@@ -190,10 +192,10 @@ export default function SharedDossier() {
         if (data.status === "success") {
           setPatient(data.patient);
         } else {
-          setError(data.message || "Dossier introuvable ou lien expiré.");
+          setError(data.message || t.sharedDossier.dossierNotFound);
         }
       } catch (err: any) {
-        setError(err.message || "Erreur de connexion au serveur.");
+        setError(err.message || t.sharedDossier.serverError);
       } finally {
         setLoading(false);
       }
@@ -208,7 +210,7 @@ export default function SharedDossier() {
     return (
       <div className="min-h-screen bg-muted/30 pt-16 flex flex-col items-center justify-center">
         <RefreshCw className="h-8 w-8 text-primary animate-spin" />
-        <p className="mt-4 text-muted-foreground">Chargement du dossier médical...</p>
+        <p className="mt-4 text-muted-foreground">{t.sharedDossier.loadingDossier}</p>
       </div>
     );
   }
@@ -218,10 +220,10 @@ export default function SharedDossier() {
       <div className="min-h-screen bg-muted/30 pt-16 flex flex-col items-center justify-center">
         <div className="bg-card p-8 rounded-2xl shadow-sm max-w-md text-center border border-border">
           <AlertCircle className="h-12 w-12 text-destructive mx-auto mb-4" />
-          <h2 className="text-xl font-bold mb-2">Accès refusé</h2>
+          <h2 className="text-xl font-bold mb-2">{t.sharedDossier.accessDenied}</h2>
           <p className="text-muted-foreground">{error}</p>
           <Button asChild className="mt-6">
-            <Link to="/">Retour à l'accueil</Link>
+            <Link to="/">{t.sharedDossier.returnHome}</Link>
           </Button>
         </div>
       </div>
@@ -242,10 +244,10 @@ export default function SharedDossier() {
     <div className="min-h-screen bg-muted/30 pt-18 md:pt-16 shared-dossier-print">
       <div className="no-print"><Navbar /></div>
       <main className="container mx-auto px-4 py-8 max-w-5xl">
-        <DossierHeader onPrint={handlePrint} logoUrl="/logo_sang.png" />
+        <DossierHeader onPrint={handlePrint} logoUrl="/logo_sang.png" t={t} />
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <PatientSidebar patient={patient} />
-          <MedicalSection patient={patient} diseases={diseases} />
+          <PatientSidebar patient={patient} t={t} />
+          <MedicalSection patient={patient} diseases={diseases} t={t} />
         </div>
       </main>
       <div className="no-print"><Footer /></div>

@@ -15,6 +15,7 @@ import ForgotPassword from "./pages/ForgotPassword.tsx";
 import ResetPassword from "./pages/ResetPassword.tsx";
 import BloodCentersMap from "./pages/BloodCentersMap.tsx";
 import { AuthProvider, useAuth } from "./contexts/AuthContext.tsx";
+import { LanguageProvider } from "./contexts/LanguageContext.tsx";
 import VoiceAssistant from "./components/ui/VoiceAssistant.tsx";
 import { slugify } from "@/lib/utils";
 const queryClient = new QueryClient();
@@ -56,32 +57,34 @@ const routesConfig = [
 ];
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-        <AuthProvider>
-          <VoiceAssistant />
-          <Routes>
-            {routesConfig.map((route) => (
-              <Route
-                key={route.path}
-                path={route.path}
-                element={
-                  route.protected ? (
-                    <ProtectedRoute>{route.element}</ProtectedRoute>
-                  ) : (
-                    route.element
-                  )
-                }
-              />
-            ))}
-          </Routes>
-        </AuthProvider>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
+  <LanguageProvider>
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+          <AuthProvider>
+            <VoiceAssistant />
+            <Routes>
+              {routesConfig.map((route) => (
+                <Route
+                  key={route.path}
+                  path={route.path}
+                  element={
+                    route.protected ? (
+                      <ProtectedRoute>{route.element}</ProtectedRoute>
+                    ) : (
+                      route.element
+                    )
+                  }
+                />
+              ))}
+            </Routes>
+          </AuthProvider>
+        </BrowserRouter>
+      </TooltipProvider>
+    </QueryClientProvider>
+  </LanguageProvider>
 );
 
 export default App;

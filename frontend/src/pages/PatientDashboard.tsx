@@ -8,26 +8,29 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { usePatientData } from "@/hooks/usePatientData";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { apiFetch } from "@/lib/api";
 import { slugify } from "@/lib/utils";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-
 
 // Import sub-components
 import { ProfileTab } from "@/components/patient/ProfileTab";
 import { NotificationsTab } from "@/components/patient/NotificationsTab";
 import { AppointmentsTab } from "@/components/patient/AppointmentsTab";
 
-const tabs = [
-  { id: "profile", label: "Mon profil", icon: User },
-  { id: "appointments", label: "Mes Rendez-vous", icon: Calendar },
-  { id: "certificate", label: "Mon certificat", icon: Award },
-  { id: "notifications", label: "Notifications", icon: Bell },
-];
-
 export default function PatientDashboard() {
   const { user: userData, updateUser, loading: authLoading, logout } = useAuth();
+  const { t, lang, isRtl } = useLanguage();
+  const dashboardT = t.patientDashboard;
+
   const [activeTab, setActiveTab] = useState("profile");
+
+  const tabs = [
+    { id: "profile", label: dashboardT.profile, icon: User },
+    { id: "appointments", label: dashboardT.appointments, icon: Calendar },
+    { id: "certificate", label: dashboardT.certificate, icon: Award },
+    { id: "notifications", label: dashboardT.notifications, icon: Bell },
+  ];
 
   const {
     notifications,
@@ -86,27 +89,13 @@ export default function PatientDashboard() {
     }
   }, [userData?.email]);
 
-  const handleGenerateShareToken = async () => {
-    const token = await generateShareToken();
-    if (token) {
-      updateUser({ ...userData, share_token: token });
-    }
-  };
-
-  const handleDisableShareToken = async () => {
-    const success = await disableShareToken();
-    if (success) {
-      updateUser({ ...userData, share_token: null });
-    }
-  };
-
   const handleUpdatePassword = async (e: React.FormEvent) => {
     e.preventDefault();
     setPassError("");
     setPassSuccess("");
 
     if (passwords.new !== passwords.confirm) {
-      setPassError("Les nouveaux mots de passe ne correspondent pas");
+      setPassError(dashboardT.passwordMismatch);
       return;
     }
 
@@ -126,10 +115,10 @@ export default function PatientDashboard() {
         setPassSuccess(data.message);
         setPasswords({ current: "", new: "", confirm: "" });
       } else {
-        setPassError(data.message || "Erreur lors de la mise à jour");
+        setPassError(data.message || dashboardT.updateError);
       }
     } catch (err: any) {
-      setPassError(err.message || "Erreur de connexion au serveur");
+      setPassError(err.message || dashboardT.connError);
     } finally {
       setPassLoading(false);
     }
@@ -155,11 +144,11 @@ export default function PatientDashboard() {
         setProfileSuccess(data.message);
         updateUser(data.user);
       } else {
-        setProfileError(data.message || "Erreur lors de la mise à jour");
+        setProfileError(data.message || dashboardT.updateError);
       }
     } catch (err: any) {
       console.error("Profile update error:", err);
-      setProfileError(err.message || "Erreur de connexion au serveur");
+      setProfileError(err.message || dashboardT.connError);
     } finally {
       setProfileLoading(false);
     }
@@ -171,7 +160,7 @@ export default function PatientDashboard() {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center gap-4 bg-muted/30">
         <RefreshCw className="h-8 w-8 text-primary animate-spin" />
-        <p className="text-muted-foreground font-medium">Chargement de votre profil...</p>
+        <p className="text-muted-foreground font-medium">{dashboardT.loadingProfile}</p>
       </div>
     );
   }
@@ -186,6 +175,7 @@ export default function PatientDashboard() {
   }
   const count = userData.donations_count || 0;
   let sealTitle = "BRONZE";
+  let sealText = dashboardT.bronzeBadge;
   let borderColor = "#ea580c"; // orange-600
   let innerBorderColor = "#ffedd5"; // orange-100
   let bgColor = "#fff7ed"; // orange-50
@@ -197,6 +187,7 @@ export default function PatientDashboard() {
 
   if (count >= 6) {
     sealTitle = "OR";
+    sealText = dashboardT.goldBadge;
     borderColor = "#ca8a04"; // gold-600
     innerBorderColor = "#fef9c3"; // gold-100
     bgColor = "#fffbeb"; // gold-50
@@ -207,6 +198,7 @@ export default function PatientDashboard() {
     innerGradSelected = "url(#certGoldInnerPrint)";
   } else if (count >= 3) {
     sealTitle = "ARGENT";
+    sealText = dashboardT.silverBadge;
     borderColor = "#475569"; // slate-600
     innerBorderColor = "#f1f5f9"; // slate-100
     bgColor = "#f8fafc"; // slate-50
@@ -223,7 +215,6 @@ export default function PatientDashboard() {
 
   return (
     <>
-
       <div className="no-print min-h-screen bg-muted/30 pt-18 md:pt-16">
       <Navbar />
 
@@ -264,7 +255,7 @@ export default function PatientDashboard() {
             <div className="bg-card rounded-xl border border-border p-4 text-center shadow-sm flex flex-col items-center justify-center">
               <Droplets className="h-8 w-8 text-primary mb-2 animate-pulse" />
               <div className="text-3xl font-bold text-primary">{userData.blood_type}</div>
-              <div className="text-xs text-muted-foreground mt-1">Votre groupe sanguin</div>
+              <div className="text-xs text-muted-foreground mt-1">{dashboardT.yourBloodType}</div>
             </div>
 
             {(() => {
@@ -283,33 +274,33 @@ export default function PatientDashboard() {
                       <span className="absolute top-[28px] left-1/2 -translate-x-1/2 font-black text-lg text-slate-400">?</span>
                     </div>
                     <div className="text-3xl font-extrabold text-slate-400">0</div>
-                    <div className="text-xs text-slate-500 font-bold mt-1">Nombre de dons</div>
+                    <div className="text-xs text-slate-500 font-bold mt-1">{dashboardT.donationsCount}</div>
                   </div>
                 );
               }
 
               // Define tier properties for Gold, Silver, and Bronze
               let tier: "gold" | "silver" | "bronze" = "bronze";
-              let title = "Insigne de Bronze";
+              let title = dashboardT.bronzeBadge;
               let bgGlow = "from-orange-50/60 to-white border-orange-200/80";
               let countTextClass = "text-orange-850";
               let numColor = "text-orange-700";
-              let labelText = "Donneur de Bronze";
+              let labelText = dashboardT.bronzeDonor;
 
               if (count >= 6) {
                 tier = "gold";
-                title = "Insigne d'Or";
+                title = dashboardT.goldBadge;
                 bgGlow = "from-amber-50/60 to-white border-amber-200/80";
                 countTextClass = "text-amber-850";
                 numColor = "text-amber-700";
-                labelText = "Donneur d'Or";
+                labelText = dashboardT.goldDonor;
               } else if (count >= 3) {
                 tier = "silver";
-                title = "Insigne d'Argent";
+                title = dashboardT.silverBadge;
                 bgGlow = "from-slate-50/60 to-white border-slate-200/80";
                 countTextClass = "text-slate-850";
                 numColor = "text-slate-700";
-                labelText = "Donneur d'Argent";
+                labelText = dashboardT.silverDonor;
               }
 
               // Color configs based on tier
@@ -335,7 +326,7 @@ export default function PatientDashboard() {
                 <div 
                   onClick={() => setActiveTab("certificate")}
                   className={`bg-gradient-to-br ${bgGlow} rounded-xl border p-4 text-center shadow-sm flex flex-col items-center justify-center transition-all duration-300 hover:shadow-md hover:border-amber-300 relative overflow-hidden group cursor-pointer hover:scale-[1.02] active:scale-[0.98]`}
-                  title="Cliquez pour voir votre certificat"
+                  title={dashboardT.viewMyCert}
                 >
                   
                   {/* High Fidelity Certificate Badge SVG */}
@@ -457,36 +448,34 @@ export default function PatientDashboard() {
 
                       {/* 3D Embossed Star at the Center */}
                       <g>
-                        {/* Top Point */}
+                        {/* Point Haut */}
                         <polygon points="50,25 50,45 46,39" fill={starLight} />
                         <polygon points="50,25 54,39 50,45" fill={starDark} />
                         
-                        {/* Right Point */}
+                        {/* Point Droite */}
                         <polygon points="68,39 50,45 54,39" fill={starLight} />
                         <polygon points="68,39 56,46 50,45" fill={starDark} />
                         
-                        {/* Bottom Right Point */}
+                        {/* Point Bas Droite */}
                         <polygon points="61,58 50,45 56,46" fill={starLight} />
                         <polygon points="61,58 50,50 50,45" fill={starDark} />
                         
-                        {/* Bottom Left Point */}
+                        {/* Point Bas Gauche */}
                         <polygon points="39,58 50,45 50,50" fill={starLight} />
                         <polygon points="39,58 44,46 50,45" fill={starDark} />
                         
-                        {/* Left Point */}
+                        {/* Point Gauche */}
                         <polygon points="32,39 50,45 44,46" fill={starLight} />
                         <polygon points="32,39 46,39 50,45" fill={starDark} />
                       </g>
                     </svg>
                   </div>
                   <div className={`text-xl font-black ${numColor}`}>{title}</div>
-                  <div className="text-sm font-extrabold text-slate-800 mt-1">{count} {count > 1 ? 'dons' : 'don'}</div>
+                  <div className="text-sm font-extrabold text-slate-800 mt-1">{count} {count > 1 ? dashboardT.donations : dashboardT.donation}</div>
                   <div className="text-[10.5px] text-slate-500 font-bold uppercase tracking-wide mt-0.5">{labelText}</div>
                 </div>
               );
             })()}
-
-           
           </div>
         </aside>
 
@@ -519,8 +508,8 @@ export default function PatientDashboard() {
                     <Award className="h-6 w-6 text-primary" />
                   </div>
                   <div>
-                    <h3 className="font-extrabold text-slate-800 text-lg leading-tight">Mon Certificat d'Honneur</h3>
-                    <p className="text-xs text-muted-foreground mt-0.5">Téléchargez ou imprimez votre certificat officiel de gratitude</p>
+                    <h3 className="font-extrabold text-slate-800 text-lg leading-tight">{dashboardT.myHonorCert}</h3>
+                    <p className="text-xs text-muted-foreground mt-0.5">{dashboardT.certSubtitle}</p>
                   </div>
                 </div>
                 <button 
@@ -528,7 +517,7 @@ export default function PatientDashboard() {
                   className="flex items-center gap-2 bg-primary hover:bg-primary/95 text-white text-sm font-black px-5 py-2.5 rounded-xl transition-all shadow-md shadow-primary/20 hover:scale-[1.02] active:scale-[0.98]"
                 >
                   <Printer className="h-4 w-4" />
-                  Imprimer / PDF
+                  {dashboardT.printPdf}
                 </button>
               </div>
 
@@ -539,20 +528,17 @@ export default function PatientDashboard() {
                   let medalTier: "gold" | "silver" | "bronze" = "bronze";
                   let borderColor = "border-amber-750/30";
                   let innerBorderColor = "border-amber-700/20";
-                  let sealTitle = "BRONZE";
                   let bgPattern = "bg-orange-50/5";
 
                   if (count >= 6) {
                     medalTier = "gold";
                     borderColor = "border-amber-500/30";
                     innerBorderColor = "border-amber-500/20";
-                    sealTitle = "OR";
                     bgPattern = "bg-amber-50/5";
                   } else if (count >= 3) {
                     medalTier = "silver";
                     borderColor = "border-slate-500/30";
                     innerBorderColor = "border-slate-500/20";
-                    sealTitle = "ARGENT";
                     bgPattern = "bg-slate-50/5";
                   }
 
@@ -581,44 +567,44 @@ export default function PatientDashboard() {
 
                       <div className="text-center z-10">
                         <h1 className="font-serif text-[10px] md:text-xs tracking-[0.25em] text-slate-400 font-extrabold uppercase mb-1">
-                          RÉPUBLIQUE DU MAROC
+                          {dashboardT.republicMorocco}
                         </h1>
                         <div className="h-[1px] w-12 bg-slate-300 mx-auto mb-1"></div>
                         <h2 className="text-[8px] md:text-[10px] tracking-wider text-slate-500 font-bold uppercase">
-                          CENTRE NATIONAL DE TRANSFUSION SANGUINE
+                          {dashboardT.cntsTitle}
                         </h2>
                       </div>
 
                       <div className="text-center my-2 z-10">
                         <h3 className="font-serif text-2xl md:text-3.5xl font-extrabold tracking-wide text-slate-900 leading-none">
-                          CERTIFICAT DE GRATITUDE
+                          {dashboardT.certGratitude}
                         </h3>
                         <p className="text-[10px] md:text-xs text-primary font-bold italic mt-1">
-                          Pour un engagement civique exceptionnel
+                          {dashboardT.civicEngagement}
                         </p>
                       </div>
 
                       <div className="text-center w-full z-10 space-y-2">
                         <p className="text-[9px] md:text-[10px] text-slate-500 font-bold uppercase tracking-widest">
-                          Ce certificat est fièrement décerné à
+                          {dashboardT.proudlyAwarded}
                         </p>
                         <h4 className="font-serif text-xl md:text-2.5xl font-black text-slate-800 border-b border-slate-200 pb-1 mx-auto max-w-[80%] capitalize">
                           {userData.full_name}
                         </h4>
                         <p className="text-[10px] md:text-[11px] text-slate-600 max-w-[85%] mx-auto leading-relaxed">
-                          En reconnaissance de sa noble contribution au don de sang volontaire. Grâce à ses gestes généreux de solidarité nationale, il contribue directement à sauver des vies humaines.
+                          {dashboardT.recognitionText}
                         </p>
                       </div>
 
                       <div className="flex items-center justify-between w-full mt-4 px-4 z-10">
-                        <div className="text-left flex flex-col justify-end h-14 w-28 border-b border-slate-200 pb-1">
-                          <span className="text-[8px] text-slate-400 font-bold uppercase">Fait le</span>
+                        <div className="text-left flex flex-col justify-end h-14 w-32 border-b border-slate-200 pb-1">
+                          <span className="text-[8px] text-slate-400 font-bold uppercase">{dashboardT.doneOn}</span>
                           <span className="text-[10px] md:text-xs font-extrabold text-slate-700">
-                            {new Date().toLocaleDateString("fr-FR", { year: "numeric", month: "long", day: "numeric" })}
+                            {new Date().toLocaleDateString(lang === "ar" ? "ar-MA" : lang === "en" ? "en-US" : "fr-FR", { year: "numeric", month: "long", day: "numeric" })}
                           </span>
                         </div>
 
-                        <div className="scale-[0.8] -my-4">
+                        <div className="scale-[0.8] -my-4 flex flex-col items-center">
                           <svg viewBox="0 0 100 120" className="w-16 h-20 select-none">
                             <defs>
                               <linearGradient id="certGoldMedal" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -683,13 +669,13 @@ export default function PatientDashboard() {
                             </g>
                           </svg>
                           <div className="text-[7px] font-black text-center text-slate-500 uppercase tracking-widest mt-1">
-                            NIVEAU {sealTitle}
+                            {dashboardT.level} {sealText}
                           </div>
                         </div>
 
                         <div className="text-right flex flex-col justify-end h-14 w-28 border-b border-slate-200 pb-1">
-                          <span className="text-[8px] text-slate-400 font-bold uppercase">Le Directeur</span>
-                          <span className="font-serif text-[10px] md:text-xs italic text-primary/85 font-bold">CNTS Maroc</span>
+                          <span className="text-[8px] text-slate-400 font-bold uppercase">{dashboardT.director}</span>
+                          <span className="font-serif text-[10px] md:text-xs italic text-primary/85 font-bold">{dashboardT.cntsMaroc}</span>
                         </div>
                       </div>
                     </div>
@@ -732,36 +718,36 @@ export default function PatientDashboard() {
 
         {/* Header */}
         <div className="print-header">
-          <h1>RÉPUBLIQUE DU MAROC</h1>
+          <h1>{dashboardT.republicMorocco}</h1>
           <div className="print-divider"></div>
-          <h2>CENTRE NATIONAL DE TRANSFUSION SANGUINE</h2>
+          <h2>{dashboardT.cntsTitle}</h2>
         </div>
 
         {/* Title Section */}
         <div className="print-title-section">
-          <h3>CERTIFICAT DE GRATITUDE</h3>
-          <p>Pour un engagement civique exceptionnel</p>
+          <h3>{dashboardT.certGratitude}</h3>
+          <p>{dashboardT.civicEngagement}</p>
         </div>
 
         {/* Recipient */}
         <div className="print-recipient-section">
-          <h4 className="print-recipient-label">Ce certificat est fièrement décerné à</h4>
+          <h4 className="print-recipient-label">{dashboardT.proudlyAwarded}</h4>
           <div className="print-recipient-name">{userData.full_name}</div>
           <p className="print-certificate-text">
-            En reconnaissance de sa noble contribution au don de sang volontaire. Grâce à ses gestes généreux de solidarité nationale, il contribue directement à sauver des vies humaines.
+            {dashboardT.recognitionText}
           </p>
         </div>
 
         {/* Footer Seals and Signatures */}
-        <div className="print-footer-section">
+        <div className="print-footer-section flex items-center justify-between">
           <div className="print-sig-block text-left">
-            <span className="print-sig-label">Fait le</span>
+            <span className="print-sig-label">{dashboardT.doneOn}</span>
             <span className="print-sig-val">
-              {new Date().toLocaleDateString("fr-FR", { year: "numeric", month: "long", day: "numeric" })}
+              {new Date().toLocaleDateString(lang === "ar" ? "ar-MA" : lang === "en" ? "en-US" : "fr-FR", { year: "numeric", month: "long", day: "numeric" })}
             </span>
           </div>
 
-          <div className="print-seal-container">
+          <div className="print-seal-container flex flex-col items-center justify-center">
             <svg viewBox="0 0 100 120" className="w-[70px] h-[85px]">
               <defs>
                 <linearGradient id="certRibbonGradPrint" x1="0%" y1="0%" x2="100%" y2="0%">
@@ -838,12 +824,12 @@ export default function PatientDashboard() {
                 <polygon points="32,39 46,39 50,45" fill={starDark} />
               </g>
             </svg>
-            <div className="print-seal-label">NIVEAU {sealTitle}</div>
+            <div className="print-seal-label">{dashboardT.level} {sealText}</div>
           </div>
 
           <div className="print-sig-block text-right">
-            <span className="print-sig-label">Le Directeur</span>
-            <span className="print-sig-val italic">CNTS Maroc</span>
+            <span className="print-sig-label">{dashboardT.director}</span>
+            <span className="print-sig-val italic">{dashboardT.cntsMaroc}</span>
           </div>
         </div>
       </div>
