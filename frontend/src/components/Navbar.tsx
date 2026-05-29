@@ -23,6 +23,7 @@ export function Navbar({}: NavbarProps) {
     const items = [
       { label: "Accueil", path: "/" },
       { label: "Alertes urgentes", path: "/UrgentAlerts" },
+      { label: "Centres de don", path: "/centres-don" },
       { label: "Contact", path: "/contact" },
     ];
 

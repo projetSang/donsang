@@ -13,6 +13,7 @@ import UrgentAlerts from "./pages/UrgentAlerts.tsx";
 import Register from "./pages/Register.tsx";
 import ForgotPassword from "./pages/ForgotPassword.tsx";
 import ResetPassword from "./pages/ResetPassword.tsx";
+import BloodCentersMap from "./pages/BloodCentersMap.tsx";
 import { AuthProvider, useAuth } from "./contexts/AuthContext.tsx";
 import VoiceAssistant from "./components/ui/VoiceAssistant.tsx";
 import { slugify } from "@/lib/utils";
@@ -41,6 +42,7 @@ import PatientDashboard from "./pages/PatientDashboard.tsx";
 const routesConfig = [
   { path: "/", element: <Index /> },
   { path: "/UrgentAlerts", element: <UrgentAlerts /> },
+  { path: "/centres-don", element: <BloodCentersMap /> },
   { path: "/contact", element: <Contact /> },
   { path: "/login", element: <Login /> },
   { path: "/register", element: <Register /> },
