@@ -107,7 +107,7 @@ export default function ResetPassword() {
               </Link>
             </div>
           ) : (
-            <form className="space-y-6" onSubmit={handleSubmit}>
+            <form method="POST" className="space-y-6" onSubmit={handleSubmit}>
               {status === "error" && (
                 <div className="bg-destructive/10 border border-destructive/20 text-destructive text-sm p-4 rounded-xl text-center font-bold animate-reveal">
                   {message}

@@ -195,7 +195,7 @@ export default function Contact() {
                     </div>
                   </div>
                 </div>
-                <form onSubmit={handleHospitalSubmit} className="p-8 space-y-5">
+                <form method="POST" onSubmit={handleHospitalSubmit} className="p-8 space-y-5">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                     <div className="space-y-2">
                       <Label htmlFor="name" className="font-bold text-slate-700">{c.responsibleName}</Label>
@@ -270,7 +270,7 @@ export default function Contact() {
                     </div>
                   </div>
                 </div>
-                <form onSubmit={handleUserSubmit} className="p-8 space-y-5">
+                <form method="POST" onSubmit={handleUserSubmit} className="p-8 space-y-5">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                     <div className="space-y-2">
                       <Label htmlFor="name" className="font-bold text-slate-700">{c.yourName}</Label>

@@ -59,7 +59,7 @@ export default function Login() {
               {error}
             </div>
           )}
-          <form className="space-y-6" onSubmit={handleLogin}>
+          <form method="POST" className="space-y-6" onSubmit={handleLogin}>
             <div className="space-y-2">
               <Label htmlFor="email" title="email" className="text-slate-900 font-bold">{t.login.email}</Label>
               <Input

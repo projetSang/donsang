@@ -47,7 +47,7 @@ export default function Index() {
             </div>
 
             <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black leading-[1.15] text-white drop-shadow-2xl animate-in fade-in slide-in-from-bottom-6 duration-1000 delay-150">
-              {t.hero.title1} <br />
+              {t.hero.title1} 
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-rose-400 drop-shadow-[0_0_30px_rgba(225,29,72,0.8)] relative inline-block transform hover:scale-105 transition-transform duration-300 mt-2">
                 {t.hero.title2}
               </span>{" "}
