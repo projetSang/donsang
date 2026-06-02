@@ -243,7 +243,8 @@ export function SearchTab({ selectedBlood, setSelectedBlood, city, setCity }: an
 
                     {/* Details row */}
                     <div className="text-sm text-slate-500 flex flex-wrap items-center gap-x-5 gap-y-1.5 mt-1.5">
-                      <div
+                      <button
+                        type="button"
                         className="flex items-center gap-1.5 hover:text-primary transition-colors cursor-pointer"
                         onClick={() => window.location.href = `tel:${donor.phone}`}
                       >

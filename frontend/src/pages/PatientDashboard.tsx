@@ -471,7 +471,7 @@ export default function PatientDashboard() {
                   <div className={`text-xl font-black ${numColor}`}>{title}</div>
                   <div className="text-sm font-extrabold text-slate-800 mt-1">{count} {count > 1 ? dashboardT.donations : dashboardT.donation}</div>
                   <div className="text-[10.5px] text-slate-500 font-bold uppercase tracking-wide mt-0.5">{labelText}</div>
-                </div>
+                </button>
               );
             })()}
           </div>

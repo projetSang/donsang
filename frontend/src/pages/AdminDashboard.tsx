@@ -44,20 +44,15 @@ export default function AdminDashboard() {
     const uppercase = "ABCDEFGHJKLMNPQRSTUVWXYZ";
     const numbers = "23456789";
     const symbols = "!@#$%&*?+=-";
-  const generateSecurePassword = (length = 12) => {
-    const uppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-    const lowercase = 'abcdefghijklmnopqrstuvwxyz';
-    const numbers = '0123456789';
-    const symbols = '!@#$%^&*()_+~`|}{[]:;?><,./-=';
-    const allChars = uppercase + lowercase + numbers + symbols;
+    const allChars = lowercase + uppercase + numbers + symbols;
 
-    let password = '';
+    let password = "";
     password += lowercase.charAt(Math.floor(Math.random() * lowercase.length)); // NOSONAR
     password += uppercase.charAt(Math.floor(Math.random() * uppercase.length)); // NOSONAR
     password += numbers.charAt(Math.floor(Math.random() * numbers.length)); // NOSONAR
     password += symbols.charAt(Math.floor(Math.random() * symbols.length)); // NOSONAR
 
-    for (let i = password.length; i < length; i++) {
+    for (let i = password.length; i < 12; i++) {
       password += allChars.charAt(Math.floor(Math.random() * allChars.length)); // NOSONAR
     }
 
