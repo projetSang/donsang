@@ -1,12 +1,11 @@
 import { useState, useEffect } from "react";
 import { 
-  Heart, Search, Users, Droplets, Bell, BarChart3, LayoutDashboard,
+  Heart, Search, Users, Droplets, LayoutDashboard,
 } from "lucide-react";
 import ReactApexChart from "react-apexcharts";
 
 import { useAuth } from "@/contexts/AuthContext";
 import { apiUrl } from "@/lib/api";
-
 export default function TableBord() {
   const { user } = useAuth();
   const [statsData, setStatsData] = useState<any>(null);

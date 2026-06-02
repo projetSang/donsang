@@ -1,5 +1,5 @@
 import { 
-  UserPlus, Droplets, Bell, Users, FileText, Share2, Search, Shield, Heart 
+  UserPlus, Droplets, Bell, Users, Search, Shield, Heart 
 } from "lucide-react";
 
 export const steps = [
