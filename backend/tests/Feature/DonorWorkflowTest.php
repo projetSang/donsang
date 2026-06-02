@@ -134,7 +134,7 @@ class DonorWorkflowTest extends TestCase
         ]);
 
         // Fetch notifications for Ahmed
-        $responseAhmed = $this->getJson("/api/patients/{$donorAhmed->id}/notifications");
+        $responseAhmed = $this->getJson("/api/donors/{$donorAhmed->id}/notifications");
         $responseAhmed->assertStatus(200);
         $notificationsAhmed = $responseAhmed->json();
 
@@ -145,7 +145,7 @@ class DonorWorkflowTest extends TestCase
         $this->assertNotContains($alert3->id, $alertIdsAhmed);
 
         // Fetch notifications for Sara
-        $responseSara = $this->getJson("/api/patients/{$donorSara->id}/notifications");
+        $responseSara = $this->getJson("/api/donors/{$donorSara->id}/notifications");
         $responseSara->assertStatus(200);
         $notificationsSara = $responseSara->json();
 
@@ -166,10 +166,10 @@ class DonorWorkflowTest extends TestCase
             'phone' => '0622222222'
         ]);
 
-        // Test profile update (sending user_type => patient fallback)
+        // Test profile update (sending user_type => donor fallback)
         $responseProfile = $this->postJson('/api/update-profile', [
             'email' => 'update@test.com',
-            'user_type' => 'patient',
+            'user_type' => 'donor',
             'full_name' => 'Updated Name',
             'phone' => '0633333333',
             'address' => 'Marrakech',
@@ -184,10 +184,10 @@ class DonorWorkflowTest extends TestCase
             'city' => 'Marrakech'
         ]);
 
-        // Test password update (sending user_type => patient fallback)
+        // Test password update (sending user_type => donor fallback)
         $responsePassword = $this->postJson('/api/update-password', [
             'email' => 'update@test.com',
-            'user_type' => 'patient',
+            'user_type' => 'donor',
             'current_password' => 'oldpassword',
             'new_password' => 'newsecretpassword'
         ]);

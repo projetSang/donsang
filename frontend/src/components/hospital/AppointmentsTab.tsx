@@ -6,23 +6,22 @@ import {
   Check, X, RefreshCw, Filter, CheckCircle2
 } from "lucide-react";
 
-interface Patient {
-  id: number;
+interface Donor {
   full_name: string;
-  blood_type: string;
   phone: string;
+  blood_type: string;
   cin: string;
 }
 
 interface Appointment {
   id: number;
-  patient_id: number;
+  blood_donor_id: number;
   appointment_date: string;
   appointment_time: string;
   status: string;
   notes: string | null;
   created_at: string;
-  patient: Patient;
+  bloodDonor: Donor;
 }
 
 export function AppointmentsTab({ hospitalId }: Readonly<{ hospitalId: number }>) {
@@ -171,14 +170,14 @@ export function AppointmentsTab({ hospitalId }: Readonly<{ hospitalId: number }>
                     {/* Donor Details */}
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
-                        <div className="h-9 w-9 bg-primary/10 rounded-full flex items-center justify-center text-primary font-black">
-                          {apt.patient.full_name.charAt(0).toUpperCase()}
+                        <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary font-bold text-lg">
+                          {apt.bloodDonor?.full_name?.charAt(0).toUpperCase()}
                         </div>
                         <div>
-                          <p className="text-slate-800 font-bold leading-tight">{apt.patient.full_name}</p>
-                          <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
-                            <Phone className="h-3 w-3" /> {apt.patient.phone}
-                          </p>
+                          <p className="text-slate-800 font-bold leading-tight">{apt.bloodDonor?.full_name}</p>
+                          <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
+                            <Phone className="h-3 w-3" /> {apt.bloodDonor?.phone}
+                          </div>
                         </div>
                       </div>
                     </td>
@@ -186,7 +185,7 @@ export function AppointmentsTab({ hospitalId }: Readonly<{ hospitalId: number }>
                     {/* Blood Type */}
                     <td className="px-6 py-4">
                       <span className="px-3 py-1 bg-rose-50 text-rose-700 border border-rose-100 rounded-full text-xs font-black flex items-center gap-1 w-fit">
-                        <Droplet className="h-3.5 w-3.5 fill-rose-600 text-rose-600" /> {apt.patient.blood_type}
+                        <Droplet className="h-3.5 w-3.5 fill-rose-600 text-rose-600" /> {apt.bloodDonor?.blood_type}
                       </span>
                     </td>
 
@@ -211,7 +210,7 @@ export function AppointmentsTab({ hospitalId }: Readonly<{ hospitalId: number }>
                     <td className="px-6 py-4">
                       <div className="space-y-1 max-w-[200px]">
                         <p className="text-xs text-slate-500 font-bold flex items-center gap-1">
-                          <CreditCard className="h-3.5 w-3.5" /> CIN: {apt.patient.cin || "N/A"}
+                          <CreditCard className="h-3.5 w-3.5" /> CIN: {apt.bloodDonor?.cin || "N/A"}
                         </p>
                         {apt.notes && (
                           <p className="text-[11px] text-slate-400 italic leading-tight truncate" title={apt.notes}>

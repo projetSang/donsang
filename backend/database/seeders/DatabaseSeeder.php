@@ -7,7 +7,6 @@ use App\Models\User;
 use Illuminate\Database\Seeder;
 use App\Models\Hospital;
 use App\Models\BloodDonor;
-use App\Models\Patient;
 use App\Models\Alert;
 
 class DatabaseSeeder extends Seeder
@@ -54,17 +53,6 @@ class DatabaseSeeder extends Seeder
             'hospital_id' => $hospital->id,
             'blood_type' => 'O-',
             'urgency_level' => 'Critique',
-        ]);
-
-        Patient::create([
-            'hospital_id' => $hospital->id,
-            'full_name' => 'Jean Dupont',
-            'email' => 'patient@test.com',
-            'password' => bcrypt('password'),
-            'cin' => 'AB123456',
-            'blood_type' => 'A+',
-            'status' => 'Stable',
-            'admission_date' => now(),
         ]);
     }
 }

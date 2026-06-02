@@ -4,15 +4,15 @@ $app = require_once 'bootstrap/app.php';
 $app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap();
 
 use Illuminate\Support\Facades\Mail;
-use App\Models\Patient;
+use App\Models\BloodDonor;
 use App\Models\Alert;
 use App\Models\Hospital;
 
 try {
-    // Récupérer un patient avec email
-    $patient = Patient::whereNotNull('email')->first();
-    if (!$patient) {
-        echo "ERROR: Aucun patient trouvé avec un email.\n";
+    // Récupérer un donneur avec email
+    $donor = BloodDonor::whereNotNull('email')->first();
+    if (!$donor) {
+        echo "ERROR: Aucun donneur trouvé avec un email.\n";
         exit;
     }
 
@@ -38,25 +38,25 @@ try {
     }
 
     echo "=== Test Email Alerte Urgente ===\n";
-    echo "Patient: {$patient->full_name} ({$patient->email})\n";
+    echo "Donneur: {$donor->full_name} ({$donor->email})\n";
     echo "Hôpital: {$hospital->name} ({$hospital->city})\n";
     echo "Groupe sanguin: {$alert->blood_type}\n";
     echo "Urgence: {$alert->urgency_level}\n";
     echo "================================\n\n";
 
     $emailData = [
-        'patient' => $patient,
+        'donor' => $donor,
         'alert' => $alert,
         'hospital' => $hospital,
         'appUrl' => 'http://localhost:8080',
     ];
 
-    Mail::send('emails.alert', $emailData, function ($message) use ($patient) {
-        $message->to($patient->email)
+    Mail::send('emails.alert', $emailData, function ($message) use ($donor) {
+        $message->to($donor->email)
             ->subject('🚨 Alerte Urgente - Don de Sang à proximité');
     });
 
-    echo "SUCCESS! Email envoyé à {$patient->email}\n";
+    echo "SUCCESS! Email envoyé à {$donor->email}\n";
     echo "Lien dans l'email: " . config('app.frontend_url', 'http://localhost:8080') . "/UrgentAlerts\n";
 
 } catch (\Exception $e) {

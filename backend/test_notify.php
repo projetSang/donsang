@@ -10,7 +10,7 @@ $alert->hospital_id = 1;
 $alert->blood_type = 'Tous groupes'; // Test with Tous groupes
 $radius = 20;
 
-$nearbyPatientsQuery = App\Models\Patient::select('*')
+$nearbyDonorsQuery = App\Models\BloodDonor::select('*')
     ->selectRaw('(6371 * acos(cos(radians(?)) * cos(radians(latitude)) * cos(radians(longitude) - radians(?)) + sin(radians(?)) * sin(radians(latitude)))) AS distance', [$hospital->latitude, $hospital->longitude, $hospital->latitude])
     ->having('distance', '<', $radius);
 
@@ -23,9 +23,9 @@ if ($alert->blood_type !== 'Tous groupes') {
             $groups[] = str_replace('−', '-', $g);
             $groups[] = str_replace('-', '−', $g);
         }
-        $nearbyPatientsQuery->whereIn('blood_type', $groups);
+        $nearbyDonorsQuery->whereIn('blood_type', $groups);
     } else {
-        $nearbyPatientsQuery->where(function($q) use ($alert) {
+        $nearbyDonorsQuery->where(function($q) use ($alert) {
             $q->where('blood_type', $alert->blood_type)
               ->orWhere('blood_type', str_replace('−', '-', $alert->blood_type))
               ->orWhere('blood_type', str_replace('-', '−', $alert->blood_type));
@@ -33,8 +33,8 @@ if ($alert->blood_type !== 'Tous groupes') {
     }
 }
 
-$nearbyPatients = $nearbyPatientsQuery->get();
-echo 'Found patients: ' . $nearbyPatients->count() . "\n";
-foreach ($nearbyPatients as $patient) {
-    echo 'Patient: ' . $patient->full_name . ' (' . $patient->email . ')' . "\n";
+$nearbyDonors = $nearbyDonorsQuery->get();
+echo 'Found donors: ' . $nearbyDonors->count() . "\n";
+foreach ($nearbyDonors as $donor) {
+    echo 'Donor: ' . $donor->full_name . ' (' . $donor->email . ')' . "\n";
 }

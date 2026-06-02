@@ -12,7 +12,7 @@ export function NotificationsTab({
   handleAvailabilityResponse
 }: NotificationsTabProps) {
   const { t } = useLanguage();
-  const dashboardT = t.patientDashboard;
+  const dashboardT = t.donorDashboard;
 
   return (
     <div className="space-y-6 animate-in fade-in duration-500 text-left">

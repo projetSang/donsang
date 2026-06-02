@@ -5,7 +5,7 @@ import { slugify } from "../lib/utils";
 interface AuthContextType {
   user: any;
   isAuthenticated: boolean;
-  userType: "patient" | "hospital" | "admin" | null;
+  userType: "donor" | "hospital" | "admin" | null;
   login: (userData: any, token?: string) => void;
   logout: () => void;
   updateUser: (newUserData: any) => void;
@@ -17,7 +17,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<any>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [userType, setUserType] = useState<"patient" | "hospital" | null>(null);
+  const [userType, setUserType] = useState<"donor" | "hospital" | null>(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
@@ -30,7 +30,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const parsedUser = JSON.parse(storedUser);
         setUser(parsedUser);
         setIsAuthenticated(true);
-        setUserType((parsedUser.user_type === "donor" || parsedUser.user_type === "patient") ? "patient" : (parsedUser.user_type || (parsedUser.hospital_id ? "patient" : "hospital")));
+        setUserType((parsedUser.user_type === "donor") ? "donor" : (parsedUser.user_type || "hospital"));
       } catch (error) {
         console.error("Failed to parse stored user", error);
         localStorage.clear();
@@ -42,7 +42,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const login = (userData: any, token?: string) => {
     setUser(userData);
     setIsAuthenticated(true);
-    const type = (userData.user_type === "donor" || userData.user_type === "patient") ? "patient" : (userData.user_type || (userData.hospital_id ? "patient" : "hospital"));
+    const type = (userData.user_type === "donor") ? "donor" : (userData.user_type || "hospital");
     setUserType(type);
     
     localStorage.setItem("userData", JSON.stringify(userData));
@@ -51,9 +51,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     
     // Redirect based on user type
     if (type === "admin") navigate("/admin");
-    else if (type === "patient") {
-      const patientSlug = slugify(userData.full_name || userData.name || "patient");
-      navigate(`/Donsang/Mon-dossier/${patientSlug}`);
+    else if (type === "donor") {
+      const donorSlug = slugify(userData.full_name || userData.name || "donor");
+      navigate(`/Donsang/Donneur/${donorSlug}`);
     } else {
       const hospitalSlug = slugify(userData.name || "hospital");
       navigate(`/Donsang/${hospitalSlug}`);

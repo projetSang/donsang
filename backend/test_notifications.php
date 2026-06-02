@@ -4,7 +4,7 @@ $app = require_once 'bootstrap/app.php';
 $kernel = $app->make(Illuminate\Contracts\Console\Kernel::class);
 $kernel->bootstrap();
 
-$patients = \App\Models\Patient::all();
-foreach ($patients as $p) {
-    echo "ID: {$p->id}, Name: {$p->full_name}, Email: {$p->email}, Blood: {$p->blood_type}\n";
+$donors = \App\Models\BloodDonor::all();
+foreach ($donors as $d) {
+    echo "ID: {$d->id}, Name: {$d->full_name}, Email: {$d->email}, Blood: {$d->blood_type}\n";
 }

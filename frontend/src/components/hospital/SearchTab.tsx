@@ -93,7 +93,7 @@ export function SearchTab({ selectedBlood, setSelectedBlood, city, setCity }: an
     })
       .then(res => res.json())
       .then(updatedDonor => {
-        setDonors(donors.map(d => (d.id === updatedDonor.id && d.is_patient === updatedDonor.is_patient) ? updatedDonor : d));
+        setDonors(donors.map(d => (d.id === updatedDonor.id) ? updatedDonor : d));
         setEditingDonor(null);
       })
       .catch(console.error);

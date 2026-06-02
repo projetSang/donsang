@@ -217,7 +217,7 @@
 
         <!-- Content -->
         <div class="content">
-            <div class="greeting">Bonjour {{ $patient->full_name }},</div>
+            <div class="greeting">Bonjour {{ $donor->full_name }},</div>
 
             <p class="message-text">
                 Une alerte urgente pour le groupe sanguin <strong class="highlight">{{ $alert->blood_type }}</strong> vient d'être lancée par l'établissement <strong>{{ $hospital->name }}</strong> situé à proximité de vous.

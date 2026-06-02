@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\Patient;
+
 use App\Models\Hospital;
 use App\Models\BloodDonor;
 use App\Models\User;
@@ -19,8 +19,6 @@ class AuthController extends Controller
             'email' => 'required|email',
             'password' => 'required',
         ]);
-
-        
 
         // Check for Admin (User model)
         $admin = User::where('email', $request->email)->first();
@@ -104,17 +102,14 @@ class AuthController extends Controller
     {
         $request->validate([
             'email' => 'required|email',
-            'user_type' => 'required|in:patient,hospital',
+            'user_type' => 'required|in:donor,hospital',
             'current_password' => 'required',
             'new_password' => 'required|min:6',
         ]);
 
         $user = null;
-        if ($request->user_type === 'patient') {
-            $user = Patient::where('email', $request->email)->first();
-            if (!$user) {
-                $user = BloodDonor::where('email', $request->email)->first();
-            }
+        if ($request->user_type === 'donor') {
+            $user = BloodDonor::where('email', $request->email)->first();
         } else {
             $user = Hospital::where('email', $request->email)->first();
         }
@@ -139,7 +134,7 @@ class AuthController extends Controller
     {
         $request->validate([
             'email' => 'required|email',
-            'user_type' => 'required|in:patient,hospital',
+            'user_type' => 'required|in:donor,hospital',
             'full_name' => 'sometimes|required|string|max:255',
             'phone' => 'nullable|string|max:50',
             'address' => 'nullable|string|max:500',
@@ -153,27 +148,17 @@ class AuthController extends Controller
         ]);
 
         $user = null;
-        if ($request->user_type === 'patient') {
-            $patient = Patient::where('email', $request->email)->first();
-            $donor = BloodDonor::where('email', $request->email)->first();
+        if ($request->user_type === 'donor') {
+            $user = BloodDonor::where('email', $request->email)->first();
 
-            if ($patient) {
-                $patient->update($request->only([
-                    'full_name', 'phone', 'address', 'birth_date', 'blood_type',
-                    'emergency_contact_name', 'emergency_contact_relation', 'emergency_contact_phone',
-                    'latitude', 'longitude'
-                ]));
-            }
-
-            if ($donor) {
-                $donorData = $request->only(['full_name', 'phone', 'blood_type']);
+            if ($user) {
+                // For donors, we map address to city if they use the same field in UI
+                $donorData = $request->only(['full_name', 'phone', 'blood_type', 'latitude', 'longitude']);
                 if ($request->filled('address')) {
                     $donorData['city'] = $request->address;
                 }
-                $donor->update($donorData);
+                $user->update($donorData);
             }
-
-            $user = $donor ?: $patient;
         } else {
             $user = Hospital::where('email', $request->email)->first();
             if ($user) {
@@ -183,8 +168,8 @@ class AuthController extends Controller
             }
         }
 
-        if ($user) {
-            $user->is_patient = ($user instanceof Patient) ? 1 : 0;
+        if ($user && $request->user_type === 'donor') {
+            $user->is_donor = 1;
         }
 
         return response()->json([
@@ -198,15 +183,12 @@ class AuthController extends Controller
     {
         $request->validate([
             'email' => 'required|email',
-            'user_type' => 'required|in:patient,hospital',
+            'user_type' => 'required|in:donor,hospital',
         ]);
 
         $user = null;
-        if ($request->user_type === 'patient') {
-            $user = Patient::where('email', $request->email)->first();
-            if (!$user) {
-                $user = BloodDonor::where('email', $request->email)->first();
-            }
+        if ($request->user_type === 'donor') {
+            $user = BloodDonor::where('email', $request->email)->first();
         } else {
             $user = Hospital::where('email', $request->email)->first();
         }
@@ -218,67 +200,13 @@ class AuthController extends Controller
             ], 404);
         }
 
-        if ($user && $request->user_type === 'patient') {
-            $user->is_patient = ($user instanceof Patient) ? 1 : 0;
+        if ($user && $request->user_type === 'donor') {
+            $user->is_donor = 1;
         }
 
         return response()->json([
             'status' => 'success',
             'user' => $user
-        ]);
-    }
-
-    public function generateShareToken(Request $request)
-    {
-        $patient = Patient::where('email', $request->email)->first();
-        if (!$patient) {
-            return response()->json(['message' => 'Utilisateur introuvable'], 404);
-        }
-        
-        $token = \Illuminate\Support\Str::random(32);
-        $patient->share_token = $token;
-        $patient->share_token_expires_at = now()->addDays(30);
-        $patient->save();
-
-        return response()->json([
-            'status' => 'success',
-            'share_token' => $token,
-            'expires_at' => $patient->share_token_expires_at
-        ]);
-    }
-
-    public function disableShareToken(Request $request)
-    {
-        $patient = Patient::where('email', $request->email)->first();
-        if ($patient) {
-            $patient->share_token = null;
-            $patient->share_token_expires_at = null;
-            $patient->save();
-        }
-        return response()->json(['status' => 'success']);
-    }
-
-    public function getSharedDossier($token)
-    {
-        $patient = Patient::where('share_token', $token)
-            ->where('share_token_expires_at', '>', now())
-            ->first();
-
-        if (!$patient) {
-            return response()->json(['status' => 'error', 'message' => 'Lien invalide ou expiré'], 404);
-        }
-
-        $patient->load('hospital');
-        $documents = \App\Models\MedicalDocument::where('patient_id', $patient->id)->orderBy('created_at', 'desc')->get();
-        $documents->transform(function ($doc) {
-            $doc->file_url = url('storage/' . $doc->file_path);
-            return $doc;
-        });
-        $patient->documents = $documents;
-
-        return response()->json([
-            'status' => 'success',
-            'patient' => $patient
         ]);
     }
 
@@ -290,21 +218,16 @@ class AuthController extends Controller
 
         $user = null;
         $name = '';
-        $patient = Patient::where('email', $request->email)->first();
-        if ($patient) {
-            $user = $patient;
-            $name = $patient->full_name;
+        
+        $donor = BloodDonor::where('email', $request->email)->first();
+        if ($donor) {
+            $user = $donor;
+            $name = $donor->full_name;
         } else {
-            $donor = BloodDonor::where('email', $request->email)->first();
-            if ($donor) {
-                $user = $donor;
-                $name = $donor->full_name;
-            } else {
-                $hospital = Hospital::where('email', $request->email)->first();
-                if ($hospital) {
-                    $user = $hospital;
-                    $name = $hospital->name;
-                }
+            $hospital = Hospital::where('email', $request->email)->first();
+            if ($hospital) {
+                $user = $hospital;
+                $name = $hospital->name;
             }
         }
 
@@ -382,10 +305,7 @@ class AuthController extends Controller
         }
 
         // Mettre à jour le mot de passe
-        $user = Patient::where('email', $request->email)->first();
-        if (!$user) {
-            $user = BloodDonor::where('email', $request->email)->first();
-        }
+        $user = BloodDonor::where('email', $request->email)->first();
         if (!$user) {
             $user = Hospital::where('email', $request->email)->first();
         }

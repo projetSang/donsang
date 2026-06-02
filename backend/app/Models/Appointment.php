@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Appointment extends Model
 {
     protected $fillable = [
-        'patient_id',
+        'blood_donor_id',
         'hospital_id',
         'appointment_date',
         'appointment_time',
@@ -15,9 +15,9 @@ class Appointment extends Model
         'notes'
     ];
 
-    public function patient()
+    public function bloodDonor()
     {
-        return $this->belongsTo(Patient::class, 'patient_id');
+        return $this->belongsTo(BloodDonor::class, 'blood_donor_id');
     }
 
     public function hospital()

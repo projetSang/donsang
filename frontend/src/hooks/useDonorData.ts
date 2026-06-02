@@ -2,24 +2,24 @@ import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { apiFetch } from "@/lib/api";
 
-export function usePatientData(userData: any, authLoading: boolean, logout: () => void) {
+export function useDonorData(userData: any, authLoading: boolean, logout: () => void) {
   const [documents, setDocuments] = useState<any[]>([]);
   const [notifications, setNotifications] = useState<any[]>([]);
   const [uploadingDoc, setUploadingDoc] = useState(false);
   const [shareLink, setShareLink] = useState("");
 
-  const fetchDocuments = async (patientId: number) => {
+  const fetchDocuments = async (donorId: number) => {
     try {
-      const data = await apiFetch(`/patients/${patientId}/documents`);
+      const data = await apiFetch(`/donors/${donorId}/documents`);
       setDocuments(data);
     } catch (e) {
       console.error("Error fetching documents", e);
     }
   };
 
-  const fetchNotifications = async (patientId: number) => {
+  const fetchNotifications = async (donorId: number) => {
     try {
-      const data = await apiFetch(`/patients/${patientId}/notifications`);
+      const data = await apiFetch(`/donors/${donorId}/notifications`);
       setNotifications(data);
     } catch (e: any) {
       if (e.message?.includes("404")) {
@@ -50,7 +50,7 @@ export function usePatientData(userData: any, authLoading: boolean, logout: () =
 
     setUploadingDoc(true);
     try {
-      const newDoc = await apiFetch(`/patients/${userData.id}/documents`, {
+      const newDoc = await apiFetch(`/donors/${userData.id}/documents`, {
         method: "POST",
         body: formData,
       });

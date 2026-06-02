@@ -11,9 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('patient_notifications', function (Blueprint $table) {
+        Schema::create('donor_notifications', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('patient_id')->nullable()->constrained('patients')->onDelete('cascade');
+            $table->foreignId('blood_donor_id')->nullable()->constrained('blood_donors')->onDelete('cascade');
             $table->string('title');
             $table->text('message')->nullable();
             $table->string('type')->default('normal'); // urgent, normal
@@ -27,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('patient_notifications');
+        Schema::dropIfExists('donor_notifications');
     }
 };

@@ -7,11 +7,11 @@ use Illuminate\Database\Eloquent\Model;
 class MedicalDocument extends Model
 {
     protected $fillable = [
-        'patient_id', 'name', 'type', 'category', 'file_path', 'date'
+        'blood_donor_id', 'name', 'type', 'category', 'file_path', 'date'
     ];
 
-    public function patient()
+    public function bloodDonor()
     {
-        return $this->belongsTo(Patient::class);
+        return $this->belongsTo(BloodDonor::class);
     }
 }

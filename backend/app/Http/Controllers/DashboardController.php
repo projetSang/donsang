@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\Patient;
 use App\Models\BloodDonor;
 use App\Models\Alert;
 use App\Models\Hospital;
@@ -25,7 +24,7 @@ class DashboardController extends Controller
         $alertsCount = $alertsQuery->count();
         // nombre de réponses disponibles pour les alertes
         $establishedContacts = \App\Models\AlertResponse::where('status', 'available')->count();//les reponse disponible pour les alertes
-        $patientsCount = 0;
+        $donorsCount = 0;
 
         $currentYear = date('Y');
 
@@ -62,7 +61,7 @@ class DashboardController extends Controller
             'established_contacts' => $establishedContacts,
             'critical_stocks' => "2/8",
             'alerts' => $alertsCount,
-            'patients' => $patientsCount,
+            'donors' => $donorsCount,
             'chart_data' => [
                 'donations' => $donationsData,
                 'requests' => $requestsData
@@ -70,95 +69,7 @@ class DashboardController extends Controller
         ]);
     }
 
-    public function getPatients(Request $request)
-    {
-        $hospitalId = $request->query('hospital_id');
-        if ($hospitalId) {
-            return response()->json(Patient::where('hospital_id', $hospitalId)->get());
-        }
-        return response()->json(Patient::all());
-    }
 
-    public function storePatient(Request $request)
-    {
-        // Check if patient already exists by CIN or Email
-        $existingPatient = null;
-        if ($request->filled('cin')) {
-            $existingPatient = Patient::where('cin', $request->cin)->first();
-        }
-        if (!$existingPatient && $request->filled('email')) {
-            $existingPatient = Patient::where('email', $request->email)->first();
-        }
-
-        if ($existingPatient) {
-            $validated = $request->validate([
-                'full_name' => 'required|string|max:255',
-                'email' => 'required|email|unique:patients,email,' . $existingPatient->id,
-                'blood_type' => 'required|string|max:10',
-                'admission_date' => 'required|date',
-                'hospital_id' => 'required|exists:hospitals,id',
-                'cin' => 'nullable|string|max:50',
-                'birth_date' => 'nullable|date',
-                'phone' => 'nullable|string|max:50',
-                'address' => 'nullable|string|max:500',
-                'height' => 'nullable|string|max:10',
-                'weight' => 'nullable|string|max:10',
-                'chronic_diseases' => 'nullable|array',
-                'allergies' => 'nullable|string',
-                'current_treatments' => 'nullable|string',
-                'medical_history' => 'nullable|string',
-            ]);
-
-            $existingPatient->update($validated);
-
-            return response()->json([
-                'patient' => $existingPatient,
-                'temporary_password' => null
-            ], 200);
-        }
-
-        $validated = $request->validate($this->patientRules());
-
-        $password = Str::random(10);// cree mdp auto avec 10 caracteres
-        $validated['password'] = $password;
-
-        $patient = Patient::create($validated);
-
-        // Envoyer l'email HTML professionnel
-        try {
-            $emailData = [
-                'patient' => $patient,
-                'password' => $password,
-                'appUrl' => config('app.frontend_url'),
-            ];
-            Mail::send('emails.welcome', $emailData, function ($message) use ($patient) {
-                $message->to($patient->email)
-                    ->subject('Bienvenue sur DonSang - Vos identifiants de connexion');
-            });
-        } catch (\Exception $e) {
-            \Log::error("Erreur d'envoi d'email : " . $e->getMessage());
-        }
-
-        return response()->json([
-            'patient' => $patient,
-            'temporary_password' => $password
-        ], 201);
-    }
-
-    public function updatePatient(Request $request, $id)
-    {
-        $patient = Patient::findOrFail($id);
-        $validated = $request->validate($this->patientRules($id));
-        $patient->update($validated);
-        return response()->json($patient);
-    }
-
-    public function deletePatient($id)
-    {
-        $patient = Patient::findOrFail($id);
-        $patient->delete();
-        return response()->json(['message' => 'Patient supprimé avec succès']);
-    }
 
     public function searchDonors(Request $request)
     {
@@ -194,7 +105,6 @@ class DashboardController extends Controller
             }
 
             if ($donor) {
-                $donor->is_patient = 0;
                 return response()->json([$donor]);
             }
 
@@ -202,7 +112,7 @@ class DashboardController extends Controller
         }
 
         // Initialize blood donors query
-        $donorsQuery = BloodDonor::select('*')->selectRaw('0 as is_patient');
+        $donorsQuery = BloodDonor::query();
 
         if ($bloodType) {
             $donorsQuery->where(function ($q) use ($bloodType) {
@@ -217,9 +127,7 @@ class DashboardController extends Controller
 
         $donors = $donorsQuery->get();
 
-        foreach ($donors as $d) {
-            $d->is_patient = 0;
-        }
+
 
         return response()->json($donors);
     }
@@ -228,7 +136,6 @@ class DashboardController extends Controller
     {
         $donor = BloodDonor::findOrFail($id);
         $donor->update($request->only(['full_name', 'cin', 'email', 'phone', 'city', 'blood_type', 'last_donation_date', 'donations_count']));
-        $donor->is_patient = 0;
         return response()->json($donor);
     }
 
@@ -295,12 +202,12 @@ class DashboardController extends Controller
         $alert = Alert::create($validated);
 
         // Notify matching donors
-        $this->notifyNearbyPatients($alert);
+        $this->notifyNearbyDonors($alert);
 
         return response()->json($alert->load('hospital'), 201);
     }
 
-    private function notifyNearbyPatients($alert)
+    private function notifyNearbyDonors($alert)
     {
         $hospital = Hospital::find($alert->hospital_id);
         if (!$hospital)
@@ -346,7 +253,7 @@ class DashboardController extends Controller
             // Send HTML Email
             try {
                 $emailData = [
-                    'patient' => $donor, // Keep name as patient to work with existing email templates
+                    'donor' => $donor,
                     'alert' => $alert,
                     'hospital' => $hospital,
                     'appUrl' => config('app.frontend_url'),
@@ -411,7 +318,7 @@ class DashboardController extends Controller
 
     public function getDocuments($id)
     {
-        $documents = \App\Models\MedicalDocument::where('patient_id', $id)->orderBy('created_at', 'desc')->get();
+        $documents = \App\Models\MedicalDocument::where('blood_donor_id', $id)->orderBy('created_at', 'desc')->get();
         // Add full URL to file_path
         $documents->transform(function ($doc) {
             $doc->file_url = url('storage/' . $doc->file_path);
@@ -434,7 +341,7 @@ class DashboardController extends Controller
         $path = $file->store('documents', 'public');
 
         $doc = \App\Models\MedicalDocument::create([
-            'patient_id' => $id,
+            'blood_donor_id' => $id,
             'name' => $request->name,
             'category' => $request->category ?: 'Autre',
             'type' => $file->getClientOriginalExtension(),
@@ -462,12 +369,7 @@ class DashboardController extends Controller
 
     public function getNotifications($id)
     {
-        $isPatient = false;
         $donor = BloodDonor::find($id);
-        if (!$donor) {
-            $donor = Patient::find($id);
-            $isPatient = true;
-        }
 
         if (!$donor) {
             return response()->json([]);
@@ -494,7 +396,7 @@ class DashboardController extends Controller
         $allCompatibleGroups = array_unique(array_merge($compatibleGroups, $altCompatibleGroups, ['Tous groupes']));
 
         // Fetch personal notifications
-        $personal = \App\Models\PatientNotification::where('patient_id', $id)
+        $personal = \App\Models\DonorNotification::where('blood_donor_id', $id)
             ->orderBy('created_at', 'desc')
             ->get()
             ->map(fn($n) => [
@@ -518,13 +420,7 @@ class DashboardController extends Controller
             });
         }
 
-        $responses = \App\Models\AlertResponse::where(function($q) use ($id, $isPatient) {
-            if ($isPatient) {
-                $q->where('patient_id', $id);
-            } else {
-                $q->where('blood_donor_id', $id);
-            }
-        })->pluck('status', 'alert_id')->toArray();
+        $responses = \App\Models\AlertResponse::where('blood_donor_id', $id)->pluck('status', 'alert_id')->toArray();
 
         $alerts = $alertsQuery->orderBy('created_at', 'desc')
             ->take(5)
@@ -552,8 +448,8 @@ class DashboardController extends Controller
             'type' => 'nullable|string|in:urgent,normal'
         ]);
 
-        $notification = \App\Models\PatientNotification::create([
-            'patient_id' => $id,
+        $notification = \App\Models\DonorNotification::create([
+            'blood_donor_id' => $id,
             'title' => $request->title,
             'message' => $request->message,
             'type' => $request->type ?? 'normal',
@@ -567,35 +463,26 @@ class DashboardController extends Controller
     {
         $request->validate([
             'alert_id' => 'required|integer',
-            'patient_id' => 'nullable|integer',
-            'blood_donor_id' => 'nullable|integer',
+            'blood_donor_id' => 'required|integer',
             'status' => 'required|string|in:available,unavailable',
         ]);
 
-        $donorId = $request->blood_donor_id ?? $request->patient_id;
+        $donorId = $request->blood_donor_id;
 
         if (!$donorId) {
             return response()->json(['status' => 'error', 'message' => 'Identifiant du donneur requis'], 400);
         }
 
         $donor = BloodDonor::find($donorId);
-        $isPatient = false;
-
-        if (!$donor) {
-            $donor = Patient::find($donorId);
-            $isPatient = true;
-        }
 
         if (!$donor) {
             return response()->json(['status' => 'error', 'message' => 'Donneur introuvable'], 404);
         }
 
-        $matchCondition = ['alert_id' => $request->alert_id];
-        if ($isPatient) {
-            $matchCondition['patient_id'] = $donor->id;
-        } else {
-            $matchCondition['blood_donor_id'] = $donor->id;
-        }
+        $matchCondition = [
+            'alert_id' => $request->alert_id,
+            'blood_donor_id' => $donor->id
+        ];
 
         $response = \App\Models\AlertResponse::updateOrCreate(
             $matchCondition,
@@ -617,7 +504,7 @@ class DashboardController extends Controller
             ->map(function ($r) {
                 return [
                     'id' => $r->id,
-                    'patient_name' => $r->bloodDonor ? $r->bloodDonor->full_name : 'Donneur anonyme',
+                    'donor_name' => $r->bloodDonor ? $r->bloodDonor->full_name : 'Donneur anonyme',
                     'blood_type' => $r->bloodDonor ? $r->bloodDonor->blood_type : 'Non spécifié',
                     'phone' => $r->bloodDonor ? $r->bloodDonor->phone : 'Non disponible',
                     'status' => $r->status,
@@ -628,26 +515,7 @@ class DashboardController extends Controller
         return response()->json($responses);
     }
 
-    private function patientRules($id = null)
-    {
-        return [
-            'full_name' => ($id ? 'sometimes|' : '') . 'required|string|max:255',
-            'email' => ($id ? 'sometimes|' : '') . 'required|email|unique:patients,email' . ($id ? ',' . $id : ''),
-            'blood_type' => ($id ? 'sometimes|' : '') . 'required|string|max:10',
-            'admission_date' => ($id ? 'sometimes|' : '') . 'required|date',
-            'hospital_id' => ($id ? 'nullable|' : 'required|') . 'exists:hospitals,id',
-            'cin' => 'nullable|string|max:50',
-            'birth_date' => 'nullable|date',
-            'phone' => 'nullable|string|max:50',
-            'address' => 'nullable|string|max:500',
-            'height' => 'nullable|string|max:10',
-            'weight' => 'nullable|string|max:10',
-            'chronic_diseases' => 'nullable|array',
-            'allergies' => 'nullable|string',
-            'current_treatments' => 'nullable|string',
-            'medical_history' => 'nullable|string',
-        ];
-    }
+
 
     private function alertRules($id = null)
     {
@@ -675,7 +543,7 @@ class DashboardController extends Controller
             'last_donation_date' => 'nullable|date',
         ];
     }
-    //fonction pour trouver les hopitaux proches en fonction de la localisation du patient
+    //fonction pour trouver les hopitaux proches en fonction de la localisation du donneur
     public function getNearbyHospitals(Request $request)
     {
         $request->validate([

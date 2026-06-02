@@ -40,8 +40,8 @@ Route::put('/contact-messages/{id}/status', [ContactMessageController::class, 'u
 Route::post('/alerts/respond', [DashboardController::class, 'respondToAlert']);
 Route::get('/hospital/alerts/{id}/responses', [DashboardController::class, 'getAlertResponses']);
 
-Route::get('/patients/{id}/documents', [DashboardController::class, 'getDocuments']);
-Route::post('/patients/{id}/documents', [DashboardController::class, 'uploadDocument']);
+Route::get('/donors/{id}/documents', [DashboardController::class, 'getDocuments']);
+Route::post('/donors/{id}/documents', [DashboardController::class, 'uploadDocument']);
 
 Route::post('/assistant/chat', [AssistantController::class, 'chat']);
 
@@ -51,12 +51,11 @@ Route::post('/admin/hospitals', [AdminController::class, 'storeHospital']);
 Route::put('/admin/hospitals/{id}', [AdminController::class, 'updateHospital']);
 Route::delete('/admin/hospitals/{id}', [AdminController::class, 'deleteHospital']);
 
-// Patient/Donor Notification Route
-Route::get('/patients/{id}/notifications', [DashboardController::class, 'getNotifications']);
+Route::get('/donors/{id}/notifications', [DashboardController::class, 'getNotifications']);
 
 // Appointment system routes
 Route::post('/appointments', [AppointmentController::class, 'store']);
-Route::get('/patients/{id}/appointments', [AppointmentController::class, 'getPatientAppointments']);
+Route::get('/donors/{id}/appointments', [AppointmentController::class, 'getDonorAppointments']);
 Route::get('/hospitals/{id}/appointments', [AppointmentController::class, 'getHospitalAppointments']);
 Route::put('/appointments/{id}/status', [AppointmentController::class, 'updateStatus']);
 Route::get('/public-hospitals', [AppointmentController::class, 'hospitalsList']);

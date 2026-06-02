@@ -284,7 +284,7 @@ export const translations = {
       title: "Oups ! Page non trouvée",
       returnHome: "Retour à l'accueil",
     },
-    patientDashboard: {
+    donorDashboard: {
       profile: "Mon profil",
       appointments: "Mes Rendez-vous",
       certificate: "Mon certificat",
@@ -487,7 +487,7 @@ export const translations = {
       bloodType: "Groupe Sanguin",
       compatible: "Compatible",
       medicalAlerts: "Alertes Médicales & Chroniques",
-      noChronicDisease: "Aucune pathologie chronique signalée par le patient.",
+      noChronicDisease: "Aucune pathologie chronique signalée par le donneur.",
       medicalSummary: "Synthèse Médicale",
       knownAllergies: "Allergies connues",
       noAllergies: "Aucune allergie signalée",
@@ -775,7 +775,7 @@ export const translations = {
       title: "Oops! Page not found",
       returnHome: "Return to Home",
     },
-    patientDashboard: {
+    donorDashboard: {
       profile: "My profile",
       appointments: "My Appointments",
       certificate: "My certificate",
@@ -978,7 +978,7 @@ export const translations = {
       bloodType: "Blood Type",
       compatible: "Compatible",
       medicalAlerts: "Medical Alerts & Chronic Conditions",
-      noChronicDisease: "No chronic disease reported by the patient.",
+      noChronicDisease: "No chronic disease reported by the donor.",
       medicalSummary: "Medical Summary",
       knownAllergies: "Known allergies",
       noAllergies: "No allergies reported",
@@ -1266,7 +1266,7 @@ export const translations = {
       title: "عذراً! الصفحة غير موجودة",
       returnHome: "العودة إلى الصفحة الرئيسية",
     },
-    patientDashboard: {
+    donorDashboard: {
       profile: "ملفي الشخصي",
       appointments: "مواعيدي",
       certificate: "شهادتي",

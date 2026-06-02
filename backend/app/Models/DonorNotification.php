@@ -4,9 +4,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class AlertResponse extends Model
+class DonorNotification extends Model
 {
-    protected $fillable = ['alert_id', 'blood_donor_id', 'status'];
+    protected $fillable = ['blood_donor_id', 'title', 'message', 'type', 'is_read'];
 
     public function bloodDonor()
     {

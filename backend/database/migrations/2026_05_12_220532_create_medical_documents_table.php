@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('medical_documents', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('patient_id')->constrained('patients')->onDelete('cascade');
+            $table->foreignId('blood_donor_id')->constrained('blood_donors')->onDelete('cascade');
             $table->string('name');
             $table->string('type')->nullable(); // PDF, Image, etc.
             $table->string('category')->nullable(); // Ordonnance, Analyse, Imagerie

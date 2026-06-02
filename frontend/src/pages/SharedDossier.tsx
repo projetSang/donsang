@@ -36,7 +36,7 @@ const DossierHeader = ({ onPrint, logoUrl, t }: { onPrint: () => void, logoUrl: 
   </>
 );
 
-const PatientSidebar = ({ patient, t }: { patient: any, t: any }) => (
+const DonorSidebar = ({ donor, t }: { donor: any, t: any }) => (
   <div className="space-y-6">
     <div className="bg-white rounded-3xl border border-slate-100 p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] relative overflow-hidden group">
       <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16 transition-transform group-hover:scale-110 duration-700" />
@@ -45,19 +45,19 @@ const PatientSidebar = ({ patient, t }: { patient: any, t: any }) => (
         <div className="h-24 w-24 bg-slate-50 rounded-full flex items-center justify-center border-4 border-white shadow-xl mb-4">
           <User className="h-12 w-12 text-slate-400" />
         </div>
-        <h2 className="font-black text-2xl text-slate-900">{patient.full_name}</h2>
+        <h2 className="font-black text-2xl text-slate-900">{donor.full_name}</h2>
         <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-slate-100 text-slate-600 rounded-full text-xs font-bold mt-2 uppercase tracking-wide">
-          CIN: {patient.cin || t.sharedDossier.notProvided}
+          CIN: {donor.cin || t.sharedDossier.notProvided}
         </div>
       </div>
 
       <div className="space-y-4 pt-6 border-t border-slate-50">
         {[
-          { icon: Phone, text: patient.phone || t.sharedDossier.notProvided, label: t.sharedDossier.phone },
-          { icon: MapPin, text: patient.address || t.sharedDossier.notProvidedF, label: t.sharedDossier.address },
-          { icon: Calendar, text: patient.birth_date || t.sharedDossier.notProvidedF, label: t.sharedDossier.birthDate },
-          { icon: Activity, text: patient.height ? `${patient.height} cm` : "N/A", label: t.sharedDossier.height },
-          { icon: Droplets, text: patient.weight ? `${patient.weight} kg` : "N/A", label: t.sharedDossier.weight }
+          { icon: Phone, text: donor.phone || t.sharedDossier.notProvided, label: t.sharedDossier.phone },
+          { icon: MapPin, text: donor.address || t.sharedDossier.notProvidedF, label: t.sharedDossier.address },
+          { icon: Calendar, text: donor.birth_date || t.sharedDossier.notProvidedF, label: t.sharedDossier.birthDate },
+          { icon: Activity, text: donor.height ? `${donor.height} cm` : "N/A", label: t.sharedDossier.height },
+          { icon: Droplets, text: donor.weight ? `${donor.weight} kg` : "N/A", label: t.sharedDossier.weight }
         ].map((item, i) => (
           <div key={i} className="flex flex-col gap-1">
             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{item.label}</span>
@@ -79,7 +79,7 @@ const PatientSidebar = ({ patient, t }: { patient: any, t: any }) => (
       <div className="relative z-10">
         <p className="text-primary-foreground/80 text-xs font-bold uppercase tracking-widest mb-2">{t.sharedDossier.bloodType}</p>
         <div className="flex items-baseline gap-2">
-          <h4 className="text-6xl font-black text-white drop-shadow-md">{patient.blood_type || "??"}</h4>
+          <h4 className="text-6xl font-black text-white drop-shadow-md">{donor.blood_type || "??"}</h4>
           <span className="text-white/60 font-bold">Rh+</span>
         </div>
         <div className="mt-4 inline-flex items-center gap-2 px-3 py-1 bg-white/10 backdrop-blur-md rounded-full text-[10px] font-bold text-white uppercase tracking-wider">
@@ -90,7 +90,7 @@ const PatientSidebar = ({ patient, t }: { patient: any, t: any }) => (
   </div>
 );
 
-const MedicalSection = ({ patient, diseases, t }: { patient: any, diseases: string[], t: any }) => (
+const MedicalSection = ({ donor, diseases, t }: { donor: any, diseases: string[], t: any }) => (
   <div className="lg:col-span-2 space-y-6">
     <div className="bg-red-50/50 rounded-3xl border border-red-100 p-8 shadow-sm">
       <h4 className="font-black text-red-900 mb-6 flex items-center gap-2 uppercase tracking-wider text-sm">
@@ -116,9 +116,9 @@ const MedicalSection = ({ patient, diseases, t }: { patient: any, diseases: stri
       </h4>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {[
-          { label: t.sharedDossier.knownAllergies, value: patient.allergies || t.sharedDossier.noAllergies, icon: AlertCircle },
-          { label: t.sharedDossier.currentTreatments, value: patient.current_treatments || t.sharedDossier.noTreatments, icon: Activity },
-          { label: t.sharedDossier.familyHistory, value: patient.medical_history || t.sharedDossier.noHistory, full: true, icon: FileText }
+          { label: t.sharedDossier.knownAllergies, value: donor.allergies || t.sharedDossier.noAllergies, icon: AlertCircle },
+          { label: t.sharedDossier.currentTreatments, value: donor.current_treatments || t.sharedDossier.noTreatments, icon: Activity },
+          { label: t.sharedDossier.familyHistory, value: donor.medical_history || t.sharedDossier.noHistory, full: true, icon: FileText }
         ].map((item, i) => (
           <div key={i} className={item.full ? "md:col-span-2" : ""}>
             <div className="flex items-center gap-2 mb-2">
@@ -138,7 +138,7 @@ const MedicalSection = ({ patient, diseases, t }: { patient: any, diseases: stri
         <FileText className="h-5 w-5 text-primary" /> {t.sharedDossier.externalDocs}
       </h4>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        {patient.documents?.length > 0 ? patient.documents.map((doc: any) => (
+        {donor.documents?.length > 0 ? donor.documents.map((doc: any) => (
           <div key={doc.id} className="group flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100 hover:bg-white hover:border-primary/20 hover:shadow-md transition-all duration-300">
             <div className="flex items-center gap-3">
               <div className="h-10 w-10 rounded-xl bg-white flex items-center justify-center border border-slate-100 group-hover:bg-primary/5 transition-colors">
@@ -173,15 +173,15 @@ export default function SharedDossier() {
   const { token } = useParams<{ token: string }>();
   const navigate = useNavigate();
   const { user, userType, isAuthenticated, loading: authLoading } = useAuth();
-  const [patient, setPatient] = useState<any>(null);
+  const [donor, setDonor] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const { t } = useLanguage();
 
   useEffect(() => {
-    if (!authLoading && isAuthenticated && userType === "patient") {
-      const patientSlug = slugify(user?.full_name || user?.name || "patient");
-      navigate(`/Donsang/Mon-dossier/${patientSlug}`);
+    if (!authLoading && isAuthenticated && userType === "donor") {
+      const donorSlug = slugify(user?.full_name || user?.name || "donor");
+      navigate(`/Donsang/Donneur/${donorSlug}`);
       return;
     }
 
@@ -190,7 +190,7 @@ export default function SharedDossier() {
         const data = await apiFetch(`/shared-dossier/${token}`);
 
         if (data.status === "success") {
-          setPatient(data.patient);
+          setDonor(data.patient);
         } else {
           setError(data.message || t.sharedDossier.dossierNotFound);
         }
@@ -204,7 +204,7 @@ export default function SharedDossier() {
     if (token) {
       fetchDossier();
     }
-  }, [token]); // Removed auth redirect to allow patient to preview their own link
+  }, [token]);
 
   if (authLoading || loading) {
     return (
@@ -215,7 +215,7 @@ export default function SharedDossier() {
     );
   }
 
-  if (error || !patient) {
+  if (error || !donor) {
     return (
       <div className="min-h-screen bg-muted/30 pt-16 flex flex-col items-center justify-center">
         <div className="bg-card p-8 rounded-2xl shadow-sm max-w-md text-center border border-border">
@@ -230,10 +230,10 @@ export default function SharedDossier() {
     );
   }
 
-  const diseases = Array.isArray(patient.chronic_diseases)
-    ? patient.chronic_diseases
-    : (typeof patient.chronic_diseases === 'string' && patient.chronic_diseases.startsWith('[')
-      ? JSON.parse(patient.chronic_diseases)
+  const diseases = Array.isArray(donor.chronic_diseases)
+    ? donor.chronic_diseases
+    : (typeof donor.chronic_diseases === 'string' && donor.chronic_diseases.startsWith('[')
+      ? JSON.parse(donor.chronic_diseases)
       : []);
 
   const handlePrint = () => {
@@ -246,8 +246,8 @@ export default function SharedDossier() {
       <main className="container mx-auto px-4 py-8 max-w-5xl">
         <DossierHeader onPrint={handlePrint} logoUrl="/logo_sang.png" t={t} />
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <PatientSidebar patient={patient} t={t} />
-          <MedicalSection patient={patient} diseases={diseases} t={t} />
+          <DonorSidebar donor={donor} t={t} />
+          <MedicalSection donor={donor} diseases={diseases} t={t} />
         </div>
       </main>
       <div className="no-print"><Footer /></div>

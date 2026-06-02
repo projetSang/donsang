@@ -187,7 +187,7 @@
 
         <!-- Content -->
         <div class="content">
-            <div class="greeting">Bonjour {{ $patient->full_name }},</div>
+            <div class="greeting">Bonjour {{ $donor->full_name }},</div>
 
             <p class="message-text">
                 Nous sommes heureux de vous informer que votre dossier médical a été créé avec succès sur la plateforme <strong>DonSang</strong>. Voici vos identifiants de connexion :
@@ -198,7 +198,7 @@
                 <div class="credentials-title">🔐 Vos identifiants de connexion</div>
                 <div class="credential-item">
                     <div class="credential-label">📧 Email</div>
-                    <div class="credential-value">{{ $patient->email }}</div>
+                    <div class="credential-value">{{ $donor->email }}</div>
                 </div>
                 <div class="credential-item">
                     <div class="credential-label">🔑 Mot de passe</div>

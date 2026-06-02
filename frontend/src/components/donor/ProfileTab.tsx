@@ -54,7 +54,7 @@ export function ProfileTab({
 }: ProfileTabProps) {
   const { toast } = useToast();
   const { t } = useLanguage();
-  const dashboardT = t.patientDashboard;
+  const dashboardT = t.donorDashboard;
   const [showMap, setShowMap] = useState(false);
 
   const ChangeView = ({ center, zoom }: { center: [number, number], zoom: number }) => {

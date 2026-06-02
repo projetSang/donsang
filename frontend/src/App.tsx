@@ -38,7 +38,7 @@ const HospitalRedirect = () => {
   return <Navigate to="/login" replace />;
 };
 
-import PatientDashboard from "./pages/PatientDashboard.tsx";
+import DonorDashboard from "./pages/DonorDashboard.tsx";
 
 const routesConfig = [
   { path: "/", element: <Index /> },
@@ -51,7 +51,7 @@ const routesConfig = [
   { path: "/reset-password", element: <ResetPassword /> },
   { path: "/hospital", element: <HospitalRedirect />, protected: true },
   { path: "/Donsang/:hospitalName", element: <HospitalDashboard />, protected: true },
-  { path: "/Donsang/Mon-dossier/:userName", element: <PatientDashboard />, protected: true },
+  { path: "/Donsang/Donneur/:userName", element: <DonorDashboard />, protected: true },
   { path: "/admin", element: <AdminDashboard />, protected: true },
   { path: "*", element: <NotFound /> },
 ];

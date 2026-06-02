@@ -27,9 +27,9 @@ interface Appointment {
   hospital: Hospital;
 }
 
-export function AppointmentsTab({ patientId }: { patientId: number }) {
+export function AppointmentsTab({ donorId }: { donorId: number }) {
   const { t } = useLanguage();
-  const dashboardT = t.patientDashboard;
+  const dashboardT = t.donorDashboard;
 
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [hospitals, setHospitals] = useState<Hospital[]>([]);
@@ -54,7 +54,7 @@ export function AppointmentsTab({ patientId }: { patientId: number }) {
 
   const fetchAppointments = async () => {
     try {
-      const data = await apiFetch(`/patients/${patientId}/appointments`);
+      const data = await apiFetch(`/donors/${donorId}/appointments`);
       if (data.status === "success") {
         setAppointments(data.appointments);
       }
@@ -75,13 +75,13 @@ export function AppointmentsTab({ patientId }: { patientId: number }) {
   };
 
   useEffect(() => {
-    if (patientId) {
+    if (donorId) {
       setLoading(true);
       Promise.all([fetchAppointments(), fetchHospitals()]).finally(() => {
         setLoading(false);
       });
     }
-  }, [patientId]);
+  }, [donorId]);
 
   const handleBookAppointment = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -110,7 +110,7 @@ export function AppointmentsTab({ patientId }: { patientId: number }) {
       const response = await apiFetch("/appointments", {
         method: "POST",
         body: JSON.stringify({
-          patient_id: patientId,
+          blood_donor_id: donorId,
           hospital_id: Number.parseInt(selectedHospitalId),
           appointment_date: appointmentDate,
           appointment_time: appointmentTime,

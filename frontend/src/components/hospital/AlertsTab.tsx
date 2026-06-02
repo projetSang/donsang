@@ -333,6 +333,7 @@ export function AlertsTab({ showNewAlert, setShowNewAlert, onViewDonors }: any) 
                 onClick={() => setShowResponsesModal(false)}
                 className="text-slate-400 hover:text-white hover:bg-white/10"
               >
+
                 <X className="h-6 w-6" />
               </Button>
             </div>
@@ -353,10 +354,10 @@ export function AlertsTab({ showNewAlert, setShowNewAlert, onViewDonors }: any) 
                         <div className={`h-10 w-10 rounded-full flex items-center justify-center font-bold text-white shadow-sm ${
                           r.status === 'available' ? 'bg-green-500' : 'bg-slate-400'
                         }`}>
-                          {r.patient_name.charAt(0)}
+                          {r.donor_name.charAt(0)}
                         </div>
                         <div className="min-w-0">
-                          <div className="font-bold text-slate-900 break-words">{r.patient_name}</div>
+                          <div className="font-bold text-slate-900 break-words">{r.donor_name}</div>
                           <div className="text-xs text-slate-500 flex flex-wrap items-center gap-2 sm:gap-3 mt-0.5">
                             <span className="flex items-center gap-1"><Droplets className="h-3 w-3" /> {r.blood_type}</span>
                             <span className="flex items-center gap-1"><Phone className="h-3 w-3" /> {r.phone || "N/A"}</span>

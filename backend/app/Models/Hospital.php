@@ -12,10 +12,6 @@ class Hospital extends Model
         'password' => 'hashed',
     ];
     
-    public function patients() {
-        return $this->hasMany(Patient::class);
-    }
-    
     public function alerts() {
         return $this->hasMany(Alert::class);
     }

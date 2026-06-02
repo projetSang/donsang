@@ -113,14 +113,14 @@
         </div>
         
         <div class="content">
-            <div class="greeting">Bonjour {{ $patient->full_name }},</div>
+            <div class="greeting">Bonjour {{ $donor->full_name }},</div>
             
             <p>Nous vous remercions infiniment pour votre réactivité et votre générosité. Votre disponibilité est cruciale.</p>
             
             <p>Nous vous confirmons votre rendez-vous pour effectuer votre don de sang.</p>
             
             <div class="card">
-                <p><strong>Groupe sanguin demandé :</strong> <span class="highlight">{{ $patient->blood_type }}</span></p>
+                <p><strong>Groupe sanguin demandé :</strong> <span class="highlight">{{ $donor->blood_type }}</span></p>
                 <p><strong>Lieu :</strong> {{ $hospitalName }}</p>
                 <p><strong>Ville :</strong> {{ $hospitalCity }}</p>
                 <p><strong>Heure :</strong> Dans les plus brefs délais</p>

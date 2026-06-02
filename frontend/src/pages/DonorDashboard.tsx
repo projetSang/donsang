@@ -7,21 +7,21 @@ import {
   User, Droplets, FileText, Share2, Bell, RefreshCw, Crown, Award, Printer, Download, Calendar
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import { usePatientData } from "@/hooks/usePatientData";
+import { useDonorData } from "@/hooks/useDonorData";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { apiFetch } from "@/lib/api";
 import { slugify } from "@/lib/utils";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 
 // Import sub-components
-import { ProfileTab } from "@/components/patient/ProfileTab";
-import { NotificationsTab } from "@/components/patient/NotificationsTab";
-import { AppointmentsTab } from "@/components/patient/AppointmentsTab";
+import { ProfileTab } from "@/components/donor/ProfileTab";
+import { NotificationsTab } from "@/components/donor/NotificationsTab";
+import { AppointmentsTab } from "@/components/donor/AppointmentsTab";
 
-export default function PatientDashboard() {
+export default function DonorDashboard() {
   const { user: userData, updateUser, loading: authLoading, logout } = useAuth();
   const { t, lang, isRtl } = useLanguage();
-  const dashboardT = t.patientDashboard;
+  const dashboardT = t.donorDashboard;
 
   const [activeTab, setActiveTab] = useState("profile");
 
@@ -35,7 +35,7 @@ export default function PatientDashboard() {
   const {
     notifications,
     respondToAlert: handleAvailabilityResponse
-  } = usePatientData(userData, authLoading, logout);
+  } = useDonorData(userData, authLoading, logout);
 
   const [passwords, setPasswords] = useState({ current: "", new: "", confirm: "" });
   const [passError, setPassError] = useState("");
@@ -53,7 +53,7 @@ export default function PatientDashboard() {
         full_name: userData.full_name,
         email: userData.email,
         phone: userData.phone || "",
-        address: userData.address || "",
+        address: userData.city || userData.address || "",
         birth_date: userData.birth_date || "",
         blood_type: userData.blood_type || "",
         emergency_contact_name: userData.emergency_contact_name || "",
@@ -72,7 +72,7 @@ export default function PatientDashboard() {
         method: "POST",
         body: JSON.stringify({
           email: userData.email,
-          user_type: "patient"
+          user_type: "donor"
         })
       });
       if (data.status === "success") {
@@ -105,7 +105,7 @@ export default function PatientDashboard() {
         method: "POST",
         body: JSON.stringify({
           email: userData.email,
-          user_type: "patient",
+          user_type: "donor",
           current_password: passwords.current,
           new_password: passwords.new
         }),
@@ -134,7 +134,7 @@ export default function PatientDashboard() {
         method: "POST",
         body: JSON.stringify({
           ...profileData,
-          user_type: "patient"
+          user_type: "donor"
         }),
       });
 
@@ -167,9 +167,9 @@ export default function PatientDashboard() {
     return <Navigate to="/login" replace />;
   }
 
-  const expectedSlug = slugify(userData.full_name || userData.name || "patient");
+  const expectedSlug = slugify(userData.full_name || userData.name || "donor");
   if (userName !== expectedSlug) {
-    return <Navigate to={`/Donsang/Mon-dossier/${expectedSlug}`} replace />;
+    return <Navigate to={`/Donsang/Donneur/${expectedSlug}`} replace />;
   }
   const count = userData.donations_count || 0;
   let sealTitle = "BRONZE";
@@ -684,7 +684,7 @@ export default function PatientDashboard() {
           )}
 
           {activeTab === "appointments" && (
-            <AppointmentsTab patientId={userData.id} />
+            <AppointmentsTab donorId={userData.id} />
           )}
 
           {activeTab === "notifications" && (

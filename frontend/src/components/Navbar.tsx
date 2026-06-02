@@ -24,7 +24,7 @@ export function Navbar({}: NavbarProps) {
 
   const displayName = user?.full_name || user?.name || t.nav.signIn;
   const hospitalPath = user?.name ? `/Donsang/${slugify(user.name)}` : "/hospital";
-  const patientPath = user?.full_name ? `/Donsang/Mon-dossier/${slugify(user.full_name)}` : "/login";
+  const donorPath = user?.full_name ? `/Donsang/Donneur/${slugify(user.full_name)}` : "/login";
 
   const activeNavItems = (() => {
     const items = [
@@ -39,8 +39,8 @@ export function Navbar({}: NavbarProps) {
         items.push({ label: t.nav.adminDashboard, path: hospitalPath });
       } else if (userType === "admin") {
         items.push({ label: t.nav.adminDashboard, path: "/admin" });
-      } else if (userType === "patient") {
-        items.push({ label: t.nav.myFile, path: patientPath });
+      } else if (userType === "donor") {
+        items.push({ label: t.nav.myFile, path: donorPath });
       }
     }
 
@@ -119,7 +119,7 @@ export function Navbar({}: NavbarProps) {
           {isAuthenticated ? (
             <div className="flex items-center gap-3 text-white">
               <Link
-                to={userType === "hospital" ? hospitalPath : userType === "admin" ? "/admin" : patientPath}
+                to={userType === "hospital" ? hospitalPath : userType === "admin" ? "/admin" : donorPath}
                 className="flex items-center gap-3 text-white hover:opacity-90 transition-opacity cursor-pointer"
               >
                 <span className="text-sm font-bold hidden xl:block truncate max-w-[120px]">{displayName}</span>
@@ -193,7 +193,7 @@ export function Navbar({}: NavbarProps) {
           {isAuthenticated ? (
             <div className="flex flex-col gap-4 w-full">
               <Link
-                to={userType === "hospital" ? hospitalPath : userType === "admin" ? "/admin" : patientPath}
+                to={userType === "hospital" ? hospitalPath : userType === "admin" ? "/admin" : donorPath}
                 className="flex items-center gap-3 p-3.5 rounded-2xl bg-slate-50 hover:bg-slate-100 transition-colors"
                 onClick={() => setMobileOpen(false)}
               >
