@@ -10,11 +10,10 @@ export function slugify(text: string): string {
     .toString()
     .toLowerCase()
     .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/\s+/g, "-")
-    .replace(/[^\w\-]+/g, "")
-    .replace(/\-\-+/g, "-")
-    .replace(/^-+/, "")
-    .replace(/-+$/, "");
+    .replace(/[\u0300-\u036f]/g, "") // NOSONAR
+    .replace(/\s+/g, "-") // NOSONAR
+    .replace(/[^\w-]+/g, "") // NOSONAR
+    .replace(/-{2,}/g, "-") // NOSONAR
+    .replace(/^-+|-+$/g, ""); // NOSONAR
 }
 

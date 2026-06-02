@@ -1,7 +1,11 @@
-const BASE_URL = "https://backend-production-4a57.up.railway.app/api";
+const BASE_URL = (import.meta.env.VITE_API_BASE_URL || "/api").replace(/\/$/, "");
+
+export const apiUrl = (endpoint: string) => {
+  return `${BASE_URL}${endpoint.startsWith("/") ? endpoint : `/${endpoint}`}`;
+};
 
 export const apiFetch = async (endpoint: string, options: RequestInit = {}) => {
-  const url = `${BASE_URL}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`;
+  const url = apiUrl(endpoint);
   
   const isFormData = options.body instanceof FormData;
   
@@ -14,11 +18,7 @@ export const apiFetch = async (endpoint: string, options: RequestInit = {}) => {
     headers["Content-Type"] = "application/json";
   }
 
-  console.log(`API Request: ${options.method || 'GET'} ${url}`, options.body);
-
   const response = await fetch(url, { ...options, headers });
-  
-  console.log(`API Response: ${response.status} ${response.statusText}`);
   
   if (!response.ok) {
     let errorData;
@@ -26,20 +26,19 @@ export const apiFetch = async (endpoint: string, options: RequestInit = {}) => {
       errorData = await response.json();
     } catch (e) {
       const text = await response.text();
-      console.error('API Error Response (text):', text);
       throw new Error(`API Error: ${response.status} - ${text}`);
     }
-    
-    console.error('API Error Data:', errorData);
-    
+
     // Handle validation errors
     if (response.status === 422 && errorData.errors) {
-      console.error('Validation errors:', errorData.errors);
       const errorMessages = Object.values(errorData.errors).flat();
-      throw new Error(errorMessages.join(', ') || errorData.message || `API Error: ${response.status}`);
+      throw Object.assign(
+        new Error(errorMessages.map(String).join(", ") || errorData.message || `API Error: ${response.status}`),
+        errorData
+      );
     }
-    
-    throw new Error(errorData.message || `API Error: ${response.status}`);
+
+    throw Object.assign(new Error(errorData.message || `API Error: ${response.status}`), errorData);
   }
   
   return response.json();

@@ -314,20 +314,21 @@ class AuthController extends Controller
                 'message' => 'Aucun utilisateur trouvé avec cette adresse email.'
             ], 404);
         }
+        // generer le token
+        $token = bin2hex(random_bytes(32));
+
+        \DB::table('password_reset_tokens')->updateOrInsert(
+            ['email' => $request->email],
+            [
+                'token' => $token,
+                'created_at' => now()
+            ]
+        );
+
+        $frontendUrl = rtrim((string) config('app.frontend_url'), '/');
+        $resetUrl = $frontendUrl . '/reset-password?token=' . $token . '&email=' . urlencode($request->email);
+
         try {
-            //generer le token 
-            $token = bin2hex(random_bytes(32));
-
-            \DB::table('password_reset_tokens')->updateOrInsert(
-                ['email' => $request->email],
-                [
-                    'token' => $token,
-                    'created_at' => now()
-                ]
-            );
-
-            $resetUrl = 'http://localhost:8080/reset-password?token=' . $token . '&email=' . urlencode($request->email);
-
             $emailData = [
                 'name' => $name,
                 'resetUrl' => $resetUrl,
@@ -336,16 +337,12 @@ class AuthController extends Controller
                 $message->to($request->email)
                     ->subject('Réinitialisation de votre mot de passe - DonSang');
             });
-        } catch (\Throwable $e) {
-            \Log::error("Erreur dans sendResetLinkEmail : " . $e->getMessage());
-            // Pour le développement local, si le serveur de mail ou la DB échoue, on peut aussi retourner le token pour faciliter le test
-            $fallbackToken = isset($token) ? $token : bin2hex(random_bytes(32));
-            $fallbackResetUrl = 'http://localhost:8080/reset-password?token=' . $fallbackToken . '&email=' . urlencode($request->email);
+        } catch (\Exception $e) {
+            \Log::error("Erreur d'envoi d'email de réinitialisation : " . $e->getMessage());
             return response()->json([
-                'status' => 'success',
-                'message' => 'Lien de réinitialisation généré (erreur d\'envoi email ou base de données)',
-                'dev_reset_url' => $fallbackResetUrl
-            ]);
+                'status' => 'error',
+                'message' => 'Impossible d\'envoyer l\'email de réinitialisation pour le moment.'
+            ], 500);
         }
 
         return response()->json([

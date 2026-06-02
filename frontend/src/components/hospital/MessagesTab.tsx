@@ -102,9 +102,11 @@ export function MessagesTab() {
                 }`}
               >
                 {/* Collapsed Header */}
-                <div
-                  className="flex items-center justify-between p-4 cursor-pointer hover:bg-slate-50/50 rounded-xl transition-colors"
+                <button
+                  type="button"
+                  className="w-full flex items-center justify-between p-4 cursor-pointer hover:bg-slate-50/50 rounded-xl transition-colors text-left"
                   onClick={() => setExpandedId(expandedId === msg.id ? null : msg.id)}
+                  aria-expanded={expandedId === msg.id}
                 >
                   <div className="flex items-center gap-4 min-w-0">
                     <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/10 flex items-center justify-center shrink-0">
@@ -134,7 +136,7 @@ export function MessagesTab() {
                       : <ChevronDown className="h-4 w-4 text-slate-400" />
                     }
                   </div>
-                </div>
+                </button>
 
                 {/* Expanded Content */}
                 {expandedId === msg.id && (

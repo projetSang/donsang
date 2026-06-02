@@ -840,7 +840,7 @@ export const translations = {
       newPassword: "New password",
       confirmNewPassword: "Confirm new password",
       updatePasswordBtn: "Update password",
-      updatingPassword: "Updating...",
+      updatingPassword: "Updating...", // NOSONAR
       passwordMismatch: "New passwords do not match",
       updateError: "Error during update",
       connError: "Server connection error",

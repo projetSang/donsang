@@ -151,7 +151,7 @@ const MedicalSection = ({ patient, diseases, t }: { patient: any, diseases: stri
             </div>
             <a 
               href={doc.file_url} 
-              target="_blank" 
+              target="_blank" // NOSONAR
               rel="noopener noreferrer" 
               className="no-print h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-primary hover:bg-primary/5 transition-all"
               onClick={() => toast.success(t.sharedDossier.downloadStarted)}

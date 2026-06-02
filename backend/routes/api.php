@@ -61,24 +61,3 @@ Route::get('/hospitals/{id}/appointments', [AppointmentController::class, 'getHo
 Route::put('/appointments/{id}/status', [AppointmentController::class, 'updateStatus']);
 Route::get('/public-hospitals', [AppointmentController::class, 'hospitalsList']);
 
-// TEMPORARY FIX - Remove after running once
-Route::get('/fix-admin', function () {
-    $user = \App\Models\User::where('email', 'Donsang@donsang.ma')->first();
-    if (!$user) {
-        $exists = \App\Models\User::where('email', 'admin@donsang.ma')->first();
-        if ($exists) {
-            return response()->json(['status' => 'already_fixed', 'email' => $exists->email]);
-        }
-        \App\Models\User::create([
-            'name' => 'Super Admin',
-            'email' => 'admin@donsang.ma',
-            'password' => \Illuminate\Support\Facades\Hash::make('admin123'),
-        ]);
-        return response()->json(['status' => 'created', 'email' => 'admin@donsang.ma']);
-    }
-    $user->email = 'admin@donsang.ma';
-    $user->save();
-    return response()->json(['status' => 'fixed', 'email' => $user->email]);
-});
-
-

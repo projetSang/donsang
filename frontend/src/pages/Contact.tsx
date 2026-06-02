@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { apiUrl } from "@/lib/api";
 import {
   Mail, Phone, MapPin, Send, Building2, User, ArrowLeft,
   CheckCircle2, Shield, Heart
@@ -26,7 +27,7 @@ export default function Contact() {
   });
 
   useEffect(() => {
-    fetch("https://backend-production-4a57.up.railway.app/api/admin/hospitals")
+    fetch(apiUrl("/admin/hospitals"))
       .then(res => res.json())
       .then(data => setHospitals(data))
       .catch(console.error);
@@ -39,7 +40,7 @@ export default function Contact() {
     e.preventDefault();
     setIsSubmitting(true);
     try {
-      const res = await fetch("https://backend-production-4a57.up.railway.app/api/contact-messages", {
+      const res = await fetch(apiUrl("/contact-messages"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ...hospitalForm, type: "hospital" }),
@@ -55,7 +56,7 @@ export default function Contact() {
     setIsSubmitting(true);
     const selectedHospital = hospitals.find(h => String(h.id) === userForm.hospital_id);
     try {
-      const res = await fetch("https://backend-production-4a57.up.railway.app/api/contact-messages", {
+      const res = await fetch(apiUrl("/contact-messages"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

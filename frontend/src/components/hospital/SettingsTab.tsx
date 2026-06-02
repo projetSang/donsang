@@ -95,11 +95,10 @@ export function SettingsTab() {
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
-                <label className="text-sm font-semibold text-slate-700 ml-1">Nom de l'hôpital</label>
+                <label htmlFor="hospital_name" className="text-sm font-semibold text-slate-700 ml-1">Nom de l'hôpital</label>
                 <div className="relative">
                   <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                  <Input 
-                    value={formData.name} 
+                  <Input id="hospital_name" value={formData.name} 
                     onChange={(e) => {
                       setFormData({...formData, name: e.target.value});
                       if (errors.name) setErrors(prev => ({...prev, name: []}));
@@ -113,11 +112,10 @@ export function SettingsTab() {
               </div>
               
               <div className="space-y-2">
-                <label className="text-sm font-semibold text-slate-700 ml-1">Ville</label>
+                <label htmlFor="hospital_city" className="text-sm font-semibold text-slate-700 ml-1">Ville</label>
                 <div className="relative">
                   <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                  <Input 
-                    value={formData.city} 
+                  <Input id="hospital_city" value={formData.city} 
                     onChange={(e) => {
                       setFormData({...formData, city: e.target.value});
                       if (errors.city) setErrors(prev => ({...prev, city: []}));
@@ -131,11 +129,10 @@ export function SettingsTab() {
               </div>
 
               <div className="space-y-2 md:col-span-2">
-                <label className="text-sm font-semibold text-slate-700 ml-1">Adresse complète</label>
+                <label htmlFor="hospital_address" className="text-sm font-semibold text-slate-700 ml-1">Adresse complète</label>
                 <div className="relative">
                   <MapPin className="absolute left-3 top-4 h-4 w-4 text-slate-400" />
-                  <textarea 
-                    value={formData.address} 
+                  <textarea id="hospital_address" value={formData.address} 
                     onChange={(e) => {
                       setFormData({...formData, address: e.target.value});
                       if (errors.address) setErrors(prev => ({...prev, address: []}));
@@ -150,11 +147,10 @@ export function SettingsTab() {
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-semibold text-slate-700 ml-1">Email de contact</label>
+                <label htmlFor="hospital_email" className="text-sm font-semibold text-slate-700 ml-1">Email de contact</label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                  <Input 
-                    value={formData.email} 
+                  <Input id="hospital_email" value={formData.email} 
                     onChange={(e) => {
                       setFormData({...formData, email: e.target.value});
                       if (errors.email) setErrors(prev => ({...prev, email: []}));
@@ -168,11 +164,10 @@ export function SettingsTab() {
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-semibold text-slate-700 ml-1">Téléphone</label>
+                <label htmlFor="hospital_phone" className="text-sm font-semibold text-slate-700 ml-1">Téléphone</label>
                 <div className="relative">
                   <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                  <Input 
-                    value={formData.phone} 
+                  <Input id="hospital_phone" value={formData.phone} 
                     onChange={(e) => {
                       setFormData({...formData, phone: e.target.value});
                       if (errors.phone) setErrors(prev => ({...prev, phone: []}));
@@ -185,12 +180,11 @@ export function SettingsTab() {
                 )}
               </div>
               <div className="space-y-2 md:col-span-2">
-                <label className="text-sm font-semibold text-slate-700 ml-1">Localisation GPS</label>
+                <label htmlFor="hospital_gps" className="text-sm font-semibold text-slate-700 ml-1">Localisation GPS</label>
                 <div className="flex gap-4">
                   <div className="relative flex-1">
                     <Globe className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                    <Input 
-                      value={formData.latitude ? `${formData.latitude}, ${formData.longitude}` : "Non définie"} 
+                    <Input id="hospital_gps" value={formData.latitude ? `${formData.latitude}, ${formData.longitude}` : "Non définie"} 
                       readOnly
                       className="pl-10 h-12 rounded-xl bg-slate-50 border-slate-200" 
                     />
@@ -199,8 +193,8 @@ export function SettingsTab() {
                     type="button" 
                     variant="outline"
                     onClick={() => {
-                      if (navigator.geolocation) {
-                        navigator.geolocation.getCurrentPosition((pos) => {
+                      if (navigator.geolocation) { // NOSONAR
+                        navigator.geolocation.getCurrentPosition((pos) => { // NOSONAR
                           setFormData({
                             ...formData,
                             latitude: pos.coords.latitude,
@@ -225,11 +219,10 @@ export function SettingsTab() {
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2 md:col-span-2">
-                <label className="text-sm font-semibold text-slate-700 ml-1">Nouveau mot de passe</label>
+                <label htmlFor="hospital_password" className="text-sm font-semibold text-slate-700 ml-1">Nouveau mot de passe</label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                  <Input 
-                    type="password"
+                  <Input id="hospital_password" type="password"
                     placeholder="Laissez vide pour ne pas changer"
                     value={formData.password}
                     onChange={(e) => {

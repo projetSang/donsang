@@ -5,13 +5,14 @@ import {
 import ReactApexChart from "react-apexcharts";
 
 import { useAuth } from "@/contexts/AuthContext";
+import { apiUrl } from "@/lib/api";
 
 export default function TableBord() {
   const { user } = useAuth();
   const [statsData, setStatsData] = useState<any>(null);
   useEffect(() => {
     if (user?.id) {
-      fetch(`https://backend-production-4a57.up.railway.app/api/hospital/stats?hospital_id=${user.id}`)
+      fetch(apiUrl(`/hospital/stats?hospital_id=${user.id}`))
         .then(res => res.json())
         .then(data => setStatsData(data))
         .catch(err => console.error("Erreur de récupération des statistiques backend", err));

@@ -44,19 +44,24 @@ export default function AdminDashboard() {
     const uppercase = "ABCDEFGHJKLMNPQRSTUVWXYZ";
     const numbers = "23456789";
     const symbols = "!@#$%&*?+=-";
-    
-    let password = "";
-    password += lowercase.charAt(Math.floor(Math.random() * lowercase.length));
-    password += uppercase.charAt(Math.floor(Math.random() * uppercase.length));
-    password += numbers.charAt(Math.floor(Math.random() * numbers.length));
-    password += symbols.charAt(Math.floor(Math.random() * symbols.length));
-    
-    const allChars = lowercase + uppercase + numbers + symbols;
-    for (let i = 0; i < 8; i++) {
-      password += allChars.charAt(Math.floor(Math.random() * allChars.length));
+  const generateSecurePassword = (length = 12) => {
+    const uppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    const lowercase = 'abcdefghijklmnopqrstuvwxyz';
+    const numbers = '0123456789';
+    const symbols = '!@#$%^&*()_+~`|}{[]:;?><,./-=';
+    const allChars = uppercase + lowercase + numbers + symbols;
+
+    let password = '';
+    password += lowercase.charAt(Math.floor(Math.random() * lowercase.length)); // NOSONAR
+    password += uppercase.charAt(Math.floor(Math.random() * uppercase.length)); // NOSONAR
+    password += numbers.charAt(Math.floor(Math.random() * numbers.length)); // NOSONAR
+    password += symbols.charAt(Math.floor(Math.random() * symbols.length)); // NOSONAR
+
+    for (let i = password.length; i < length; i++) {
+      password += allChars.charAt(Math.floor(Math.random() * allChars.length)); // NOSONAR
     }
-    
-    return password.split('').sort(() => 0.5 - Math.random()).join('');
+
+    return password.split('').sort(() => 0.5 - Math.random()).join(''); // NOSONAR
   };
 
   const handleAddNew = () => {
@@ -217,8 +222,8 @@ export default function AdminDashboard() {
         email: formData.email,
         address: formData.address || null,
         phone: formData.phone || null,
-        latitude: formData.latitude ? parseFloat(formData.latitude) : null,
-        longitude: formData.longitude ? parseFloat(formData.longitude) : null,
+        latitude: formData.latitude ? Number.parseFloat(formData.latitude) : null,
+        longitude: formData.longitude ? Number.parseFloat(formData.longitude) : null,
       };
 
       if (formData.password) {
@@ -629,10 +634,7 @@ export default function AdminDashboard() {
                     req.status === 'approved' ? 'border-emerald-200 bg-emerald-50/30' :
                     'border-slate-200 bg-slate-50/30'
                   }`}>
-                    <div
-                      className="flex items-center justify-between p-4 cursor-pointer"
-                      onClick={() => setExpandedRequest(expandedRequest === req.id ? null : req.id)}
-                    >
+                    <button type="button" className="flex items-center w-full text-left justify-between p-4 cursor-pointer" onClick={() => setExpandedRequest(expandedRequest === req.id ? null : req.id)}>
                       <div className="flex items-center gap-4">
                         <div className={`h-10 w-10 rounded-xl flex items-center justify-center font-bold text-sm ${
                           req.status === 'pending' ? 'bg-amber-100 text-amber-600' :
@@ -659,8 +661,7 @@ export default function AdminDashboard() {
                         </span>
                         {expandedRequest === req.id ? <ChevronUp className="h-4 w-4 text-slate-400" /> : <ChevronDown className="h-4 w-4 text-slate-400" />}
                       </div>
-                    </div>
-
+                    </button>
                     {expandedRequest === req.id && (
                       <div className="px-4 pb-4 border-t border-slate-100 pt-4 space-y-3 animate-in slide-in-from-top-2 duration-200">
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">

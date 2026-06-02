@@ -129,7 +129,7 @@ class DashboardController extends Controller
             $emailData = [
                 'patient' => $patient,
                 'password' => $password,
-                'appUrl' => 'http://localhost:8080',
+                'appUrl' => config('app.frontend_url'),
             ];
             Mail::send('emails.welcome', $emailData, function ($message) use ($patient) {
                 $message->to($patient->email)
@@ -349,7 +349,7 @@ class DashboardController extends Controller
                     'patient' => $donor, // Keep name as patient to work with existing email templates
                     'alert' => $alert,
                     'hospital' => $hospital,
-                    'appUrl' => 'http://localhost:8080',
+                    'appUrl' => config('app.frontend_url'),
                 ];
                 Mail::send('emails.alert', $emailData, function ($message) use ($donor) {
                     $message->to($donor->email)

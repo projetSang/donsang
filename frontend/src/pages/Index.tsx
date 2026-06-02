@@ -5,6 +5,7 @@ import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { Heart, Droplets, Bell, Users, Search, Shield, FileText, Share2, UserPlus } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { apiUrl } from "@/lib/api";
 
 const STEP_ICONS = [UserPlus, Droplets, Bell, Users];
 const FEATURE_ICONS = [Droplets, Search, Users, Bell, Shield, Heart];
@@ -15,7 +16,7 @@ export default function Index() {
   const { t } = useLanguage();
 
   useEffect(() => {
-    fetch("https://backend-production-4a57.up.railway.app/api/hospital/alerts")
+    fetch(apiUrl("/hospital/alerts"))
       .then(res => res.json())
       .then(data => {
         const activeAlerts = data.filter((a: any) => a.status === "Active");

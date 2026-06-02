@@ -36,7 +36,7 @@ class AdminController extends Controller
             $emailData = [
                 'hospital' => $hospital,
                 'password' => $rawPassword,
-                'appUrl' => 'http://localhost:8080'
+                'appUrl' => config('app.frontend_url')
             ];
             Mail::send('emails.welcome_hospital', $emailData, function ($message) use ($hospital) {
                 $message->to($hospital->email)

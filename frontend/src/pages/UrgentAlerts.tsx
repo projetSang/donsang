@@ -9,6 +9,7 @@ import {
 import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { toast } from "sonner";
+import { apiUrl } from "@/lib/api";
 
 export default function UrgentAlerts() {
     const { t, isRtl } = useLanguage();
@@ -48,7 +49,7 @@ export default function UrgentAlerts() {
       setDonorSubmitting(true);
       try {
         // 1. Register guest as donor first (which allows alert response)
-        const resDonor = await fetch("https://backend-production-4a57.up.railway.app/api/hospital/donors", {
+        const resDonor = await fetch(apiUrl("/hospital/donors"), {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -74,7 +75,7 @@ export default function UrgentAlerts() {
         const donorId = donorData.id;
 
         // 2. Respond to alert
-        const resResponse = await fetch("https://backend-production-4a57.up.railway.app/api/alerts/respond", {
+        const resResponse = await fetch(apiUrl("/alerts/respond"), {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -109,7 +110,7 @@ export default function UrgentAlerts() {
       if (!selectedAlert || !user) return;
       setDonorSubmitting(true);
       try {
-        const res = await fetch("https://backend-production-4a57.up.railway.app/api/alerts/respond", {
+        const res = await fetch(apiUrl("/alerts/respond"), {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -144,7 +145,7 @@ export default function UrgentAlerts() {
     const alertsPerPage = 6;
 
     const fetchAlerts = () => {
-      fetch("https://backend-production-4a57.up.railway.app/api/hospital/alerts")
+      fetch(apiUrl("/hospital/alerts"))
         .then(res => res.json())
         .then(data => {
           const activeAlerts = data.filter((a: any) => a.status === "Active" || a.status === "Active_Public");
@@ -171,7 +172,7 @@ export default function UrgentAlerts() {
       setIsSubmitting(true);
 
       try {
-        const response = await fetch("https://backend-production-4a57.up.railway.app/api/hospital/alerts", {
+        const response = await fetch(apiUrl("/hospital/alerts"), {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

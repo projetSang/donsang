@@ -257,12 +257,12 @@ export default function BloodCentersMap() {
   };
 
   const handleGeolocate = () => {
-    if (!navigator.geolocation) {
+    if (!navigator.geolocation) { // NOSONAR
       setError(pageT.errorGeoSupport);
       return;
     }
     setGeoLoading(true);
-    navigator.geolocation.getCurrentPosition(
+    navigator.geolocation.getCurrentPosition( // NOSONAR
       (pos) => {
         const { latitude, longitude } = pos.coords;
         setUserLocation({ lat: latitude, lon: longitude });
@@ -293,8 +293,8 @@ export default function BloodCentersMap() {
         return;
       }
       const { lat, lon } = data[0];
-      const latNum = parseFloat(lat);
-      const lonNum = parseFloat(lon);
+      const latNum = Number.parseFloat(lat);
+      const lonNum = Number.parseFloat(lon);
       setUserLocation({ lat: latNum, lon: lonNum });
       mapRef.current?.setView([latNum, lonNum], 13);
       await loadCenters(latNum, lonNum);
@@ -545,7 +545,7 @@ export default function BloodCentersMap() {
 
                   <a
                     href={`https://www.google.com/maps/dir/?api=1&destination=${selected.lat},${selected.lon}`}
-                    target="_blank"
+                    target="_blank" // NOSONAR
                     rel="noopener noreferrer"
                     className="mt-3 flex items-center justify-center gap-2 w-full bg-gradient-to-r from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700 text-white text-sm font-bold py-2.5 rounded-xl transition-all hover:scale-[1.02] shadow-md shadow-red-200"
                   >

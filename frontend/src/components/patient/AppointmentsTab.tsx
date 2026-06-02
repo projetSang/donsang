@@ -111,7 +111,7 @@ export function AppointmentsTab({ patientId }: { patientId: number }) {
         method: "POST",
         body: JSON.stringify({
           patient_id: patientId,
-          hospital_id: parseInt(selectedHospitalId),
+          hospital_id: Number.parseInt(selectedHospitalId),
           appointment_date: appointmentDate,
           appointment_time: appointmentTime,
           notes: notes || null
@@ -217,7 +217,7 @@ export function AppointmentsTab({ patientId }: { patientId: number }) {
                 </select>
                 {selectedHospitalId && (
                   <p className="text-xs text-muted-foreground ml-1">
-                    📍 {hospitals.find(h => h.id === parseInt(selectedHospitalId))?.address}
+                    📍 {hospitals.find(h => h.id === Number.parseInt(selectedHospitalId))?.address}
                   </p>
                 )}
               </div>

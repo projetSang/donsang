@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Search, MapPin, Phone, Edit2, X, Crown, Award, CreditCard, Mail, MessageCircle } from "lucide-react";
 import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { apiFetch } from "@/lib/api";
+import { apiFetch, apiUrl } from "@/lib/api";
 import {
   Dialog,
   DialogContent,
@@ -88,7 +88,7 @@ export function SearchTab({ selectedBlood, setSelectedBlood, city, setCity }: an
   const handleUpdateDate = () => {
     if (!editingDonor) return;
 
-    fetch(`https://backend-production-4a57.up.railway.app/api/hospital/donors/${editingDonor.id}`, {
+    fetch(apiUrl(`/hospital/donors/${editingDonor.id}`), {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ ...editingDonor, last_donation_date: newDonationDate })
@@ -135,10 +135,10 @@ export function SearchTab({ selectedBlood, setSelectedBlood, city, setCity }: an
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-sm font-bold text-slate-700 ml-1">Ville</label>
+              <label htmlFor="city" className="text-sm font-bold text-slate-700 ml-1">Ville</label>
               <div className="relative">
                 <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                <Input
+                <Input id="city"
                   className="h-11 pl-10 rounded-xl border-slate-200 bg-slate-50 focus:bg-white transition-all"
                   value={city}
                   onChange={(e) => setCity(e.target.value)}
@@ -148,13 +148,13 @@ export function SearchTab({ selectedBlood, setSelectedBlood, city, setCity }: an
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-sm font-bold text-slate-700 ml-1 flex items-center gap-1.5">
+              <label htmlFor="cin" className="text-sm font-bold text-slate-700 ml-1 flex items-center gap-1.5">
                 <CreditCard className="h-4 w-4 text-primary" />
                 CIN
               </label>
               <div className="relative">
                 <CreditCard className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                <Input
+                <Input id="cin"
                   className="h-11 pl-10 rounded-xl border-slate-200 bg-slate-50 focus:bg-white transition-all"
                   value={cinSearch}
                   onChange={(e) => setCinSearch(e.target.value.toUpperCase())}
@@ -249,7 +249,7 @@ export function SearchTab({ selectedBlood, setSelectedBlood, city, setCity }: an
                       >
                         <Phone className="h-3.5 w-3.5 text-slate-400" />
                         {donor.phone}
-                      </div>
+                      </button>
                       <div className="flex items-center gap-1.5">
                         <MapPin className="h-3.5 w-3.5 text-slate-400" />
                         {donor.city}
@@ -327,19 +327,19 @@ export function SearchTab({ selectedBlood, setSelectedBlood, city, setCity }: an
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="space-y-2">
-              <label className="text-sm font-bold text-slate-700">Nom complet</label>
-              <Input
+              <label htmlFor="full_name" className="text-sm font-bold text-slate-700">Nom complet</label>
+              <Input id="full_name"
                 value={editingDonor?.full_name || ""}
                 onChange={(e) => setEditingDonor({ ...editingDonor, full_name: e.target.value })}
                 className="rounded-xl"
               />
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-bold text-slate-700 flex items-center gap-1.5">
+              <label htmlFor="donor_cin" className="text-sm font-bold text-slate-700 flex items-center gap-1.5">
                 <CreditCard className="h-4 w-4 text-slate-400" />
                 CIN <span className="text-slate-400 font-normal text-xs">(optionnel)</span>
               </label>
-              <Input
+              <Input id="donor_cin"
                 value={editingDonor?.cin || ""}
                 onChange={(e) => setEditingDonor({ ...editingDonor, cin: e.target.value })}
                 placeholder="Ex: AB123456"
@@ -347,8 +347,8 @@ export function SearchTab({ selectedBlood, setSelectedBlood, city, setCity }: an
               />
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-bold text-slate-700">Date du dernier don</label>
-              <Input
+              <label htmlFor="donation_date" className="text-sm font-bold text-slate-700">Date du dernier don</label>
+              <Input id="donation_date"
                 type="date"
                 value={newDonationDate}
                 onChange={(e) => setNewDonationDate(e.target.value)}
@@ -356,11 +356,11 @@ export function SearchTab({ selectedBlood, setSelectedBlood, city, setCity }: an
               />
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-bold text-slate-700">Points (Nombre de dons)</label>
-              <Input
+              <label htmlFor="donations_count" className="text-sm font-bold text-slate-700">Points (Nombre de dons)</label>
+              <Input id="donations_count"
                 type="number"
                 value={editingDonor?.donations_count || 0}
-                onChange={(e) => setEditingDonor({ ...editingDonor, donations_count: parseInt(e.target.value) || 0 })}
+                onChange={(e) => setEditingDonor({ ...editingDonor, donations_count: Number.parseInt(e.target.value) || 0 })}
                 className="rounded-xl"
               />
             </div>

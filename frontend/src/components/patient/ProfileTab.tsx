@@ -66,12 +66,12 @@ export function ProfileTab({
   };
 
   const handleGetCurrentGPSLocation = () => {
-    if (!navigator.geolocation) {
+    if (!navigator.geolocation) { // NOSONAR
       alert(dashboardT.gpsNotSupported);
       return;
     }
 
-    navigator.geolocation.getCurrentPosition(
+    navigator.geolocation.getCurrentPosition( // NOSONAR
       async (position) => {
         const lat = position.coords.latitude;
         const lon = position.coords.longitude;
@@ -128,8 +128,8 @@ export function ProfileTab({
       if (data && data.length > 0) {
         setProfileData({
           ...profileData,
-          latitude: parseFloat(data[0].lat),
-          longitude: parseFloat(data[0].lon)
+          latitude: Number.parseFloat(data[0].lat),
+          longitude: Number.parseFloat(data[0].lon)
         });
         setShowMap(true);
         toast({

@@ -14,7 +14,6 @@ export default function ForgotPassword() {
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [message, setMessage] = useState("");
-  const [devResetUrl, setDevResetUrl] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,7 +25,6 @@ export default function ForgotPassword() {
 
     setStatus("loading");
     setMessage("");
-    setDevResetUrl("");
 
     try {
       const data = await apiFetch("/forgot-password", {
@@ -37,9 +35,6 @@ export default function ForgotPassword() {
       if (data.status === "success") {
         setStatus("success");
         setMessage(data.message || f.resetSent);
-        if (data.dev_reset_url) {
-          setDevResetUrl(data.dev_reset_url);
-        }
       } else {
         setStatus("error");
         setMessage(data.message || f.errorOccurred);
@@ -71,22 +66,6 @@ export default function ForgotPassword() {
               <div className="bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm p-5 rounded-2xl font-medium leading-relaxed">
                 {message}
               </div>
-              
-              {devResetUrl && (
-                <div className="bg-amber-50 border border-amber-200 text-amber-900 text-xs p-4 rounded-xl text-left space-y-2">
-                  <span className="font-bold block text-amber-800">💡 {f.devMode}</span>
-                  <p className="break-all font-mono bg-white p-2 rounded border border-amber-200">
-                    {devResetUrl}
-                  </p>
-                  <a 
-                    href={devResetUrl}
-                    className="inline-block mt-1 font-bold text-amber-700 hover:underline"
-                  >
-                    {f.simulateEmail} &rarr;
-                  </a>
-                </div>
-              )}
-
               <Link 
                 to="/login"
                 className="inline-flex items-center gap-2 text-primary font-bold hover:underline justify-center w-full pt-4"

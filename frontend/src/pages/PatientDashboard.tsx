@@ -129,8 +129,6 @@ export default function PatientDashboard() {
     setProfileError("");
     setProfileSuccess("");
     setProfileLoading(true);
-    console.log("Updating profile with data:", profileData);
-
     try {
       const data = await apiFetch("/update-profile", {
         method: "POST",
@@ -323,7 +321,7 @@ export default function PatientDashboard() {
               const wreathColor = isGold ? "#ca8a04" : isSilver ? "#64748b" : "#9a3412";
 
               return (
-                <div 
+                <button type="button" 
                   onClick={() => setActiveTab("certificate")}
                   className={`bg-gradient-to-br ${bgGlow} rounded-xl border p-4 text-center shadow-sm flex flex-col items-center justify-center transition-all duration-300 hover:shadow-md hover:border-amber-300 relative overflow-hidden group cursor-pointer hover:scale-[1.02] active:scale-[0.98]`}
                   title={dashboardT.viewMyCert}

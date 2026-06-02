@@ -1,12 +1,13 @@
 import { BarChart3, Search } from "lucide-react";
 import { useState, useEffect } from "react";
+import { apiUrl } from "@/lib/api";
 
 export function StatsTab() {
   const [statistiques, setStatistiques] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("https://backend-production-4a57.up.railway.app/api/hospital/statistiques")
+    fetch(apiUrl("/hospital/statistiques"))
       .then(res => res.json())
       .then(data => {
         setStatistiques(data);

@@ -3,6 +3,7 @@ import { Loader2, Mic } from 'lucide-react';
 import { Button } from './button';
 import { DotLottieReact } from '@lottiefiles/dotlottie-react';
 import { useLocation } from 'react-router-dom';
+import { apiUrl } from '@/lib/api';
 
 declare global {
   interface Window {
@@ -95,7 +96,7 @@ const VoiceAssistant: React.FC = () => {
   const handleSendVoiceMessage = async (message: string) => {
     setIsProcessing(true);
     try {
-      const response = await fetch('https://backend-production-4a57.up.railway.app/api/assistant/chat', {
+      const response = await fetch(apiUrl('/assistant/chat'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

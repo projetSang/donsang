@@ -130,12 +130,12 @@ export function AlertsTab({ showNewAlert, setShowNewAlert, onViewDonors }: any) 
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-destructive opacity-75"></span>
               <span className="relative inline-flex rounded-full h-3 w-3 bg-destructive"></span>
             </span>
-            Formulaire de demande urgente
+            <span>Formulaire de demande urgente</span>
           </h4>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-5">
             <div>
-              <label className="text-sm font-medium text-slate-800">Groupes Sanguins Requis</label>
-              <select 
+              <label htmlFor="blood_type" className="text-sm font-medium text-slate-800">Groupes Sanguins Requis</label>
+              <select id="blood_type" 
                 className="mt-1 h-11 w-full rounded-lg border border-input bg-white px-3 py-2 text-sm focus:ring-2 focus:ring-destructive/20 outline-none"
                 value={formData.blood_type}
                 onChange={(e) => setFormData({...formData, blood_type: e.target.value})}
@@ -146,8 +146,8 @@ export function AlertsTab({ showNewAlert, setShowNewAlert, onViewDonors }: any) 
               </select>
             </div>
             <div>
-              <label className="text-sm font-medium text-slate-800">Quantité (Poches)</label>
-              <Input 
+              <label htmlFor="quantity" className="text-sm font-medium text-slate-800">Quantité (Poches)</label>
+              <Input id="quantity" 
                 type="number"
                 placeholder="Quantité de poches" 
                 className="mt-1 h-11 rounded-lg border-input bg-white" 
@@ -156,8 +156,8 @@ export function AlertsTab({ showNewAlert, setShowNewAlert, onViewDonors }: any) 
               />
             </div>
             <div>
-              <label className="text-sm font-medium text-slate-800">Niveau d'urgence</label>
-              <select 
+              <label htmlFor="urgency_level" className="text-sm font-medium text-slate-800">Niveau d'urgence</label>
+              <select id="urgency_level" 
                 className="mt-1 h-11 w-full rounded-lg border border-input bg-white px-3 py-2 text-sm focus:ring-2 focus:ring-destructive/20 outline-none"
                 value={formData.urgency_level}
                 onChange={(e) => setFormData({...formData, urgency_level: e.target.value})}
@@ -168,8 +168,8 @@ export function AlertsTab({ showNewAlert, setShowNewAlert, onViewDonors }: any) 
               </select>
             </div>
             <div className="md:col-span-4">
-              <label className="text-sm font-medium text-slate-800">Numéro de téléphone direct (Optionnel)</label>
-              <Input 
+              <label htmlFor="direct_phone" className="text-sm font-medium text-slate-800">Numéro de téléphone direct (Optionnel)</label>
+              <Input id="direct_phone" 
                 type="text"
                 placeholder="Ex: 0612345678" 
                 className="mt-1 h-11 rounded-lg border-input bg-white" 
@@ -178,8 +178,8 @@ export function AlertsTab({ showNewAlert, setShowNewAlert, onViewDonors }: any) 
               />
             </div>
             <div className="md:col-span-4">
-              <label className="text-sm font-medium text-slate-800">Informations complémentaires</label>
-              <textarea 
+              <label htmlFor="description" className="text-sm font-medium text-slate-800">Informations complémentaires</label>
+              <textarea id="description" 
                 className="mt-1 flex w-full rounded-lg border border-input bg-white px-3 py-3 text-sm min-h-[80px] focus:ring-2 focus:ring-destructive/20 outline-none resize-none" 
                 placeholder="Précisez le service (ex: Réanimation), des instructions pour l'accès..." 
                 value={formData.description}

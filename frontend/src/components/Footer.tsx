@@ -28,9 +28,9 @@ export function Footer() {
           <div>
             <h4 className="font-semibold mb-3">{f.legal}</h4>
             <ul className="space-y-2 text-sm text-background/60">
-              <li><a href="#" className="hover:text-background transition-colors">{f.privacy}</a></li>
-              <li><a href="#" className="hover:text-background transition-colors">{f.terms}</a></li>
-              <li><a href="#" className="hover:text-background transition-colors">{f.dataProtection}</a></li>
+              <li><Link to="/privacy" className="hover:text-background transition-colors">{f.privacy}</Link></li>
+              <li><Link to="/terms" className="hover:text-background transition-colors">{f.terms}</Link></li>
+              <li><Link to="/data-protection" className="hover:text-background transition-colors">{f.dataProtection}</Link></li>
             </ul>
           </div>
           <div>

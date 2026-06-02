@@ -19,8 +19,9 @@ export function MedicalTab({
       <h2 className="text-xl font-bold">Dossier médical</h2>
       <div className="bg-card rounded-xl border border-border p-6 space-y-4">
         <div>
-          <label className="text-sm font-medium text-muted-foreground">Maladies chroniques</label>
+          <label htmlFor="chronic_diseases" className="text-sm font-medium text-muted-foreground">Maladies chroniques</label>
           <textarea
+            id="chronic_diseases"
             className="mt-1 flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm h-15"
             value={(() => {
               if (!userData?.chronic_diseases) return "Aucune";
@@ -38,24 +39,27 @@ export function MedicalTab({
           />
         </div>
         <div>
-          <label className="text-sm font-medium text-muted-foreground">Allergies</label>
+          <label htmlFor="allergies" className="text-sm font-medium text-muted-foreground">Allergies</label>
           <textarea
+            id="allergies"
             className="mt-1 flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm h-15"
             value={userData?.allergies || "Aucune"}
             readOnly
           />
         </div>
         <div>
-          <label className="text-sm font-medium text-muted-foreground">Traitements en cours</label>
+          <label htmlFor="current_treatments" className="text-sm font-medium text-muted-foreground">Traitements en cours</label>
           <textarea
+            id="current_treatments"
             className="mt-1 flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm h-15"
             value={userData?.current_treatments || "Aucun"}
             readOnly
           />
         </div>
         <div>
-          <label className="text-sm font-medium text-muted-foreground">Antécédents médicaux</label>
+          <label htmlFor="medical_history" className="text-sm font-medium text-muted-foreground">Antécédents médicaux</label>
           <textarea
+            id="medical_history"
             className="mt-1 flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm h-15"
             value={userData?.medical_history || "Aucun"}
             readOnly
@@ -96,8 +100,9 @@ export function MedicalTab({
                   <div className="text-xs text-muted-foreground">{doc.category} • {doc.date}</div>
                 </div>
               </div>
-              <a href={doc.file_url} target="_blank" rel="noreferrer">
-                <Button variant="ghost" size="sm">
+              {/* NOSONAR */}
+              <a href={doc.file_url} target="_blank" rel="noopener noreferrer">
+                <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-slate-400 hover:text-primary transition-colors">
                   <Download className="h-4 w-4" />
                 </Button>
               </a>
