@@ -1,7 +1,6 @@
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
-import { Search, MapPin, Phone, Edit2, X, Crown, Award, CreditCard, Mail, MessageCircle } from "lucide-react";
+import { Search, MapPin, Phone, Edit2, Crown, Award, CreditCard, Mail, MessageCircle } from "lucide-react";
 import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { apiFetch, apiUrl } from "@/lib/api";
@@ -23,7 +22,6 @@ export function SearchTab({ selectedBlood, setSelectedBlood, city, setCity }: an
   const [editingDonor, setEditingDonor] = useState<any>(null);
   const [newDonationDate, setNewDonationDate] = useState("");
   const [cinSearch, setCinSearch] = useState("");
-  const [selectedDonorIds, setSelectedDonorIds] = useState<number[]>([]);
 // pour le message WhatsApp
   const getWhatsappUrl = (donor: any) => {
     let phone = String(donor.phone || "").replace(/\D/g, "");
@@ -34,7 +32,7 @@ export function SearchTab({ selectedBlood, setSelectedBlood, city, setCity }: an
 
     const hospitalName = user?.name || "notre hopital";
     const donorCity = donor.city || "votre ville";
-    const siteUrl = `${window.location.origin}/`;
+    const siteUrl = `${globalThis.location.origin}/`;
     const message = `Bonjour ${donor.full_name} 👋
    ${hospitalName} vous contacte pour un besoin urgent en sang ${donor.blood_type} 🩸
 📍 Ville : ${donorCity}
@@ -246,7 +244,7 @@ export function SearchTab({ selectedBlood, setSelectedBlood, city, setCity }: an
                       <button
                         type="button"
                         className="flex items-center gap-1.5 hover:text-primary transition-colors cursor-pointer"
-                        onClick={() => window.location.href = `tel:${donor.phone}`}
+                        onClick={() => globalThis.location.href = `tel:${donor.phone}`}
                       >
                         <Phone className="h-3.5 w-3.5 text-slate-400" />
                         {donor.phone}
@@ -283,7 +281,7 @@ export function SearchTab({ selectedBlood, setSelectedBlood, city, setCity }: an
                     variant="outline"
                     size="sm"
                     className="h-9 w-9 rounded-lg border-slate-200 bg-white p-0 hover:bg-green-50 hover:text-green-600 hover:border-green-300 transition-all"
-                    onClick={() => window.open(getWhatsappUrl(donor), "_blank")}
+                    onClick={() => globalThis.open(getWhatsappUrl(donor), "_blank")}
                     disabled={!donor.phone}
                     title="WhatsApp"
                   >
@@ -293,7 +291,7 @@ export function SearchTab({ selectedBlood, setSelectedBlood, city, setCity }: an
                     variant="outline"
                     size="sm"
                     className="h-9 w-9 rounded-lg border-slate-200 bg-white p-0 hover:bg-sky-50 hover:text-sky-600 hover:border-sky-300 transition-all"
-                    onClick={() => window.location.href = `mailto:${donor.email}`}
+                    onClick={() => globalThis.location.href = `mailto:${donor.email}`}
                     disabled={!donor.email}
                     title="Email"
                   >

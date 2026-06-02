@@ -1,12 +1,10 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
-  MessageSquare, Mail, Phone, MapPin, Clock, User, ChevronDown, ChevronUp, Inbox
+  MessageSquare, Mail, Phone, Clock, User, ChevronDown, ChevronUp, Inbox
 } from "lucide-react";
-import { useAuth } from "@/contexts/AuthContext";
 
 export function MessagesTab() {
-  const { user } = useAuth();
   const [messages, setMessages] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [expandedId, setExpandedId] = useState<number | null>(null);
@@ -173,7 +171,7 @@ export function MessagesTab() {
                         size="sm"
                         variant="outline"
                         className="rounded-lg gap-1.5 h-9 border-slate-200 hover:border-primary hover:text-primary"
-                        onClick={() => window.location.href = `mailto:${msg.email}?subject=Re: ${msg.subject || 'Votre message'}`}
+                        onClick={() => globalThis.location.href = `mailto:${msg.email}?subject=Re: ${msg.subject || 'Votre message'}`}
                       >
                         <Mail className="h-3.5 w-3.5" /> Répondre par email
                       </Button>
@@ -182,7 +180,7 @@ export function MessagesTab() {
                           size="sm"
                           variant="outline"
                           className="rounded-lg gap-1.5 h-9 border-slate-200 hover:border-emerald-500 hover:text-emerald-600"
-                          onClick={() => window.location.href = `tel:${msg.phone}`}
+                          onClick={() => globalThis.location.href = `tel:${msg.phone}`}
                         >
                           <Phone className="h-3.5 w-3.5" /> Appeler
                         </Button>

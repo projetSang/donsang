@@ -2,5 +2,5 @@ projectKey=donsang
 serverUrl=http://localhost:9000
 serverVersion=26.5.0.122743
 dashboardUrl=http://localhost:9000/dashboard?id=donsang
-ceTaskId=fe93bf5b-e156-4df6-8612-8c3a2a2e5883
-ceTaskUrl=http://localhost:9000/api/ce/task?id=fe93bf5b-e156-4df6-8612-8c3a2a2e5883
+ceTaskId=07ad73c5-9684-4122-bc71-4438d92b20a1
+ceTaskUrl=http://localhost:9000/api/ce/task?id=07ad73c5-9684-4122-bc71-4438d92b20a1

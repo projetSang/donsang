@@ -2,10 +2,9 @@ import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { apiFetch } from "@/lib/api";
 import {
-  Calendar as CalendarIcon, Clock, User, Droplet, Phone, CreditCard,
-  Check, X, RefreshCw, Filter, FileText, CheckCircle2
+  Calendar as CalendarIcon, Clock, Droplet, Phone, CreditCard,
+  Check, X, RefreshCw, Filter, CheckCircle2
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
 
 interface Patient {
   id: number;
@@ -26,7 +25,7 @@ interface Appointment {
   patient: Patient;
 }
 
-export function AppointmentsTab({ hospitalId }: { hospitalId: number }) {
+export function AppointmentsTab({ hospitalId }: Readonly<{ hospitalId: number }>) {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(true);
   const [filterStatus, setFilterStatus] = useState<string>("all");
