@@ -567,7 +567,16 @@ export default function AdminDashboard() {
                             {hospital.city}
                           </span>
                         </td>
-                        <td className="px-6 py-4 text-slate-600 font-mono">{hospital.email}</td>
+                        <td className="px-6 py-4 text-slate-600 font-mono">
+                          <div className="flex items-center gap-2">
+                            {hospital.email}
+                            {hospital.email && (
+                              <a href={`mailto:${hospital.email}`} className="text-slate-400 hover:text-primary transition-colors bg-slate-100 hover:bg-primary/10 p-1.5 rounded-md" title="Envoyer un email">
+                                <Mail className="h-4 w-4" />
+                              </a>
+                            )}
+                          </div>
+                        </td>
                         <td className="px-6 py-4 text-slate-600">{hospital.phone || "—"}</td>
                         <td className="px-6 py-4">
                           <div className="flex items-center justify-center gap-2">

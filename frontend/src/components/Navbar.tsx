@@ -54,7 +54,7 @@ export function Navbar({}: NavbarProps) {
       {/* Left: Logo */}
       <div className="flex items-center px-6 md:px-12 relative z-10">
         <Link to="/" className="flex items-center gap-2 group">
-          <img src="/logo_sang.png" alt="Donsang Logo" className="h-10 md:h-12 w-auto object-contain" />
+          <img src="/image.png" alt="Donsang Logo" className="h-10 md:h-16 w-25 object-contain" />
         </Link>
       </div>
 
