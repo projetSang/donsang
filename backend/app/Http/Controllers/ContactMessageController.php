@@ -11,9 +11,13 @@ class ContactMessageController extends Controller
     public function index(Request $request)
     {
         $type = $request->query('type');
+        $hospital_id = $request->query('hospital_id');
         $query = ContactMessage::orderBy('created_at', 'desc');
         if ($type) {
             $query->where('type', $type);
+        }
+        if ($hospital_id) {
+            $query->where('hospital_id', $hospital_id);
         }
         return response()->json($query->get());
     }
@@ -44,6 +48,7 @@ class ContactMessageController extends Controller
                 'phone' => 'nullable|string|max:50',
                 'subject' => 'required|string|max:255',
                 'message' => 'required|string',
+                'hospital_id' => 'nullable|exists:hospitals,id',
             ]);
             $validated['type'] = 'user';
             $validated['status'] = 'pending';

@@ -76,7 +76,7 @@ export default function Register() {
           <div className="flex flex-col items-center gap-3">
             <div className="mb-4">
               <Link to="/">
-                <img src="logo_sang.png" alt="SangVital Logo" width={150} height={150} />
+                <img src="/logo_login.png" alt="SangVital Logo" width={150} height={150} />
               </Link>
             </div>
             <h2 className="text-2xl font-bold text-slate-900 mb-2">{t.register.title}</h2>

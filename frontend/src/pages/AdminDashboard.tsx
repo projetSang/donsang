@@ -272,7 +272,7 @@ export default function AdminDashboard() {
         <div className="container mx-auto flex items-center justify-between h-16 px-6">
           <div className="flex items-center px-4 relative z-10">
             <Link to="/" className="flex items-center gap-2 group">
-              <img src="logo_sang.png" alt="DonSang" width={130} height={130} />
+              <img src="/logo_login.png" alt="DonSang" width={130} height={130} />
             </Link>
           </div>
           

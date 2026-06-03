@@ -3,14 +3,17 @@ import { Button } from "@/components/ui/button";
 import {
   MessageSquare, Mail, Phone, Clock, User, ChevronDown, ChevronUp, Inbox
 } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 
 export function MessagesTab() {
+  const { user } = useAuth();
   const [messages, setMessages] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [expandedId, setExpandedId] = useState<number | null>(null);
 
   useEffect(() => {
-    fetch("https://backend-production-4a57.up.railway.app/api/hospital/contact-messages?type=user")
+    if (!user) return;
+    fetch(`https://backend-production-4a57.up.railway.app/api/hospital/contact-messages?type=user&hospital_id=${user.id}`)
       .then(res => res.json())
       .then(data => {
         setMessages(data);
@@ -20,7 +23,7 @@ export function MessagesTab() {
         console.error("Error fetching messages:", err);
         setLoading(false);
       });
-  }, []);
+  }, [user]);
 
   return (
     <div className="space-y-6 animate-reveal">

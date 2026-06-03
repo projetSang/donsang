@@ -46,7 +46,7 @@ export default function Login() {
         <div className="text-center group">
           <div className="flex flex-col items-center gap-3">
             <div className="mb-4">
-              <img src="logo_sang.png" alt="SangVital Logo" width={180} height={180} />
+              <img src="/logo_login.png" alt="SangVital Logo" width={180} height={180} />
             </div>
             <h2 className="text-2xl font-bold text-slate-900 mb-2">{t.login.title}</h2>
           </div>
