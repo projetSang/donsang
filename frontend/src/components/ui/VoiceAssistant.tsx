@@ -242,7 +242,7 @@ const VoiceAssistant: React.FC = () => {
 
           <div className={`w-full h-full flex items-center justify-center transition-all duration-300 ${isListening ? 'scale-110' : 'group-hover:scale-110'}`}>
             <DotLottieReact
-              src="https://lottie.host/f37c59d6-237a-463b-afcc-d979ec96e5d5/1fTqDdiss9.lottie"
+              src="/assistant-animation.lottie"
               loop
               autoplay={false}
               dotLottieRefCallback={dotLottieRefCallback}
