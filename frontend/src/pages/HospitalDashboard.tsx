@@ -62,7 +62,7 @@ export default function HospitalDashboard() {
         <div className="container mx-auto flex items-center justify-between h-16 px-6">
           <div className="flex items-center px-6 md:px-12 relative z-10">
             <Link to="/" className="flex items-center gap-2 group">
-              <img src="/logo_sang.png" alt="" width={130} height={130} />
+              <img src="/logo_login.png" alt="" width={130} height={130} />
             </Link>
           </div>
 
