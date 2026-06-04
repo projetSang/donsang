@@ -11,7 +11,7 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div>
             <div className="bg-white p-3 rounded-2xl mb-4 w-fit inline-flex shadow-sm">
-              <img src="/logo_sang.png" alt="SangVital Logo" width={130} height={130} className="object-contain" />
+              <img src="/image.png.png" alt="SangVital Logo" width={130} height={130} className="object-contain" />
             </div>
             <p className="text-sm text-background/60">
               {f.tagline}
