@@ -72,10 +72,7 @@ export default function Login() {
               />
             </div>
             <div className="space-y-2">
-              <div className="flex justify-between items-center px-1">
-                <Label htmlFor="password" title="password" className="text-slate-900 font-bold">{t.login.password}</Label>
-                <Link to="/forgot-password" className="text-xs text-primary font-bold hover:underline">{t.login.forgotPassword}</Link>
-              </div>
+              
               <div className="relative">
                 <Input
                   id="password"
