@@ -201,4 +201,44 @@ class DonorWorkflowTest extends TestCase
         ]);
         $responseLogin->assertStatus(200);
     }
+
+    public function test_appointment_status_update_creates_notification()
+    {
+        $hospital = Hospital::create([
+            'name' => 'Hopital Casablanca',
+            'city' => 'Casablanca',
+            'email' => 'hopital@casa.com',
+            'password' => Hash::make('password')
+        ]);
+
+        $donor = BloodDonor::create([
+            'full_name' => 'Ahmed Test Notification',
+            'email' => 'notification@test.com',
+            'password' => Hash::make('password'),
+            'blood_type' => 'O+',
+            'city' => 'Casablanca',
+            'phone' => '0600000000',
+            'donations_count' => 0
+        ]);
+
+        $appointment = \App\Models\Appointment::create([
+            'blood_donor_id' => $donor->id,
+            'hospital_id' => $hospital->id,
+            'appointment_date' => '2026-06-06',
+            'appointment_time' => '10:00',
+            'status' => 'En attente'
+        ]);
+
+        $response = $this->putJson("/api/appointments/{$appointment->id}/status", [
+            'status' => 'Confirmé',
+            'notes' => 'Tout est OK'
+        ]);
+
+        $response->assertStatus(200);
+
+        $this->assertDatabaseHas('donor_notifications', [
+            'blood_donor_id' => $donor->id,
+            'title' => 'Rendez-vous confirmé'
+        ]);
+    }
 }

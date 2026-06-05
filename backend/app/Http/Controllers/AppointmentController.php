@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Appointment;
 use App\Models\Hospital;
 use App\Models\BloodDonor;
+use App\Models\DonorNotification;
 use Illuminate\Http\Request;
 
 class AppointmentController extends Controller
@@ -123,11 +124,11 @@ class AppointmentController extends Controller
             'notes' => $validated['notes'] ?? $appointment->notes
         ]);
 
+        $donor = $appointment->bloodDonor;
+        $hospital = $appointment->hospital;
+
         // Send email confirmation to the donor if status is Confirmé
         if ($validated['status'] === 'Confirmé') {
-            $donor = $appointment->bloodDonor;
-            $hospital = $appointment->hospital;
-
             if ($donor && $hospital && !empty($donor->email)) {
                 try {
                     $emailData = [
@@ -142,6 +143,39 @@ class AppointmentController extends Controller
                 } catch (\Exception $e) {
                     \Illuminate\Support\Facades\Log::error("Erreur d'envoi d'email de rendez-vous: " . $e->getMessage());
                 }
+            }
+        }
+
+        // Create a private notification in the system
+        if ($donor && $hospital) {
+            try {
+                $status = $validated['status'];
+                $dateFormatted = date('d/m/Y', strtotime($appointment->appointment_date));
+                $timeFormatted = $appointment->appointment_time;
+
+                $title = "Le statut de votre rdv est modifié";
+                $message = "Le statut de votre rendez-vous à l'hôpital {$hospital->name} prévu le {$dateFormatted} à {$timeFormatted} a été mis à jour : {$status}.";
+
+                if ($status === 'Confirmé') {
+                    $title = "Rendez-vous confirmé";
+                    $message = "Votre rendez-vous pour le don de sang à l'hôpital {$hospital->name} le {$dateFormatted} à {$timeFormatted} a été confirmé.";
+                } elseif ($status === 'Annulé') {
+                    $title = "Rendez-vous annulé";
+                    $message = "Votre rendez-vous pour le don de sang à l'hôpital {$hospital->name} le {$dateFormatted} à {$timeFormatted} a été annulé.";
+                } elseif ($status === 'Terminé') {
+                    $title = "Merci pour votre don";
+                    $message = "Votre rendez-vous du {$dateFormatted} à {$timeFormatted} à l'hôpital {$hospital->name} est terminé. Merci pour votre don de sang !";
+                }
+
+                DonorNotification::create([
+                    'blood_donor_id' => $donor->id,
+                    'title' => $title,
+                    'message' => $message,
+                    'type' => 'normal',
+                    'is_read' => false
+                ]);
+            } catch (\Exception $e) {
+                \Illuminate\Support\Facades\Log::error("Erreur de création de la notification de rendez-vous: " . $e->getMessage());
             }
         }
 
