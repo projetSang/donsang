@@ -195,5 +195,25 @@ class AppointmentController extends Controller
             'status' => 'success',
             'hospitals' => $hospitals
         ]);
+    public function getReservedSlots(Request $request, $hospitalId)
+    {
+        $date = $request->query('date');
+        
+        if (!$date) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Date is required.'
+            ], 400);
+        }
+
+        $reservedSlots = Appointment::where('hospital_id', $hospitalId)
+            ->where('appointment_date', $date)
+            ->whereIn('status', ['En attente', 'Confirmé'])
+            ->pluck('appointment_time');
+
+        return response()->json([
+            'status' => 'success',
+            'reserved_slots' => $reservedSlots
+        ]);
     }
 }

@@ -41,6 +41,7 @@ export function AppointmentsTab({ donorId }: { donorId: number }) {
   const [appointmentDate, setAppointmentDate] = useState<string>("");
   const [appointmentTime, setAppointmentTime] = useState<string>("");
   const [notes, setNotes] = useState<string>("");
+  const [reservedSlots, setReservedSlots] = useState<string[]>([]);
   
   // Quiz/Checklist State
   const [quizAnswers, setQuizAnswers] = useState({
@@ -73,6 +74,29 @@ export function AppointmentsTab({ donorId }: { donorId: number }) {
       console.error("Error fetching hospitals:", err);
     }
   };
+
+  const fetchReservedSlots = async (hospitalId: string, date: string) => {
+    if (!hospitalId || !date) {
+      setReservedSlots([]);
+      return;
+    }
+    try {
+      const data = await apiFetch(`/hospitals/${hospitalId}/reserved-slots?date=${date}`);
+      if (data.status === "success") {
+        setReservedSlots(data.reserved_slots);
+        // If currently selected time is reserved, clear it
+        if (data.reserved_slots.includes(appointmentTime)) {
+          setAppointmentTime("");
+        }
+      }
+    } catch (err) {
+      console.error("Error fetching reserved slots:", err);
+    }
+  };
+
+  useEffect(() => {
+    fetchReservedSlots(selectedHospitalId, appointmentDate);
+  }, [selectedHospitalId, appointmentDate]);
 
   useEffect(() => {
     if (donorId) {
@@ -134,6 +158,7 @@ export function AppointmentsTab({ donorId }: { donorId: number }) {
           illness: false,
         });
         fetchAppointments();
+        fetchReservedSlots(selectedHospitalId, appointmentDate);
       } else {
         toast.error(response.message || dashboardT.bookingError);
       }
@@ -261,20 +286,27 @@ export function AppointmentsTab({ donorId }: { donorId: number }) {
                   <Clock className="h-4 w-4 text-primary" /> {dashboardT.timeSlot}
                 </label>
                 <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3">
-                  {timeSlots.map((slot) => (
+                  {timeSlots.map((slot) => {
+                    const isReserved = reservedSlots.includes(slot);
+                    return (
                     <button
                       key={slot}
                       type="button"
+                      disabled={isReserved}
                       onClick={() => setAppointmentTime(slot)}
-                      className={`py-2 px-3 text-sm font-bold rounded-xl border transition-all ${
-                        appointmentTime === slot
+                      className={`py-2 px-1 sm:px-3 text-[13px] sm:text-sm font-bold rounded-xl border transition-all ${
+                        isReserved
+                          ? "bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed opacity-60"
+                          : appointmentTime === slot
                           ? "bg-primary text-white border-primary shadow-md shadow-primary/20 scale-[1.05]"
-                          : "bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200"
+                          : "bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200 cursor-pointer"
                       }`}
+                      title={isReserved ? "Ce créneau est déjà réservé" : ""}
                     >
                       {slot}
                     </button>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
 

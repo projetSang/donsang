@@ -57,6 +57,7 @@ Route::get('/donors/{id}/notifications', [DashboardController::class, 'getNotifi
 Route::post('/appointments', [AppointmentController::class, 'store']);
 Route::get('/donors/{id}/appointments', [AppointmentController::class, 'getDonorAppointments']);
 Route::get('/hospitals/{id}/appointments', [AppointmentController::class, 'getHospitalAppointments']);
+Route::get('/hospitals/{id}/reserved-slots', [AppointmentController::class, 'getReservedSlots']);
 Route::put('/appointments/{id}/status', [AppointmentController::class, 'updateStatus']);
 Route::get('/public-hospitals', [AppointmentController::class, 'hospitalsList']);
 

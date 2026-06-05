@@ -217,7 +217,7 @@ export default function DonorDashboard() {
       <Navbar />
 
       {/* Mobile Tab Bar */}
-      <div className="lg:hidden sticky top-16 z-40 bg-white border-b border-border shadow-sm">
+      <div className="lg:hidden sticky top-18 md:top-16 z-40 bg-white border-b border-border shadow-sm">
         <div className="flex overflow-x-auto scrollbar-hide px-4 gap-1 py-2">
           {tabs.map((tab) => (
             <button
