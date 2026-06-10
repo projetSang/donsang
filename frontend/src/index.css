@@ -202,11 +202,14 @@
       display: block !important;
     }
     
-    html, body {
+    html, body, #root {
       background-color: #ffffff !important;
       margin: 0 !important;
       padding: 0 !important;
       overflow: visible !important;
+      height: auto !important;
+      min-height: auto !important;
+      display: block !important;
       -webkit-print-color-adjust: exact !important;
       print-color-adjust: exact !important;
     }
