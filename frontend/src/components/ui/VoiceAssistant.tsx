@@ -60,6 +60,7 @@ const VoiceAssistant: React.FC = () => {
       };
 
       recognitionRef.current.onresult = async (event: any) => {
+        //transcript le vocal en texte et l'envoyer au backend 
         const transcript = event.results[0][0].transcript;
         setIsListening(false);
         handleSendVoiceMessage(transcript);

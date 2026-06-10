@@ -37,7 +37,7 @@ export function Footer() {
           <div>
             <h4 className="font-semibold mb-3">{f.contactTitle}</h4>
             <ul className="space-y-2 text-sm text-background/60">
-              <li>admin@chu.com</li>
+              <li>Donsang@donsang.ma</li>
               <li>+212 688996655</li>
               <li>Maroc</li>
             </ul>

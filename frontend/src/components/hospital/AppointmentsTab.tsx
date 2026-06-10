@@ -164,19 +164,21 @@ export function AppointmentsTab({ hospitalId }: Readonly<{ hospitalId: number }>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 text-slate-700 font-semibold text-sm">
-                {filteredAppointments.map((apt) => (
+                {filteredAppointments.map((apt) => {
+                  const donor = apt.bloodDonor || (apt as any).blood_donor;
+                  return (
                   <tr key={apt.id} className="hover:bg-slate-50/50 transition-colors">
                     
                     {/* Donor Details */}
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
-                        <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary font-bold text-lg">
-                          {apt.bloodDonor?.full_name?.charAt(0).toUpperCase()}
+                        <div className="h-10 w-10 shrink-0 rounded-xl bg-primary/10 flex items-center justify-center text-primary font-bold text-lg">
+                          {donor?.full_name?.charAt(0).toUpperCase() || "?"}
                         </div>
                         <div>
-                          <p className="text-slate-800 font-bold leading-tight">{apt.bloodDonor?.full_name}</p>
-                          <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
-                            <Phone className="h-3 w-3" /> {apt.bloodDonor?.phone}
+                          <p className="text-slate-800 font-bold leading-tight whitespace-nowrap">{donor?.full_name || "Anonyme"}</p>
+                          <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5 whitespace-nowrap">
+                            <Phone className="h-3 w-3 shrink-0" /> {donor?.phone || "N/A"}
                           </div>
                         </div>
                       </div>
@@ -184,19 +186,19 @@ export function AppointmentsTab({ hospitalId }: Readonly<{ hospitalId: number }>
 
                     {/* Blood Type */}
                     <td className="px-6 py-4">
-                      <span className="px-3 py-1 bg-rose-50 text-rose-700 border border-rose-100 rounded-full text-xs font-black flex items-center gap-1 w-fit">
-                        <Droplet className="h-3.5 w-3.5 fill-rose-600 text-rose-600" /> {apt.bloodDonor?.blood_type}
+                      <span className="px-3 py-1 bg-rose-50 text-rose-700 border border-rose-100 rounded-full text-xs font-black flex items-center gap-1 w-fit whitespace-nowrap">
+                        <Droplet className="h-3.5 w-3.5 fill-rose-600 text-rose-600 shrink-0" /> {donor?.blood_type || "?"}
                       </span>
                     </td>
 
                     {/* Date & Time */}
                     <td className="px-6 py-4">
                       <div className="space-y-1">
-                        <p className="flex items-center gap-1.5 text-xs text-slate-800 font-bold">
-                          <CalendarIcon className="h-3.5 w-3.5 text-primary" /> {apt.appointment_date}
+                        <p className="flex items-center gap-1.5 text-xs text-slate-800 font-bold whitespace-nowrap">
+                          <CalendarIcon className="h-3.5 w-3.5 text-primary shrink-0" /> {apt.appointment_date}
                         </p>
-                        <p className="flex items-center gap-1.5 text-xs text-muted-foreground font-semibold">
-                          <Clock className="h-3.5 w-3.5 text-primary" /> {apt.appointment_time}
+                        <p className="flex items-center gap-1.5 text-xs text-muted-foreground font-semibold whitespace-nowrap">
+                          <Clock className="h-3.5 w-3.5 text-primary shrink-0" /> {apt.appointment_time}
                         </p>
                       </div>
                     </td>
@@ -209,8 +211,8 @@ export function AppointmentsTab({ hospitalId }: Readonly<{ hospitalId: number }>
                     {/* Notes / Details */}
                     <td className="px-6 py-4">
                       <div className="space-y-1 max-w-[200px]">
-                        <p className="text-xs text-slate-500 font-bold flex items-center gap-1">
-                          <CreditCard className="h-3.5 w-3.5" /> CIN: {apt.bloodDonor?.cin || "N/A"}
+                        <p className="text-xs text-slate-500 font-bold flex items-center gap-1 whitespace-nowrap">
+                          <CreditCard className="h-3.5 w-3.5 shrink-0" /> CIN: {donor?.cin || "N/A"}
                         </p>
                         {apt.notes && (
                           <p className="text-[11px] text-slate-400 italic leading-tight truncate" title={apt.notes}>
@@ -224,7 +226,7 @@ export function AppointmentsTab({ hospitalId }: Readonly<{ hospitalId: number }>
                     <td className="px-6 py-4 text-right">
                       <div className="flex items-center justify-end gap-2">
                         {updatingId === apt.id ? (
-                          <RefreshCw className="h-5 w-5 animate-spin text-primary" />
+                          <RefreshCw className="h-5 w-5 animate-spin text-primary shrink-0" />
                         ) : (
                           <>
                             {apt.status === "En attente" && (
@@ -250,10 +252,10 @@ export function AppointmentsTab({ hospitalId }: Readonly<{ hospitalId: number }>
                               <>
                                 <button
                                   onClick={() => handleUpdateStatus(apt.id, "Terminé")}
-                                  className="px-2.5 py-1.5 bg-primary text-white font-bold text-xs rounded-xl shadow-sm hover:bg-primary/95 transition-all flex items-center gap-1"
+                                  className="px-2.5 py-1.5 bg-primary text-white font-bold text-xs rounded-xl shadow-sm hover:bg-primary/95 transition-all flex items-center gap-1 whitespace-nowrap"
                                   title="Marquer le don comme effectué"
                                 >
-                                  <Check className="h-3.5 w-3.5" /> Effectué
+                                  <Check className="h-3.5 w-3.5 shrink-0" /> Effectué
                                 </button>
                                 <button
                                   onClick={() => handleUpdateStatus(apt.id, "Annulé")}
@@ -266,13 +268,13 @@ export function AppointmentsTab({ hospitalId }: Readonly<{ hospitalId: number }>
                             )}
 
                             {apt.status === "Terminé" && (
-                              <span className="text-xs text-emerald-600 font-bold flex items-center gap-1">
-                                <CheckCircle2 className="h-4 w-4" /> Don d'honneur fait
+                              <span className="text-xs text-emerald-600 font-bold flex items-center gap-1 whitespace-nowrap">
+                                <CheckCircle2 className="h-4 w-4 shrink-0" /> Don d'honneur fait
                               </span>
                             )}
 
                             {apt.status === "Annulé" && (
-                              <span className="text-xs text-rose-500 font-semibold">
+                              <span className="text-xs text-rose-500 font-semibold whitespace-nowrap">
                                 Rendez-vous annulé
                               </span>
                             )}
@@ -282,7 +284,7 @@ export function AppointmentsTab({ hospitalId }: Readonly<{ hospitalId: number }>
                     </td>
 
                   </tr>
-                ))}
+                )})}
               </tbody>
             </table>
           </div>
