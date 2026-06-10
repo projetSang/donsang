@@ -168,8 +168,13 @@ class AuthController extends Controller
             }
         }
 
-        if ($user && $request->user_type === 'donor') {
-            $user->is_donor = 1;
+        if ($user) {
+            if ($request->user_type === 'donor') {
+                $user->is_donor = 1;
+                $user->user_type = 'donor';
+            } else {
+                $user->user_type = 'hospital';
+            }
         }
 
         return response()->json([
@@ -200,8 +205,13 @@ class AuthController extends Controller
             ], 404);
         }
 
-        if ($user && $request->user_type === 'donor') {
-            $user->is_donor = 1;
+        if ($user) {
+            if ($request->user_type === 'donor') {
+                $user->is_donor = 1;
+                $user->user_type = 'donor';
+            } else {
+                $user->user_type = 'hospital';
+            }
         }
 
         return response()->json([

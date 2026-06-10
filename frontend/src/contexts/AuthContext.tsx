@@ -69,8 +69,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const updateUser = (newUserData: any) => {
-    setUser(newUserData);
-    localStorage.setItem("userData", JSON.stringify(newUserData));
+    setUser((prev: any) => {
+      const merged = { ...prev, ...newUserData };
+      localStorage.setItem("userData", JSON.stringify(merged));
+      return merged;
+    });
   };
 
   return (
