@@ -195,6 +195,8 @@ class AppointmentController extends Controller
             'status' => 'success',
             'hospitals' => $hospitals
         ]);
+    }
+
     public function getReservedSlots(Request $request, $hospitalId)
     {
         $date = $request->query('date');
